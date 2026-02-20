@@ -21,8 +21,8 @@
 | Código | Módulo | Estado | Notas |
 |--------|--------|--------|-------|
 | F1-01 | Setup proyecto Tauri | ✅ COMPLETO | |
-| F1-02 | Esquema SQLite en Rust | 🔵 EN CURSO | rama: feat/F1-02-sqlite |
-| F1-03 | Selector de carpeta | ⬜ PENDIENTE | depende de F1-02 |
+| F1-02 | Esquema SQLite en Rust | ✅ COMPLETO | |
+| F1-03 | Selector de carpeta    | 🔵 EN CURSO | rama: feat/F1-03-selector |
 | F1-04 | Capa de comandos Tauri | ⬜ PENDIENTE | depende de F1-02 |
 | F1-05 | Migración JSON → SQLite | ⬜ PENDIENTE | depende de F1-04 |
 | F1-06 | Dashboard trabajos | ⬜ PENDIENTE | depende de F1-04 |
