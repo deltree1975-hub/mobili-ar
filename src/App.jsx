@@ -1,50 +1,36 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import { invoke } from "@tauri-apps/api/core";
-import "./App.css";
+// ============================================================
+// MOBILI-AR — Componente raíz de la aplicación
+// Archivo  : src/App.jsx
+// Módulo   : F1-01 — Setup proyecto Tauri
+// Depende  : (ninguno todavía)
+// Expone   : <App /> — montado en src/main.jsx
+// Creado   : [fecha]
+// ============================================================
+// F1-06: agregar Router y rutas principales
+// F2-05: agregar lógica de sesión
+// F2-09: agregar header global con usuario activo
+// ============================================================
+
+import './App.css';
 
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
-
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
-  }
-
   return (
-    <main className="container">
-      <h1>Welcome to Tauri + React</h1>
-
-      <div className="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="app-root">
+      <div className="app-bienvenida">
+        <div className="app-logo">M</div>
+        <h1>MOBILI-AR</h1>
+        <p className="app-version">v0.1.0 — Entorno funcionando correctamente</p>
+        <p className="app-modulo">Módulo activo: F1-01 — Setup inicial</p>
+        <div className="app-checklist">
+          <p>✅ Tauri inicializado</p>
+          <p>✅ React montado</p>
+          <p>✅ Vite conectado</p>
+          <p>⬜ Base de datos — F1-02</p>
+          <p>⬜ Selector de carpeta — F1-03</p>
+          <p>⬜ Comandos Tauri — F1-04</p>
+        </div>
       </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
-
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
-    </main>
+    </div>
   );
 }
 
