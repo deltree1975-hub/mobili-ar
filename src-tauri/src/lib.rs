@@ -1,13 +1,14 @@
 // ============================================================
 // MOBILI-AR — Librería principal de Tauri
 // Archivo  : src-tauri/src/lib.rs
-// Módulo   : F1-02 — Esquema SQLite en Rust
-// Depende  : db::DbState, db::abrir
+// Módulo   : F1-03 — Selector de carpeta
+// Depende  : db::DbState, commands::config
 // Creado   : [fecha]
 // ============================================================
-// F1-04: agregar mod commands y registrar invoke_handler
+// F1-04: agregar comandos de trabajos, módulos, etc.
 
 mod db;
+mod commands;
 
 use db::DbState;
 use std::sync::Mutex;
@@ -18,14 +19,18 @@ pub fn run() {
         // ── PLUGINS ───────────────────────────────────────────
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_dialog::init())
         // ── ESTADO GLOBAL ─────────────────────────────────────
-        // La conexión a SQLite empieza como None.
-        // F1-03 (selector de carpeta) la inicializa con la ruta
-        // que el usuario elige la primera vez que abre la app.
         .manage(DbState(Mutex::new(None)))
         // ── COMANDOS ──────────────────────────────────────────
-        // F1-04: .invoke_handler(tauri::generate_handler![...])
-        .invoke_handler(tauri::generate_handler![])
+        .invoke_handler(tauri::generate_handler![
+            commands::config::get_db_path,
+            commands::config::seleccionar_carpeta_db,
+            commands::config::abrir_db_existente,
+            // F1-04: commands::trabajos::get_trabajos_activos,
+            // F1-04: commands::trabajos::crear_trabajo,
+            // F2-06: commands::usuarios::validar_token,
+        ])
         .run(tauri::generate_context!())
         .expect("Error al iniciar MOBILI-AR");
 }
