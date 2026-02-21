@@ -26,7 +26,7 @@
 | F1-03 | Selector de carpeta    | ✅ COMPLETO | |
 | F1-04 | Capa de comandos Tauri | ✅ COMPLETO |  |
 | F1-05 | Migración JSON → SQLite | ⬜ PENDIENTE | depende de F1-04 |
-| F1-06 | Dashboard trabajos     | 🔵 EN CURSO | rama: feat/F1-06-dashboard |
+| F1-06 | Dashboard trabajos | ✅ COMPLETO | |
 | F1-07 | Proyecto y Composición | ⬜ PENDIENTE | depende de F1-06 |
 | F1-08 | Editor de módulo | ⬜ PENDIENTE | depende de F1-06 |
 | F1-09 | Librería de módulos | ⬜ PENDIENTE | depende de F1-06 |
