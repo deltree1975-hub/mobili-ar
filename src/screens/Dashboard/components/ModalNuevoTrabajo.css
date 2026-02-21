@@ -1,0 +1,82 @@
+/* ============================================================
+   MOBILI-AR — Modal nuevo trabajo
+   Archivo  : src/screens/Dashboard/components/ModalNuevoTrabajo.css
+   Módulo   : F1-06
+   ============================================================ */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 24px;
+}
+
+.modal-card {
+  background: var(--color-white);
+  border-radius: var(--radius);
+  padding: 32px;
+  width: 100%;
+  max-width: 460px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+
+.modal-titulo {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-dark);
+  margin-bottom: 24px;
+}
+
+.modal-campo {
+  margin-bottom: 16px;
+}
+
+.modal-campo label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-mid);
+  margin-bottom: 6px;
+}
+
+.modal-campo input,
+.modal-campo textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #ddd;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-family: var(--font-base);
+  color: var(--color-dark);
+  background: white;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+
+.modal-campo input:focus,
+.modal-campo textarea:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.modal-campo textarea { resize: vertical; }
+
+.modal-error {
+  font-size: 13px;
+  color: #cc0000;
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  background: #fff0f0;
+  border-radius: var(--radius);
+}
+
+.modal-botones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
