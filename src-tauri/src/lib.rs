@@ -1,14 +1,14 @@
 // ============================================================
 // MOBILI-AR — Librería principal de Tauri
 // Archivo  : src-tauri/src/lib.rs
-// Módulo   : F1-03 — Selector de carpeta
-// Depende  : db::DbState, commands::config
+// Módulo   : F1-04 — Capa de comandos Tauri
+// Depende  : db::DbState, commands::*
 // Creado   : [fecha]
 // ============================================================
-// F1-04: agregar comandos de trabajos, módulos, etc.
 
-mod db;
 mod commands;
+mod db;
+mod types;
 
 use db::DbState;
 use std::sync::Mutex;
@@ -24,12 +24,25 @@ pub fn run() {
         .manage(DbState(Mutex::new(None)))
         // ── COMANDOS ──────────────────────────────────────────
         .invoke_handler(tauri::generate_handler![
+            // F1-03: configuración de base de datos
             commands::config::get_db_path,
             commands::config::seleccionar_carpeta_db,
             commands::config::abrir_db_existente,
-            // F1-04: commands::trabajos::get_trabajos_activos,
-            // F1-04: commands::trabajos::crear_trabajo,
+            // F1-04: trabajos
+            commands::trabajos::get_trabajos_activos,
+            commands::trabajos::crear_trabajo,
+            commands::trabajos::actualizar_trabajo,
+            commands::trabajos::cambiar_estado_trabajo,
+            // F1-04: composiciones y módulos
+            commands::composiciones::get_composiciones,
+            commands::composiciones::crear_composicion,
+            commands::composiciones::get_modulos,
+            commands::composiciones::crear_modulo,
+            commands::composiciones::eliminar_modulo,
+            commands::composiciones::get_libreria,
             // F2-06: commands::usuarios::validar_token,
+            // F2-06: commands::usuarios::crear_usuario,
+            // F4-02: commands::piezas::buscar_pieza_por_codigo,
         ])
         .run(tauri::generate_context!())
         .expect("Error al iniciar MOBILI-AR");
