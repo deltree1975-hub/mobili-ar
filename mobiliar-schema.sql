@@ -229,6 +229,15 @@ CREATE TABLE IF NOT EXISTS modulos (
   libreria_ref        TEXT,
   lanzado_en          TEXT,
   lanzado_por         TEXT REFERENCES usuarios(id),
+  material_id         TEXT REFERENCES materiales(id),
+  color_material      TEXT,
+  tipo_canto          TEXT NOT NULL DEFAULT 'pvc',
+  espesor_canto       REAL NOT NULL DEFAULT 0.4,
+  canto_sup           INTEGER NOT NULL DEFAULT 1 CHECK(canto_sup IN (0,1)),
+  canto_inf           INTEGER NOT NULL DEFAULT 1 CHECK(canto_inf IN (0,1)),
+  canto_izq           INTEGER NOT NULL DEFAULT 1 CHECK(canto_izq IN (0,1)),
+  canto_der           INTEGER NOT NULL DEFAULT 1 CHECK(canto_der IN (0,1)),
+  apertura_puerta     TEXT NOT NULL DEFAULT 'derecha' CHECK(apertura_puerta IN ('derecha','izquierda','dos_hojas','corredera')),
   creado_en           TEXT NOT NULL DEFAULT (datetime('now'))
 );
 

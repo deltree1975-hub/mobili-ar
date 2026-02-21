@@ -76,7 +76,6 @@ pub fn crear_composicion(
 }
 
 // ── MÓDULOS ───────────────────────────────────────────────────
-
 /// Retorna todos los módulos de una composición.
 pub fn get_modulos(conn: &Connection, composicion_id: &str) -> anyhow::Result<Vec<Modulo>> {
     let mut stmt = conn.prepare(
@@ -84,7 +83,9 @@ pub fn get_modulos(conn: &Connection, composicion_id: &str) -> anyhow::Result<Ve
                 ancho, alto, profundidad, espesor_tablero, espesor_fondo,
                 tipo_union, costados_por_fuera, fondo_embutido, tapa_apoyada,
                 cant_estantes, cant_puertas, overlap_puertas,
-                inset_estantes, offset_tirador, estado, creado_en
+                inset_estantes, offset_tirador, estado, creado_en,
+                material_id, color_material, tipo_canto, espesor_canto,
+                canto_sup, canto_inf, canto_izq, canto_der, apertura_puerta
          FROM modulos
          WHERE composicion_id = ?1
          ORDER BY creado_en ASC",
@@ -113,6 +114,15 @@ pub fn get_modulos(conn: &Connection, composicion_id: &str) -> anyhow::Result<Ve
             offset_tirador:     row.get(18)?,
             estado:             row.get(19)?,
             creado_en:          row.get(20)?,
+            material_id:        row.get(21)?,
+            color_material:     row.get(22)?,
+            tipo_canto:         row.get(23)?,
+            espesor_canto:      row.get(24)?,
+            canto_sup:          row.get::<_, i64>(25)? != 0,
+            canto_inf:          row.get::<_, i64>(26)? != 0,
+            canto_izq:          row.get::<_, i64>(27)? != 0,
+            canto_der:          row.get::<_, i64>(28)? != 0,
+            apertura_puerta:    row.get(29)?,
         })
     })?
     .collect::<Result<Vec<_>, _>>()?;
@@ -125,7 +135,7 @@ pub fn crear_modulo(conn: &Connection, datos: CrearModuloInput) -> anyhow::Resul
     let id = Uuid::new_v4().to_string();
     let ahora = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
 
-    // Aplicar valores por defecto
+    // ── VALORES POR DEFECTO ───────────────────────────────────
     let espesor_tablero  = datos.espesor_tablero.unwrap_or(18.0);
     let espesor_fondo    = datos.espesor_fondo.unwrap_or(3.0);
     let tipo_union       = datos.tipo_union.unwrap_or_else(|| "cam_locks".to_string());
@@ -137,20 +147,34 @@ pub fn crear_modulo(conn: &Connection, datos: CrearModuloInput) -> anyhow::Resul
     let overlap_puertas  = datos.overlap_puertas.unwrap_or(2.0);
     let inset_estantes   = datos.inset_estantes.unwrap_or(5.0);
     let offset_tirador   = datos.offset_tirador.unwrap_or(35.0);
+    let tipo_canto       = datos.tipo_canto.unwrap_or_else(|| "pvc".to_string());
+    let espesor_canto    = datos.espesor_canto.unwrap_or(0.4);
+    let canto_sup        = datos.canto_sup.unwrap_or(true);
+    let canto_inf        = datos.canto_inf.unwrap_or(true);
+    let canto_izq        = datos.canto_izq.unwrap_or(true);
+    let canto_der        = datos.canto_der.unwrap_or(true);
+    let apertura_puerta  = datos.apertura_puerta.unwrap_or_else(|| "derecha".to_string());
 
+    // ── INSERT ────────────────────────────────────────────────
     conn.execute(
         "INSERT INTO modulos (
             id, composicion_id, nombre, disposicion,
             ancho, alto, profundidad, espesor_tablero, espesor_fondo,
             tipo_union, costados_por_fuera, fondo_embutido, tapa_apoyada,
             cant_estantes, cant_puertas, overlap_puertas,
-            inset_estantes, offset_tirador, estado, creado_en
+            inset_estantes, offset_tirador,
+            material_id, color_material, tipo_canto, espesor_canto,
+            canto_sup, canto_inf, canto_izq, canto_der, apertura_puerta,
+            estado, creado_en
          ) VALUES (
             ?1, ?2, ?3, ?4,
             ?5, ?6, ?7, ?8, ?9,
             ?10, ?11, ?12, ?13,
             ?14, ?15, ?16,
-            ?17, ?18, 'borrador', ?19
+            ?17, ?18,
+            ?19, ?20, ?21, ?22,
+            ?23, ?24, ?25, ?26, ?27,
+            'borrador', ?28
          )",
         params![
             id, datos.composicion_id, datos.nombre, datos.disposicion,
@@ -159,10 +183,15 @@ pub fn crear_modulo(conn: &Connection, datos: CrearModuloInput) -> anyhow::Resul
             tipo_union,
             costados_x_fuera as i64, fondo_embutido as i64, tapa_apoyada as i64,
             cant_estantes, cant_puertas, overlap_puertas,
-            inset_estantes, offset_tirador, ahora
+            inset_estantes, offset_tirador,
+            datos.material_id, datos.color_material, tipo_canto, espesor_canto,
+            canto_sup as i64, canto_inf as i64, canto_izq as i64, canto_der as i64,
+            apertura_puerta,
+            ahora
         ],
     )?;
 
+    // ── RETORNAR MÓDULO CREADO ────────────────────────────────
     Ok(Modulo {
         id,
         composicion_id: datos.composicion_id,
@@ -183,6 +212,15 @@ pub fn crear_modulo(conn: &Connection, datos: CrearModuloInput) -> anyhow::Resul
         overlap_puertas,
         inset_estantes,
         offset_tirador,
+        material_id:     datos.material_id,
+        color_material:  datos.color_material,
+        tipo_canto,
+        espesor_canto,
+        canto_sup,
+        canto_inf,
+        canto_izq,
+        canto_der,
+        apertura_puerta,
         estado:    "borrador".to_string(),
         creado_en: ahora,
     })

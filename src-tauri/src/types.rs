@@ -83,6 +83,15 @@ pub struct Modulo {
     pub offset_tirador: f64,
     pub estado: String,
     pub creado_en: String,
+    pub material_id:     Option<String>,
+    pub color_material:  Option<String>,
+    pub tipo_canto:      String,
+    pub espesor_canto:   f64,
+    pub canto_sup:       bool,
+    pub canto_inf:       bool,
+    pub canto_izq:       bool,
+    pub canto_der:       bool,
+    pub apertura_puerta: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -104,6 +113,15 @@ pub struct CrearModuloInput {
     pub overlap_puertas: Option<f64>,
     pub inset_estantes: Option<f64>,
     pub offset_tirador: Option<f64>,
+    pub material_id:     Option<String>,
+    pub color_material:  Option<String>,
+    pub tipo_canto:      Option<String>,
+    pub espesor_canto:   Option<f64>,
+    pub canto_sup:       Option<bool>,
+    pub canto_inf:       Option<bool>,
+    pub canto_izq:       Option<bool>,
+    pub canto_der:       Option<bool>,
+    pub apertura_puerta: Option<String>,
 }
 
 // ── LIBRERÍA ──────────────────────────────────────────────────
