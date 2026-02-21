@@ -1,11 +1,11 @@
 // ============================================================
 // MOBILI-AR — Componente raíz de la aplicación
 // Archivo  : src/App.jsx
-// Módulo   : F1-06 — Dashboard trabajos
-// Depende  : screens/DbSetup, screens/Dashboard
+// Módulo   : F1-07 — Proyecto y Composición
+// Depende  : screens/DbSetup, screens/Dashboard, screens/Proyecto
 // Creado   : [fecha]
 // ============================================================
-// F1-07: agregar pantalla de Proyecto/Composición
+// F1-08: agregar pantalla de Editor de módulo
 // F2-05: agregar lógica de sesión antes del Dashboard
 // ============================================================
 
@@ -13,31 +13,34 @@ import { useState, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import DbSetup from './screens/DbSetup';
 import Dashboard from './screens/Dashboard';
+import Proyecto from './screens/Proyecto';
 import './App.css';
 
 const ESTADO = {
-  VERIFICANDO:  'verificando',
-  SIN_DB:       'sin_db',
-  DASHBOARD:    'dashboard',
-  TRABAJO:      'trabajo',   // F1-07: pantalla de trabajo individual
+  VERIFICANDO: 'verificando',
+  SIN_DB:      'sin_db',
+  DASHBOARD:   'dashboard',
+  PROYECTO:    'proyecto',
+  EDITOR:      'editor',   // F1-08
 };
 
 function App() {
-  // ── ESTADO ───────────────────────────────────────────────────
-  const [estado, setEstado]           = useState(ESTADO.VERIFICANDO);
+  const [estado, setEstado]             = useState(ESTADO.VERIFICANDO);
   const [trabajoActivo, setTrabajoActivo] = useState(null);
+  const [moduloActivo, setModuloActivo]   = useState(null);
 
-  // ── EFECTO: verificar DB al arrancar ─────────────────────────
-  useEffect(() => {
-    verificarDb();
-  }, []);
+  useEffect(() => { verificarDb(); }, []);
 
   async function verificarDb() {
     try {
       const ruta = await invoke('get_db_path');
-      if (ruta) {
-        await invoke('abrir_db_existente', { ruta });
-        setEstado(ESTADO.DASHBOARD);
+      if (ruta && ruta.trim() !== '') {
+        try {
+          await invoke('abrir_db_existente', { ruta });
+          setEstado(ESTADO.DASHBOARD);
+        } catch {
+          setEstado(ESTADO.SIN_DB);
+        }
       } else {
         setEstado(ESTADO.SIN_DB);
       }
@@ -46,14 +49,17 @@ function App() {
     }
   }
 
-  function handleDbConfigurada() {
-    setEstado(ESTADO.DASHBOARD);
-  }
+  function handleDbConfigurada() { setEstado(ESTADO.DASHBOARD); }
 
   function handleAbrirTrabajo(trabajo) {
     setTrabajoActivo(trabajo);
-    setEstado(ESTADO.TRABAJO);
-    // F1-07: navegar a la pantalla de trabajo
+    setEstado(ESTADO.PROYECTO);
+  }
+
+  function handleAbrirEditor(modulo) {
+    setModuloActivo(modulo);
+    setEstado(ESTADO.EDITOR);
+    // F1-08: navegar al editor paramétrico
   }
 
   // ── RENDER ───────────────────────────────────────────────────
@@ -74,20 +80,30 @@ function App() {
     return <Dashboard onAbrirTrabajo={handleAbrirTrabajo} />;
   }
 
-  // F1-07: reemplazar por <PantallaTrabajo trabajo={trabajoActivo} />
-  if (estado === ESTADO.TRABAJO) {
+  if (estado === ESTADO.PROYECTO) {
+    return (
+      <Proyecto
+        trabajo={trabajoActivo}
+        onVolver={() => setEstado(ESTADO.DASHBOARD)}
+        onAbrirEditor={handleAbrirEditor}
+      />
+    );
+  }
+
+  // F1-08: reemplazar por <Editor modulo={moduloActivo} />
+  if (estado === ESTADO.EDITOR) {
     return (
       <div className="app-root">
         <div className="app-bienvenida">
-          <h2>Trabajo: {trabajoActivo?.nombre}</h2>
+          <h2>Editor: {moduloActivo?.nombre}</h2>
           <p style={{ marginTop: 8, color: '#999', fontSize: 13 }}>
-            Pantalla de trabajo — F1-07
+            Editor paramétrico — F1-08
           </p>
           <button
             style={{ marginTop: 20, padding: '8px 16px', cursor: 'pointer' }}
-            onClick={() => setEstado(ESTADO.DASHBOARD)}
+            onClick={() => setEstado(ESTADO.PROYECTO)}
           >
-            ← Volver al Dashboard
+            ← Volver al proyecto
           </button>
         </div>
       </div>
