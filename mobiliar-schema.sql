@@ -43,13 +43,16 @@ INSERT OR IGNORE INTO configuracion_terminal (clave, valor) VALUES
 -- USUARIOS
 -- ================================================================
 CREATE TABLE IF NOT EXISTS usuarios (
-  id          TEXT PRIMARY KEY NOT NULL,
-  nombre      TEXT NOT NULL,
-  rol         TEXT NOT NULL CHECK (rol IN ('operario', 'encargado', 'administrador')),
-  token       TEXT NOT NULL UNIQUE,
-  estado      TEXT NOT NULL DEFAULT 'activo' CHECK (estado IN ('activo', 'revocado')),
-  creado_en   TEXT NOT NULL DEFAULT (datetime('now')),
-  creado_por  TEXT REFERENCES usuarios(id)
+    id            TEXT PRIMARY KEY,
+    nombre        TEXT NOT NULL,
+    apellido      TEXT NOT NULL DEFAULT '',
+    rol           TEXT NOT NULL DEFAULT 'operario'
+                  CHECK(rol IN ('operario','disenador','admin','dueno')),
+    token         TEXT NOT NULL UNIQUE,
+    pin           TEXT,
+    activo        INTEGER NOT NULL DEFAULT 1,
+    creado_en     TEXT NOT NULL,
+    ultimo_acceso TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_usuarios_token  ON usuarios(token);
@@ -520,6 +523,28 @@ JOIN composiciones c ON c.id = m.composicion_id
 JOIN trabajos      t ON t.id = c.trabajo_id
 GROUP BY t.id, h.tipo, h.descripcion
 ORDER BY t.nombre, h.tipo;
+
+CREATE TABLE IF NOT EXISTS mansiones (
+    id      TEXT PRIMARY KEY,
+    codigo  TEXT NOT NULL UNIQUE,
+    nombre  TEXT NOT NULL,
+    activo  INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE TABLE IF NOT EXISTS usuario_mansiones (
+    usuario_id TEXT NOT NULL REFERENCES usuarios(id),
+    mansion_id TEXT NOT NULL REFERENCES mansiones(id),
+    PRIMARY KEY (usuario_id, mansion_id)
+);
+
+CREATE TABLE IF NOT EXISTS sesiones (
+    id         TEXT PRIMARY KEY,
+    usuario_id TEXT NOT NULL REFERENCES usuarios(id),
+    mansion_id TEXT NOT NULL REFERENCES mansiones(id),
+    inicio     TEXT NOT NULL,
+    fin        TEXT,
+    activa     INTEGER NOT NULL DEFAULT 1
+);
 
 -- ================================================================
 -- FIN DEL SCHEMA
