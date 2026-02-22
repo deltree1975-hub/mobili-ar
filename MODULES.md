@@ -28,8 +28,8 @@
 | F1-05 | Migración JSON → SQLite | ⬜ PENDIENTE | depende de F1-04 |
 | F1-06 | Dashboard trabajos | ✅ COMPLETO | |
 | F1-07 | Proyecto y Composición | ✅ COMPLETO | |
-| F1-08 | Editor de módulo       | 🔵 EN CURSO | rama: feat/F1-08-editor |
-| F1-09 | Librería de módulos | ⬜ PENDIENTE | depende de F1-06 |
+| F1-08 | Editor de módulo | ✅ COMPLETO | |
+| F1-09 | Librería de módulos | ✅ COMPLETO | Gestión de librería → F2-08 |
 | F1-10 | Build y distribución | ⬜ PENDIENTE | depende de F1-01 |
 
 ## Fase 2 — Usuarios y Sesiones

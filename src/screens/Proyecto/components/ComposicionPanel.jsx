@@ -1,31 +1,19 @@
-// ============================================================
-// MOBILI-AR — Panel de composición con sus módulos
-// Archivo  : src/screens/Proyecto/components/ComposicionPanel.jsx
-// Módulo   : F1-07 — Proyecto y Composición
-// Creado   : [fecha]
-// ============================================================
-
 import './ComposicionPanel.css';
 
 const DISPOSICIONES = {
-  bajo:    'Bajo',
-  aereo:   'Aéreo',
-  torre:   'Torre',
-  cajon:   'Cajón',
-  especial: 'Especial',
+  bm: 'Bajomesa', al: 'Aéreo', to: 'Torre',
+  ca: 'Cajón', ab: 'Abierto', me: 'Mesa',
+  es: 'Estante', co: 'Columna',
 };
 
-/**
- * Panel que muestra una composición y sus módulos.
- */
 function ComposicionPanel({
   composicion, modulos,
-  onNuevoModulo, onAbrirEditor, onEliminarModulo,
+  onNuevoModulo, onAbrirLibreria, onAbrirEditor, onEliminarModulo,
 }) {
   return (
     <div className="comp-panel">
 
-      {/* HEADER DE COMPOSICIÓN */}
+      {/* HEADER */}
       <div className="comp-header">
         <div className="comp-info">
           <h2 className="comp-nombre">{composicion.nombre}</h2>
@@ -36,16 +24,21 @@ function ComposicionPanel({
             {modulos.length} módulo{modulos.length !== 1 ? 's' : ''}
           </span>
         </div>
-        <button className="btn-secundario btn-sm" onClick={onNuevoModulo}>
-          + Módulo
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="btn-secundario btn-sm" onClick={onAbrirLibreria}>
+            📚 Librería
+          </button>
+          <button className="btn-secundario btn-sm" onClick={onNuevoModulo}>
+            + Módulo
+          </button>
+        </div>
       </div>
 
-      {/* LISTA DE MÓDULOS */}
+      {/* MÓDULOS */}
       <div className="comp-modulos">
         {modulos.length === 0 && (
           <div className="comp-vacio">
-            No hay módulos. Agregá el primero con "+ Módulo".
+            No hay módulos. Agregá el primero con "+ Módulo" o elegí uno de la Librería.
           </div>
         )}
         {modulos.map(modulo => (
