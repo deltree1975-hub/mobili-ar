@@ -40,6 +40,7 @@ pub fn run() {
             commands::composiciones::crear_modulo,
             commands::composiciones::eliminar_modulo,
             commands::composiciones::get_libreria,
+            commands::composiciones::actualizar_modulo_completo,
             // F2-06: commands::usuarios::validar_token,
             // F2-06: commands::usuarios::crear_usuario,
             // F4-02: commands::piezas::buscar_pieza_por_codigo,

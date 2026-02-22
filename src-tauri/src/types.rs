@@ -135,3 +135,32 @@ pub struct LibreriaModulo {
     pub descripcion: Option<String>,
     pub config_json: String,
 }
+
+#[derive(Debug, Deserialize)]
+pub struct ActualizarModuloInput {
+    pub nombre:             String,
+    pub disposicion:        String,
+    pub ancho:              f64,
+    pub alto:               f64,
+    pub profundidad:        f64,
+    pub espesor_tablero:    f64,
+    pub espesor_fondo:      f64,
+    pub tipo_union:         String,
+    pub costados_por_fuera: bool,
+    pub fondo_embutido:     bool,
+    pub tapa_apoyada:       bool,
+    pub cant_estantes:      i64,
+    pub cant_puertas:       i64,
+    pub overlap_puertas:    f64,
+    pub inset_estantes:     f64,
+    pub offset_tirador:     f64,
+    pub material_id:        Option<String>,
+    pub color_material:     Option<String>,
+    pub tipo_canto:         String,
+    pub espesor_canto:      f64,
+    pub canto_sup:          bool,
+    pub canto_inf:          bool,
+    pub canto_izq:          bool,
+    pub canto_der:          bool,
+    pub apertura_puerta:    String,
+}

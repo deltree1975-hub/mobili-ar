@@ -1,12 +1,7 @@
 // ============================================================
 // MOBILI-AR — Componente raíz de la aplicación
 // Archivo  : src/App.jsx
-// Módulo   : F1-07 — Proyecto y Composición
-// Depende  : screens/DbSetup, screens/Dashboard, screens/Proyecto
-// Creado   : [fecha]
-// ============================================================
-// F1-08: agregar pantalla de Editor de módulo
-// F2-05: agregar lógica de sesión antes del Dashboard
+// Módulo   : F1-08 — Editor de módulo
 // ============================================================
 
 import { useState, useEffect } from 'react';
@@ -14,6 +9,7 @@ import { invoke } from '@tauri-apps/api/core';
 import DbSetup from './screens/DbSetup';
 import Dashboard from './screens/Dashboard';
 import Proyecto from './screens/Proyecto';
+import Editor from './screens/Editor';
 import './App.css';
 
 const ESTADO = {
@@ -21,11 +17,11 @@ const ESTADO = {
   SIN_DB:      'sin_db',
   DASHBOARD:   'dashboard',
   PROYECTO:    'proyecto',
-  EDITOR:      'editor',   // F1-08
+  EDITOR:      'editor',
 };
 
 function App() {
-  const [estado, setEstado]             = useState(ESTADO.VERIFICANDO);
+  const [estado, setEstado]               = useState(ESTADO.VERIFICANDO);
   const [trabajoActivo, setTrabajoActivo] = useState(null);
   const [moduloActivo, setModuloActivo]   = useState(null);
 
@@ -49,7 +45,7 @@ function App() {
     }
   }
 
-  function handleDbConfigurada() { setEstado(ESTADO.DASHBOARD); }
+  function handleDbConfigurada()      { setEstado(ESTADO.DASHBOARD); }
 
   function handleAbrirTrabajo(trabajo) {
     setTrabajoActivo(trabajo);
@@ -59,10 +55,8 @@ function App() {
   function handleAbrirEditor(modulo) {
     setModuloActivo(modulo);
     setEstado(ESTADO.EDITOR);
-    // F1-08: navegar al editor paramétrico
   }
 
-  // ── RENDER ───────────────────────────────────────────────────
   if (estado === ESTADO.VERIFICANDO) {
     return (
       <div className="app-cargando">
@@ -72,43 +66,21 @@ function App() {
     );
   }
 
-  if (estado === ESTADO.SIN_DB) {
-    return <DbSetup onConfigurado={handleDbConfigurada} />;
-  }
-
-  if (estado === ESTADO.DASHBOARD) {
-    return <Dashboard onAbrirTrabajo={handleAbrirTrabajo} />;
-  }
-
-  if (estado === ESTADO.PROYECTO) {
-    return (
-      <Proyecto
-        trabajo={trabajoActivo}
-        onVolver={() => setEstado(ESTADO.DASHBOARD)}
-        onAbrirEditor={handleAbrirEditor}
-      />
-    );
-  }
-
-  // F1-08: reemplazar por <Editor modulo={moduloActivo} />
-  if (estado === ESTADO.EDITOR) {
-    return (
-      <div className="app-root">
-        <div className="app-bienvenida">
-          <h2>Editor: {moduloActivo?.nombre}</h2>
-          <p style={{ marginTop: 8, color: '#999', fontSize: 13 }}>
-            Editor paramétrico — F1-08
-          </p>
-          <button
-            style={{ marginTop: 20, padding: '8px 16px', cursor: 'pointer' }}
-            onClick={() => setEstado(ESTADO.PROYECTO)}
-          >
-            ← Volver al proyecto
-          </button>
-        </div>
-      </div>
-    );
-  }
+  if (estado === ESTADO.SIN_DB)    return <DbSetup onConfigurado={handleDbConfigurada} />;
+  if (estado === ESTADO.DASHBOARD) return <Dashboard onAbrirTrabajo={handleAbrirTrabajo} />;
+  if (estado === ESTADO.PROYECTO)  return (
+    <Proyecto
+      trabajo={trabajoActivo}
+      onVolver={() => setEstado(ESTADO.DASHBOARD)}
+      onAbrirEditor={handleAbrirEditor}
+    />
+  );
+  if (estado === ESTADO.EDITOR)    return (
+    <Editor
+      modulo={moduloActivo}
+      onVolver={() => setEstado(ESTADO.PROYECTO)}
+    />
+  );
 }
 
 export default App;

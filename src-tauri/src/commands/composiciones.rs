@@ -8,7 +8,8 @@
 //            get_libreria()
 // Creado   : [fecha]
 // ============================================================
-
+use rusqlite::Connection;
+use rusqlite::params;
 use crate::db::{composiciones as db, DbState};
 use crate::types::{
     Composicion, CrearComposicionInput, CrearModuloInput, LibreriaModulo, Modulo,
@@ -84,4 +85,14 @@ pub fn get_libreria(
     let guard = state.0.lock().unwrap();
     let conn = guard.as_ref().ok_or("Base de datos no conectada")?;
     db::get_libreria(conn).map_err(|e| e.to_string())
+}
+#[tauri::command]
+pub fn actualizar_modulo_completo(
+    state: State<'_, DbState>,
+    id: String,
+    datos: crate::types::ActualizarModuloInput,
+) -> Result<(), String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard.as_ref().ok_or("Base de datos no conectada")?;
+    db::actualizar_modulo(conn, &id, datos).map_err(|e| e.to_string())
 }

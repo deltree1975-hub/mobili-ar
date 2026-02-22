@@ -257,3 +257,41 @@ pub fn get_libreria(conn: &Connection) -> anyhow::Result<Vec<LibreriaModulo>> {
 
     Ok(items)
 }
+pub fn actualizar_modulo(
+    conn: &Connection,
+    id: &str,
+    d: crate::types::ActualizarModuloInput,
+) -> anyhow::Result<()> {
+    conn.execute(
+        "UPDATE modulos SET
+            nombre = ?1, disposicion = ?2,
+            ancho = ?3, alto = ?4, profundidad = ?5,
+            espesor_tablero = ?6, espesor_fondo = ?7,
+            tipo_union = ?8, costados_por_fuera = ?9,
+            fondo_embutido = ?10, tapa_apoyada = ?11,
+            cant_estantes = ?12, cant_puertas = ?13,
+            overlap_puertas = ?14, inset_estantes = ?15,
+            offset_tirador = ?16, material_id = ?17,
+            color_material = ?18, tipo_canto = ?19,
+            espesor_canto = ?20, canto_sup = ?21,
+            canto_inf = ?22, canto_izq = ?23,
+            canto_der = ?24, apertura_puerta = ?25
+         WHERE id = ?26",
+        params![
+            d.nombre, d.disposicion,
+            d.ancho, d.alto, d.profundidad,
+            d.espesor_tablero, d.espesor_fondo,
+            d.tipo_union, d.costados_por_fuera as i64,
+            d.fondo_embutido as i64, d.tapa_apoyada as i64,
+            d.cant_estantes, d.cant_puertas,
+            d.overlap_puertas, d.inset_estantes,
+            d.offset_tirador, d.material_id,
+            d.color_material, d.tipo_canto,
+            d.espesor_canto, d.canto_sup as i64,
+            d.canto_inf as i64, d.canto_izq as i64,
+            d.canto_der as i64, d.apertura_puerta,
+            id
+        ],
+    )?;
+    Ok(())
+}

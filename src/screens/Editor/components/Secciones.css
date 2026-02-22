@@ -1,0 +1,202 @@
+/* ============================================================
+   MOBILI-AR — Estilos compartidos de secciones del editor
+   Archivo  : src/screens/Editor/components/Secciones.css
+   Módulo   : F1-08
+   ============================================================ */
+
+.editor-seccion {
+  background: var(--color-white);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+
+.editor-seccion-titulo {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-dark);
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.editor-campo {
+  margin-bottom: 12px;
+}
+.editor-campo:last-child { margin-bottom: 0; }
+
+.editor-campo label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-mid);
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.editor-campo input,
+.editor-campo select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: var(--radius);
+  font-size: 14px;
+  color: var(--color-dark);
+  background: white;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+.editor-campo input:focus,
+.editor-campo select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.editor-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.editor-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+/* ── TOGGLE ──────────────────────────────────────────────── */
+.editor-campo--toggle {
+  display: flex;
+  flex-direction: column;
+}
+
+.toggle-btn {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: var(--radius);
+  background: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--color-mid);
+  transition: all 0.15s;
+}
+.toggle-btn.activo {
+  background: var(--color-accent);
+  color: white;
+  border-color: var(--color-accent);
+}
+
+/* ── CANTOS ──────────────────────────────────────────────── */
+.cantos-caras {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.canto-btn {
+  padding: 6px 14px;
+  border: 1px solid #ddd;
+  border-radius: var(--radius);
+  background: white;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--color-mid);
+  transition: all 0.15s;
+}
+.canto-btn.activo {
+  background: var(--color-accent);
+  color: white;
+  border-color: var(--color-accent);
+}
+
+/* ── APERTURA PUERTAS ────────────────────────────────────── */
+.apertura-btns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.apertura-btn {
+  padding: 7px 14px;
+  border: 1px solid #ddd;
+  border-radius: var(--radius);
+  background: white;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--color-mid);
+  transition: all 0.15s;
+}
+.apertura-btn.activo {
+  background: var(--color-accent);
+  color: white;
+  border-color: var(--color-accent);
+}
+
+/* ── COLOR INPUT ─────────────────────────────────────────── */
+.editor-color-input { display: flex; gap: 8px; }
+.editor-color-input input { flex: 1; }
+
+/* ── NOTA ────────────────────────────────────────────────── */
+.editor-nota {
+  font-size: 12px;
+  color: #aaa;
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: #f9f9f9;
+  border-radius: var(--radius);
+}
+
+/* ── RESUMEN ─────────────────────────────────────────────── */
+.resumen-card {
+  background: var(--color-white);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+
+.resumen-titulo {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-mid);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.resumen-nombre {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.resumen-tipo {
+  font-size: 12px;
+  color: var(--color-accent);
+  font-weight: 600;
+  margin-top: 2px;
+  margin-bottom: 4px;
+}
+
+.resumen-separador {
+  height: 1px;
+  background: #eee;
+  margin: 12px 0;
+}
+
+.resumen-grupo-titulo {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-mid);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.resumen-fila {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 2px 0;
+}
+
+.resumen-label { color: var(--color-mid); }
+.resumen-valor { font-weight: 600; color: var(--color-dark); }
+
+.resumen-estado {
+  font-size: 12px;
+  color: var(--color-mid);
+  text-align: center;
+}
