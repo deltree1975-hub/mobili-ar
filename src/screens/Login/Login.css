@@ -1,0 +1,219 @@
+/* ============================================================
+   MOBILI-AR — Pantalla de Login
+   Archivo  : src/screens/Login/Login.css
+   ============================================================ */
+
+.login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0f2d1a 0%, #1a4d2e 60%, #0f2d1a 100%);
+  cursor: default;
+}
+
+.login-card {
+  background: white;
+  border-radius: 16px;
+  padding: 48px 40px;
+  width: 380px;
+  text-align: center;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+}
+
+.login-card--mansiones {
+  width: 440px;
+  text-align: left;
+}
+
+/* Logo */
+.login-logo {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: var(--color-accent);
+  color: white;
+  font-size: 32px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.login-titulo {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--color-dark);
+  margin: 0 0 8px;
+}
+
+.login-subtitulo {
+  font-size: 15px;
+  color: var(--color-mid);
+  margin: 0 0 32px;
+}
+
+/* Scanner */
+.login-scanner {
+  background: #f5f5f5;
+  border: 2px dashed #ddd;
+  border-radius: 12px;
+  padding: 24px 16px;
+  margin-bottom: 24px;
+  font-size: 15px;
+  color: var(--color-mid);
+  transition: all 0.2s;
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-scanner--leyendo {
+  border-color: var(--color-accent);
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+  animation: pulso 1s ease-in-out infinite;
+}
+
+.login-scanner--error {
+  border-color: #cc0000;
+  background: #fff0f0;
+}
+
+.login-error-text {
+  color: #cc0000;
+  font-weight: 600;
+}
+
+@keyframes pulso {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+
+/* Input invisible que captura el scanner */
+.login-input-oculto {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.login-hint {
+  font-size: 12px;
+  color: #bbb;
+  margin: 0;
+}
+
+/* ── MANSIONES ─────────────────────────────────────────────── */
+
+.login-bienvenida {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.login-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.login-nombre {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-dark);
+  margin: 0 0 4px;
+}
+
+.login-rol {
+  font-size: 12px;
+  color: var(--color-accent);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.login-instruccion {
+  font-size: 14px;
+  color: var(--color-mid);
+  margin: 0 0 16px;
+  font-weight: 600;
+}
+
+.login-mansiones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.login-mansion-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: #f8f8f8;
+  border: 2px solid #eee;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-dark);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+}
+
+.login-mansion-btn:hover:not(:disabled) {
+  background: var(--color-accent-light);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.login-mansion-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.login-mansion-icono {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.login-error {
+  color: #cc0000;
+  font-size: 13px;
+  text-align: center;
+  margin: 0 0 16px;
+}
+
+.login-cancelar {
+  width: 100%;
+  padding: 10px;
+  background: none;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--color-mid);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.login-cancelar:hover {
+  background: #f5f5f5;
+  color: var(--color-dark);
+}

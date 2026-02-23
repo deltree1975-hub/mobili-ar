@@ -52,3 +52,12 @@ pub fn asignar_mansiones(
     db_mansiones::asignar_a_usuario(conn, &usuario_id, &mansion_ids)
         .map_err(|e| e.to_string())
 }
+#[tauri::command]
+pub fn validar_token(
+    token: String,
+    state: State<DbState>,
+) -> Result<Option<Usuario>, String> {
+    let conn = state.0.lock().map_err(|e| e.to_string())?;
+    let conn = conn.as_ref().ok_or("DB no inicializada")?;
+    db_usuarios::buscar_por_token(conn, &token).map_err(|e| e.to_string())
+}

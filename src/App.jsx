@@ -1,21 +1,23 @@
 // ============================================================
 // MOBILI-AR — Componente raíz de la aplicación
 // Archivo  : src/App.jsx
-// Módulo   : F1-09 — Librería de módulos
+// Módulo   : F2-03 — Pantalla de Login
 // ============================================================
 
 import { useState, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
-import DbSetup from './screens/DbSetup';
+import DbSetup   from './screens/DbSetup';
+import Login     from './screens/Login';
 import Dashboard from './screens/Dashboard';
-import Proyecto from './screens/Proyecto';
-import Editor from './screens/Editor';
-import Libreria from './screens/Libreria';
+import Proyecto  from './screens/Proyecto';
+import Editor    from './screens/Editor';
+import Libreria  from './screens/Libreria';
 import './App.css';
 
 const ESTADO = {
   VERIFICANDO: 'verificando',
   SIN_DB:      'sin_db',
+  LOGIN:       'login',       // ← nuevo
   DASHBOARD:   'dashboard',
   PROYECTO:    'proyecto',
   EDITOR:      'editor',
@@ -24,6 +26,7 @@ const ESTADO = {
 
 function App() {
   const [estado, setEstado]               = useState(ESTADO.VERIFICANDO);
+  const [sesion, setSesion]               = useState(null); // ← SesionActiva activa
   const [trabajoActivo, setTrabajoActivo] = useState(null);
   const [moduloActivo, setModuloActivo]   = useState(null);
   const [composicionLibreria, setComposicionLibreria] = useState(null);
@@ -36,7 +39,7 @@ function App() {
       if (ruta && ruta.trim() !== '') {
         try {
           await invoke('abrir_db_existente', { ruta });
-          setEstado(ESTADO.DASHBOARD);
+          setEstado(ESTADO.LOGIN); // DB ok → ir a login
         } catch {
           setEstado(ESTADO.SIN_DB);
         }
@@ -48,7 +51,17 @@ function App() {
     }
   }
 
-  function handleDbConfigurada() { setEstado(ESTADO.DASHBOARD); }
+  function handleDbConfigurada() { setEstado(ESTADO.LOGIN); }
+
+  function handleLoginExitoso(sesionActiva) {
+    setSesion(sesionActiva);
+    setEstado(ESTADO.DASHBOARD);
+  }
+
+  function handleLogout() {
+    setSesion(null);
+    setEstado(ESTADO.LOGIN);
+  }
 
   function handleAbrirTrabajo(trabajo) {
     setTrabajoActivo(trabajo);
@@ -74,12 +87,21 @@ function App() {
     );
   }
 
-  if (estado === ESTADO.SIN_DB)    return <DbSetup onConfigurado={handleDbConfigurada} />;
-  if (estado === ESTADO.DASHBOARD) return <Dashboard onAbrirTrabajo={handleAbrirTrabajo} />;
+  if (estado === ESTADO.SIN_DB) return <DbSetup onConfigurado={handleDbConfigurada} />;
+  if (estado === ESTADO.LOGIN)  return <Login onLoginExitoso={handleLoginExitoso} />;
+
+  if (estado === ESTADO.DASHBOARD) return (
+    <Dashboard
+      sesion={sesion}
+      onAbrirTrabajo={handleAbrirTrabajo}
+      onLogout={handleLogout}
+    />
+  );
 
   if (estado === ESTADO.PROYECTO) return (
     <Proyecto
       trabajo={trabajoActivo}
+      sesion={sesion}
       onVolver={() => setEstado(ESTADO.DASHBOARD)}
       onAbrirEditor={handleAbrirEditor}
       onAbrirLibreria={handleAbrirLibreria}
@@ -89,6 +111,7 @@ function App() {
   if (estado === ESTADO.EDITOR) return (
     <Editor
       modulo={moduloActivo}
+      sesion={sesion}
       onVolver={() => setEstado(ESTADO.PROYECTO)}
     />
   );
@@ -97,10 +120,7 @@ function App() {
     <Libreria
       composicionId={composicionLibreria}
       onVolver={() => setEstado(ESTADO.PROYECTO)}
-      onModuloCreado={(modulo) => {
-        // Volver al proyecto — el módulo ya fue creado en la DB
-        setEstado(ESTADO.PROYECTO);
-      }}
+      onModuloCreado={() => setEstado(ESTADO.PROYECTO)}
     />
   );
 }
