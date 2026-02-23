@@ -26,3 +26,4 @@ anyhow              = "1"
 
 [dev-dependencies]
 tauri = { version = "2", features = ["test"] }
+chrono = { version = "0.4", features = ["serde"] }

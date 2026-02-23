@@ -8,6 +8,9 @@
 pub mod composiciones;
 pub mod config;
 pub mod trabajos;
+pub mod usuarios;
+pub mod auth;
+pub mod mansiones;
 
 // F2-06: pub mod usuarios;
 // F4-02: pub mod piezas;

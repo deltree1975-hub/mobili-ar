@@ -17,3 +17,6 @@ use std::sync::Mutex;
 
 /// Estado global de la conexión SQLite.
 pub struct DbState(pub Mutex<Option<Connection>>);
+pub mod usuarios;
+pub mod mansiones;
+pub mod sesiones;

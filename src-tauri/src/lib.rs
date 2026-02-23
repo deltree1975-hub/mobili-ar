@@ -12,6 +12,9 @@ mod types;
 
 use db::DbState;
 use std::sync::Mutex;
+use commands::usuarios;
+use commands::auth;
+use commands::mansiones;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -41,6 +44,14 @@ pub fn run() {
             commands::composiciones::eliminar_modulo,
             commands::composiciones::get_libreria,
             commands::composiciones::actualizar_modulo_completo,
+            auth::login,
+            auth::logout,
+            auth::get_sesion_activa,
+            usuarios::get_usuarios,
+            usuarios::crear_usuario,
+            usuarios::get_mansiones_usuario,
+            usuarios::asignar_mansiones,
+            mansiones::get_mansiones,
             // F2-06: commands::usuarios::validar_token,
             // F2-06: commands::usuarios::crear_usuario,
             // F4-02: commands::piezas::buscar_pieza_por_codigo,

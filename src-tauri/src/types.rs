@@ -164,3 +164,41 @@ pub struct ActualizarModuloInput {
     pub canto_der:          bool,
     pub apertura_puerta:    String,
 }
+
+// ── F2-01: Usuarios y Sesiones ────────────────────────────
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Usuario {
+    pub id:            String,
+    pub nombre:        String,
+    pub apellido:      String,
+    pub rol:           String,
+    pub token:         String,
+    pub activo:        bool,
+    pub ultimo_acceso: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Mansion {
+    pub id:     String,
+    pub codigo: String,
+    pub nombre: String,
+    pub activo: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SesionActiva {
+    pub sesion_id:             String,
+    pub usuario:               Usuario,
+    pub mansion_activa:        Mansion,
+    pub mansiones_habilitadas: Vec<Mansion>,
+    pub iniciada_en:           String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CrearUsuarioInput {
+    pub nombre:    String,
+    pub apellido:  String,
+    pub rol:       String,
+    pub mansiones: Vec<String>, // IDs de mansiones habilitadas
+}
