@@ -13,12 +13,14 @@ import Proyecto  from './screens/Proyecto';
 import Editor    from './screens/Editor';
 import Libreria  from './screens/Libreria';
 import './App.css';
+import Gestion from './screens/Gestion';
 
 const ESTADO = {
   VERIFICANDO: 'verificando',
   SIN_DB:      'sin_db',
-  LOGIN:       'login',       // ← nuevo
+  LOGIN:       'login',
   DASHBOARD:   'dashboard',
+  GESTION:     'gestion',    // ← nuevo
   PROYECTO:    'proyecto',
   EDITOR:      'editor',
   LIBRERIA:    'libreria',
@@ -55,7 +57,11 @@ function App() {
 
   function handleLoginExitoso(sesionActiva) {
     setSesion(sesionActiva);
-    setEstado(ESTADO.DASHBOARD);
+    if (sesionActiva.modoGestion) {
+      setEstado(ESTADO.GESTION);
+    } else {
+     setEstado(ESTADO.DASHBOARD);
+    }
   }
 
   function handleLogout() {
@@ -89,7 +95,13 @@ function App() {
 
   if (estado === ESTADO.SIN_DB) return <DbSetup onConfigurado={handleDbConfigurada} />;
   if (estado === ESTADO.LOGIN)  return <Login onLoginExitoso={handleLoginExitoso} />;
-
+  if (estado === ESTADO.GESTION) return (
+    <Gestion
+      sesion={sesion}
+      onVolver={() => setEstado(ESTADO.LOGIN)}
+      onIrAlTaller={() => setEstado(ESTADO.DASHBOARD)}
+    />
+  );
   if (estado === ESTADO.DASHBOARD) return (
     <Dashboard
       sesion={sesion}
