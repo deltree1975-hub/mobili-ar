@@ -204,17 +204,25 @@
    ============================================================ */
 @media print {
 
-  /* Ocultar TODO lo que no es la tarjeta */
-  body > * {
-    display: none !important;
+  /* Ocultar visualmente todo excepto la tarjeta */
+  body * {
+    visibility: hidden !important;
   }
 
-  /* Mostrar solo el overlay como contenedor neutro */
+  .tu-overlay,
+  .tu-overlay * {
+    visibility: visible !important;
+  }
+
   .tu-overlay {
-    all: unset !important;
-    display: block !important;
-    position: static !important;
-    background: none !important;
+    position: fixed !important;
+    inset: 0 !important;
+    background: white !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   /* Ocultar controles */
