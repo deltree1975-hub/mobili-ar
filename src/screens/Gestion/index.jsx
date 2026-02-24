@@ -6,7 +6,7 @@
 // ============================================================
 
 import { useState } from 'react';
-import GestionUsuarios  from './sections/GestionUsuarios';
+import GestionUsuarios from './sections/GestionUsuarios';
 import GestionMansiones from './sections/GestionMansiones';
 import GestionLibreria  from './sections/GestionLibreria';
 import './Gestion.css';

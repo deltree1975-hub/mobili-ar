@@ -1,0 +1,246 @@
+/* src/components/SeccionUsuarios.css */
+/* F2-05 — Lista de usuarios en el panel de gestión */
+
+.su-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ── Topbar ── */
+.su-topbar {
+  align-items: center;
+  border-bottom: 1px solid #242424;
+  display: flex;
+  justify-content: space-between;
+  flex-shrink: 0;
+  padding: 14px 20px;
+}
+
+.su-topbar-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.su-titulo {
+  color: #e0d8cc;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.su-conteo {
+  color: #484848;
+  font-size: 11px;
+}
+
+.su-btn-nuevo {
+  background: #d9541e;
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  padding: 8px 16px;
+  text-transform: uppercase;
+  transition: background 0.12s;
+}
+
+.su-btn-nuevo:hover {
+  background: #c44818;
+}
+
+.su-btn-nuevo--abierto {
+  background: #2a2a2a;
+  color: #686868;
+}
+
+.su-btn-nuevo--abierto:hover {
+  background: #333;
+  color: #999;
+}
+
+/* ── Zona formulario ── */
+.su-form-zona {
+  border-bottom: 1px solid #242424;
+  background: #151515;
+  flex-shrink: 0;
+  padding: 16px 20px;
+}
+
+/* ── Banner último creado ── */
+.su-banner-ok {
+  align-items: center;
+  background: #0c180c;
+  border-bottom: 1px solid #1a301a;
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 10px 20px;
+}
+
+.su-banner-texto {
+  color: #5aaa5a;
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  gap: 6px;
+}
+
+.su-banner-check {
+  font-size: 14px;
+}
+
+.su-banner-token {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 4px;
+}
+
+.su-banner-label {
+  color: #3a5a3a;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.su-banner-token code {
+  color: #4a8a4a;
+  font-family: monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.su-btn-tarjeta {
+  background: #152015;
+  border: 1px solid #244024;
+  border-radius: 4px;
+  color: #5aaa5a;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: auto;
+  padding: 5px 12px;
+  transition: background 0.12s;
+}
+
+.su-btn-tarjeta:hover {
+  background: #1e2e1e;
+}
+
+/* ── Estados ── */
+.su-estado {
+  color: #484848;
+  font-size: 13px;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.su-estado--error  { color: #d9541e; }
+.su-estado--vacio  { color: #383838; }
+
+/* ── Lista ── */
+.su-lista {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* ── Fila usuario ── */
+.su-fila {
+  align-items: center;
+  border-bottom: 1px solid #1e1e1e;
+  display: flex;
+  gap: 14px;
+  padding: 11px 20px;
+  transition: background 0.1s;
+}
+
+.su-fila:hover {
+  background: #1c1c1c;
+}
+
+.su-fila--inactivo {
+  opacity: 0.4;
+}
+
+/* Avatar con inicial */
+.su-fila-avatar {
+  align-items: center;
+  background: #242424;
+  border-radius: 50%;
+  color: #686868;
+  display: flex;
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 700;
+  height: 32px;
+  justify-content: center;
+  width: 32px;
+}
+
+.su-fila-info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.su-nombre {
+  color: #e0d8cc;
+  font-size: 13px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.su-token {
+  color: #383838;
+  font-family: monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.su-fila-meta {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+/* Badge rol */
+.su-badge {
+  background: color-mix(in srgb, var(--c) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c) 35%, transparent);
+  border-radius: 3px;
+  color: var(--c);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  padding: 3px 8px;
+  text-transform: uppercase;
+}
+
+.su-tag-inactivo {
+  background: #202020;
+  border-radius: 3px;
+  color: #484848;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  padding: 3px 8px;
+  text-transform: uppercase;
+}

@@ -1,0 +1,271 @@
+/* ============================================================
+   MOBILI-AR — Tarjeta de usuario imprimible
+   Archivo  : src/components/TarjetaUsuario.css
+   Módulo   : F2-06
+   ============================================================ */
+
+/* ── Overlay (pantalla previa) ────────────────────────────── */
+.tu-overlay {
+  align-items: center;
+  background: rgba(0, 0, 0, 0.75);
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  justify-content: center;
+  left: 0;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 1000;
+}
+
+/* ── Controles sobre el overlay ───────────────────────────── */
+.tu-controles {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.tu-instruccion {
+  color: #888;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  margin: 0;
+  text-align: center;
+}
+
+.tu-btns {
+  display: flex;
+  gap: 10px;
+}
+
+.tu-btn {
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  padding: 9px 20px;
+  text-transform: uppercase;
+  transition: background 0.12s;
+}
+
+.tu-btn--cancelar {
+  background: #2a2a2a;
+  color: #888;
+}
+
+.tu-btn--cancelar:hover {
+  background: #333;
+  color: #bbb;
+}
+
+.tu-btn--imprimir {
+  background: #d9541e;
+  color: #fff;
+}
+
+.tu-btn--imprimir:hover {
+  background: #c44818;
+}
+
+/* ── Tarjeta (85 × 54 mm — tamaño carnet ISO) ─────────────── */
+.tu-tarjeta {
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  height: 204px;      /* 54mm a 96dpi aprox para preview */
+  overflow: hidden;
+  position: relative;
+  width: 321px;       /* 85mm a 96dpi aprox para preview */
+}
+
+/* Franja de color superior */
+.tu-franja {
+  flex-shrink: 0;
+  height: 6px;
+  width: 100%;
+}
+
+/* Cabecera */
+.tu-cabecera {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  gap: 10px;
+  padding: 10px 12px 6px;
+}
+
+.tu-avatar {
+  align-items: center;
+  background: #f0f0f0;
+  border: 2px solid #d9541e;
+  border-radius: 50%;
+  color: #333;
+  display: flex;
+  flex-shrink: 0;
+  font-size: 18px;
+  font-weight: 700;
+  height: 36px;
+  justify-content: center;
+  width: 36px;
+}
+
+.tu-info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.tu-nombre {
+  color: #111;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tu-rol {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tu-logo {
+  align-items: center;
+  background: #111;
+  border-radius: 4px;
+  color: #fff;
+  display: flex;
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 900;
+  height: 26px;
+  justify-content: center;
+  width: 26px;
+}
+
+/* Divider */
+.tu-divider {
+  background: #ebebeb;
+  flex-shrink: 0;
+  height: 1px;
+  margin: 0 12px;
+}
+
+/* Código de barras */
+.tu-barcode-wrap {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  padding: 4px 8px 0;
+}
+
+.tu-barcode {
+  max-height: 72px;
+  max-width: 100%;
+}
+
+/* Pie */
+.tu-pie {
+  align-items: center;
+  border-top: 1px solid #f0f0f0;
+  color: #bbb;
+  display: flex;
+  flex-shrink: 0;
+  font-size: 9px;
+  gap: 5px;
+  justify-content: center;
+  letter-spacing: 0.06em;
+  padding: 4px 12px;
+  text-transform: uppercase;
+}
+
+.tu-pie-sep {
+  color: #ddd;
+}
+
+/* ============================================================
+   ESTILOS DE IMPRESIÓN
+   Todo lo que no es la tarjeta se oculta.
+   La tarjeta se imprime en tamaño carnet real (85 × 54 mm).
+   ============================================================ */
+@media print {
+
+  /* Ocultar TODO lo que no es la tarjeta */
+  body > * {
+    display: none !important;
+  }
+
+  /* Mostrar solo el overlay como contenedor neutro */
+  .tu-overlay {
+    all: unset !important;
+    display: block !important;
+    position: static !important;
+    background: none !important;
+  }
+
+  /* Ocultar controles */
+  .no-print {
+    display: none !important;
+  }
+
+  /* Tarjeta en tamaño real */
+  .tu-tarjeta {
+    /* Tamaño ISO carnet */
+    width: 85mm !important;
+    height: 54mm !important;
+    border-radius: 4px !important;
+    box-shadow: none !important;
+    margin: 0 auto !important;
+    page-break-inside: avoid !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Ajustar tipografías al tamaño real */
+  .tu-avatar {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 14px !important;
+  }
+
+  .tu-nombre {
+    font-size: 11px !important;
+  }
+
+  .tu-rol {
+    font-size: 8px !important;
+  }
+
+  .tu-logo {
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 11px !important;
+  }
+
+  .tu-barcode {
+    max-height: 52px !important;
+  }
+
+  .tu-pie {
+    font-size: 7px !important;
+  }
+
+  @page {
+    size: 85mm 54mm;
+    margin: 0;
+  }
+}

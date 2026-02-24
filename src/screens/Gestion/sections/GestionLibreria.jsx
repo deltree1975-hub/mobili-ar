@@ -26,7 +26,7 @@ function GestionLibreria() {
 
   async function cargar() {
     try {
-      const data = await invoke('get_libreria_modulos');
+      const data = await invoke('get_libreria'); // ✅ era get_libreria_modulos
       setModulos(data);
     } catch (e) {
       setError('Error al cargar librería: ' + e);
@@ -55,7 +55,6 @@ function GestionLibreria() {
               <th>Código</th>
               <th>Nombre</th>
               <th>Tipo</th>
-              <th>Estado</th>
             </tr>
           </thead>
           <tbody>
@@ -65,11 +64,6 @@ function GestionLibreria() {
                 <td><strong>{m.nombre}</strong></td>
                 <td style={{ color: '#888', fontSize: 13 }}>
                   {DISPOSICION_LABELS[m.disposicion] || m.disposicion}
-                </td>
-                <td>
-                  <span className={`badge-activo badge-activo--${m.activo ? 'si' : 'no'}`}>
-                    {m.activo ? 'Activo' : 'Inactivo'}
-                  </span>
                 </td>
               </tr>
             ))}

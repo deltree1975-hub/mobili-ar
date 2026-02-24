@@ -1,0 +1,251 @@
+/* src/components/FormularioUsuario.css */
+/* F2-05 — Formulario inline de usuario — tema industrial MOBILI-AR */
+
+.fu-wrapper {
+  background: #1a1a1a;
+  border: 1px solid #2e2e2e;
+  border-radius: 6px;
+  overflow: hidden;
+  width: 100%;
+}
+
+/* ── Header ── */
+.fu-header {
+  background: #212121;
+  border-bottom: 1px solid #2e2e2e;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 18px;
+}
+
+.fu-titulo {
+  color: #e0d8cc;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.fu-subtitulo {
+  color: #4a4a4a;
+  font-size: 11px;
+  font-family: monospace;
+}
+
+/* ── Form body ── */
+.fu-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px;
+}
+
+/* ── Row (nombre + apellido side by side) ── */
+.fu-row {
+  display: flex;
+  gap: 12px;
+}
+
+.fu-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fu-field--grow {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Labels ── */
+.fu-label {
+  color: #686868;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.fu-required {
+  color: #d9541e;
+  margin-left: 2px;
+}
+
+.fu-opcional {
+  color: #444;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* ── Inputs ── */
+.fu-input {
+  background: #111;
+  border: 1px solid #2e2e2e;
+  border-radius: 4px;
+  box-sizing: border-box;
+  color: #e0d8cc;
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  padding: 8px 11px;
+  transition: border-color 0.12s;
+  width: 100%;
+}
+
+.fu-input:focus {
+  border-color: #d9541e;
+}
+
+.fu-input::placeholder {
+  color: #383838;
+}
+
+.fu-input:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+/* ── Chips (rol + mansiones) ── */
+.fu-chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.fu-chip {
+  align-items: center;
+  background: #111;
+  border: 1px solid #2e2e2e;
+  border-radius: 4px;
+  color: #686868;
+  cursor: pointer;
+  display: flex;
+  font-size: 11px;
+  font-weight: 600;
+  gap: 5px;
+  letter-spacing: 0.04em;
+  padding: 6px 12px;
+  transition: border-color 0.12s, color 0.12s, background 0.12s;
+  user-select: none;
+}
+
+.fu-chip input {
+  display: none;
+}
+
+.fu-chip:hover {
+  border-color: #444;
+  color: #aaa;
+}
+
+.fu-chip--activo {
+  background: #1e0e06;
+  border-color: #d9541e;
+  color: #e0d8cc;
+}
+
+/* Mansiones: código en monospace previo al nombre */
+.fu-chip--mansion {
+  font-size: 11px;
+}
+
+.fu-chip-codigo {
+  color: #d9541e;
+  font-family: monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.fu-chip--mansion.fu-chip--activo .fu-chip-codigo {
+  color: #f07040;
+}
+
+/* ── Hints ── */
+.fu-hint {
+  color: #484848;
+  font-size: 11px;
+}
+
+.fu-hint--warn {
+  color: #7a5020;
+}
+
+/* ── Error ── */
+.fu-error {
+  background: #1a0806;
+  border: 1px solid #6a1e0a;
+  border-radius: 4px;
+  color: #d9541e;
+  font-size: 12px;
+  padding: 8px 12px;
+}
+
+/* ── Acciones ── */
+.fu-acciones {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding-top: 2px;
+}
+
+.fu-btn {
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 8px 18px;
+  text-transform: uppercase;
+  transition: background 0.12s, opacity 0.12s;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.fu-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.fu-btn--cancelar {
+  background: #222;
+  color: #686868;
+}
+
+.fu-btn--cancelar:hover:not(:disabled) {
+  background: #2a2a2a;
+  color: #999;
+}
+
+.fu-btn--guardar {
+  background: #d9541e;
+  color: #fff;
+  min-width: 128px;
+  justify-content: center;
+}
+
+.fu-btn--guardar:hover:not(:disabled) {
+  background: #c44818;
+}
+
+/* ── Spinner ── */
+.fu-spinner {
+  animation: fu-spin 0.55s linear infinite;
+  border: 2px solid rgba(255,255,255,0.25);
+  border-radius: 50%;
+  border-top-color: #fff;
+  display: inline-block;
+  height: 11px;
+  width: 11px;
+  flex-shrink: 0;
+}
+
+@keyframes fu-spin {
+  to { transform: rotate(360deg); }
+}

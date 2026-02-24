@@ -63,11 +63,10 @@ function Login({ onLoginExitoso }) {
 
       setUsuario(usuarioEncontrado);
       setMansiones(mansionesHabilitadas);
-      // Admin y dueño ven pantalla de elección de modo
       if (usuarioEncontrado.rol === 'admin' || usuarioEncontrado.rol === 'dueno') {
-          setFase('elegir_modo');
+        setFase('elegir_modo');
       } else {
-          setFase('eligiendo');
+        setFase('eligiendo');
       }
     } catch (err) {
       setMensajeError('Error al validar tarjeta');
@@ -96,6 +95,29 @@ function Login({ onLoginExitoso }) {
     }
   }
 
+  // ✅ FIX: movida adentro del componente para acceder al estado
+  async function handleEntrarGestion() {
+    setCargando(true);
+    try {
+      const mansionId = mansiones[0]?.id;
+      if (!mansionId) {
+        setMensajeError('No hay mansiones configuradas');
+        setTimeout(() => setMensajeError(''), 3000);
+        return;
+      }
+      const sesion = await invoke('login', {
+        token: usuario.token,
+        mansionId,
+      });
+      onLoginExitoso({ ...sesion, modoGestion: true });
+    } catch (err) {
+      setMensajeError('Error al iniciar sesión de gestión');
+      setTimeout(() => setMensajeError(''), 3000);
+    } finally {
+      setCargando(false);
+    }
+  }
+
   function handleCancelarEleccion() {
     setFase('esperando');
     setUsuario(null);
@@ -104,48 +126,55 @@ function Login({ onLoginExitoso }) {
     setTimeout(() => inputRef.current?.focus(), 100);
   }
 
+  // ── RENDER: elegir modo (admin/dueño) ────────────────────────
   if (fase === 'elegir_modo' && usuario) {
-  return (
-    <div className="login">
-      <div className="login-card login-card--mansiones">
-        <div className="login-bienvenida">
-          <div className="login-avatar">
-            {usuario.nombre.charAt(0)}{usuario.apellido.charAt(0)}
+    return (
+      <div className="login">
+        <div className="login-card login-card--mansiones">
+          <div className="login-bienvenida">
+            <div className="login-avatar">
+              {usuario.nombre.charAt(0)}{usuario.apellido.charAt(0)}
+            </div>
+            <div>
+              <p className="login-nombre">{usuario.nombre} {usuario.apellido}</p>
+              <p className="login-rol">{usuario.rol}</p>
+            </div>
           </div>
-          <div>
-            <p className="login-nombre">{usuario.nombre} {usuario.apellido}</p>
-            <p className="login-rol">{usuario.rol}</p>
+
+          <p className="login-instruccion">¿Qué vas a hacer?</p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
+            <button
+              className="login-mansion-btn"
+              style={{ padding: '18px 20px', fontSize: 15 }}
+              onClick={() => setFase('eligiendo')}
+              disabled={cargando}
+            >
+              <span className="login-mansion-icono">🏭</span>
+              <span>Ir al taller</span>
+            </button>
+            <button
+              className="login-mansion-btn"
+              style={{ padding: '18px 20px', fontSize: 15 }}
+              onClick={handleEntrarGestion}
+              disabled={cargando}
+            >
+              <span className="login-mansion-icono">⚙️</span>
+              <span>{cargando ? 'Entrando…' : 'Gestión'}</span>
+            </button>
           </div>
-        </div>
 
-        <p className="login-instruccion">¿Qué vas a hacer?</p>
+          {mensajeError && <p className="login-error">{mensajeError}</p>}
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
-          <button
-            className="login-mansion-btn"
-            style={{ padding: '18px 20px', fontSize: 15 }}
-            onClick={() => setFase('eligiendo')}
-          >
-            <span className="login-mansion-icono">🏭</span>
-            <span>Ir al taller</span>
-          </button>
-          <button
-            className="login-mansion-btn"
-            style={{ padding: '18px 20px', fontSize: 15 }}
-            onClick={() => handleEntrarGestion()}
-          >
-            <span className="login-mansion-icono">⚙️</span>
-            <span>Gestión</span>
+          <button className="login-cancelar" onClick={handleCancelarEleccion}>
+            ← No soy yo
           </button>
         </div>
-
-        <button className="login-cancelar" onClick={handleCancelarEleccion}>
-          ← No soy yo
-        </button>
       </div>
-    </div>
-  );
+    );
   }
+
+  // ── RENDER: elegir mansión ───────────────────────────────────
   if (fase === 'eligiendo' && usuario) {
     return (
       <div className="login">
@@ -186,6 +215,7 @@ function Login({ onLoginExitoso }) {
     );
   }
 
+  // ── RENDER: pantalla principal de espera ─────────────────────
   return (
     <div className="login" onClick={() => !DEV_MODE && inputRef.current?.focus()}>
       <div className="login-card">
@@ -204,13 +234,6 @@ function Login({ onLoginExitoso }) {
         </div>
 
         <form onSubmit={handleTokenSubmit} style={{ marginBottom: 12 }}>
-
-          {/* ── MODO DESARROLLO: input visible ──────────────────
-              Para activar el modo scanner físico:
-                1. Cambiar DEV_MODE = false al inicio del archivo
-                2. Este bloque se oculta automáticamente
-                3. El campo invisible (abajo) toma el control
-          ─────────────────────────────────────────────────── */}
           {DEV_MODE && (
             <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
               <input
@@ -238,10 +261,6 @@ function Login({ onLoginExitoso }) {
             </div>
           )}
 
-          {/* ── MODO SCANNER: campo invisible siempre enfocado ──
-              Activo cuando DEV_MODE = false.
-              El scanner HID tipea el token + Enter automáticamente.
-          ─────────────────────────────────────────────────── */}
           {!DEV_MODE && (
             <input
               ref={inputRef}
@@ -253,7 +272,6 @@ function Login({ onLoginExitoso }) {
               autoFocus
             />
           )}
-
         </form>
 
         {DEV_MODE ? (
@@ -283,21 +301,5 @@ function iconoMansion(codigo) {
   };
   return iconos[codigo] || '🏭';
 }
-async function handleEntrarGestion() {
-  setCargando(true);
-  try {
-    // Abrimos sesión sin mansión específica — usamos la primera disponible
-    // como placeholder. La gestión no requiere mansión activa.
-    const sesion = await invoke('login', {
-      token: usuario.token,
-      mansionId: mansiones[0].id,
-    });
-    onLoginExitoso({ ...sesion, modoGestion: true });
-  } catch (err) {
-    setMensajeError('Error al iniciar sesión');
-    setTimeout(() => setMensajeError(''), 3000);
-  } finally {
-    setCargando(false);
-  }
-}
+
 export default Login;
