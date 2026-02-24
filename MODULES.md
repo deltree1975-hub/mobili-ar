@@ -1,8 +1,8 @@
 # MOBILI-AR — Estado del Proyecto
 
-**Actualizado:** [fecha de hoy]
-**En curso:** F1-02 — Esquema SQLite en Rust
-**Rama activa:** `feat/F1-02-sqlite`
+**Actualizado:** 2026-02-24
+**En curso:** F2-04 — Impresión tarjeta usuario
+**Rama activa:** `work`
 
 ---
 
@@ -36,12 +36,12 @@
 
 | Código | Módulo | Estado | Notas |
 |--------|--------|--------|-------|
-| F2-01 | Tabla usuarios SQLite | ⬜ PENDIENTE | depende de F1-02 |
-| F2-02 | Gestión de usuarios | ⬜ PENDIENTE | depende de F2-01 |
-| F2-03 | Generación de token | ⬜ PENDIENTE | depende de F2-01 |
+| F2-01 | Tabla usuarios SQLite | ✅ COMPLETO | |
+| F2-02 | Gestión de usuarios | ✅ COMPLETO | Vista y alta de usuarios implementada |
+| F2-03 | Generación de token | ✅ COMPLETO | Token generado automáticamente al crear usuario |
 | F2-04 | Impresión tarjeta usuario | ⬜ PENDIENTE | depende de F2-03 |
-| F2-05 | Pantalla de sesión | ⬜ PENDIENTE | depende de F2-01 |
-| F2-06 | Validación de token | ⬜ PENDIENTE | depende de F2-05 |
+| F2-05 | Pantalla de sesión | ✅ COMPLETO | Flujo de login por tarjeta y selección de mansión |
+| F2-06 | Validación de token | ✅ COMPLETO | Comando `validar_token` activo en backend |
 | F2-07 | Toggle de sesión | ⬜ PENDIENTE | depende de F2-06 |
 | F2-08 | Sistema de permisos | ⬜ PENDIENTE | depende de F2-06 |
 | F2-09 | Indicador sesión activa | ⬜ PENDIENTE | depende de F2-06 |
