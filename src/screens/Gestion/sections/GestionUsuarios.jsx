@@ -5,11 +5,14 @@
 
 import { useState, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
+import { TarjetaUsuario } from '../../../components/TarjetaUsuario';
 
 function GestionUsuarios({ sesion }) {
   const [usuarios, setUsuarios]   = useState([]);
   const [cargando, setCargando]   = useState(true);
   const [error, setError]         = useState('');
+  const [usuarioTarjeta, setUsuarioTarjeta] = useState(null);
+
 
   useEffect(() => { cargar(); }, []);
 
@@ -47,6 +50,7 @@ function GestionUsuarios({ sesion }) {
               <th>Token</th>
               <th>Activo</th>
               <th>Último acceso</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -67,10 +71,24 @@ function GestionUsuarios({ sesion }) {
                 <td style={{ color: '#888', fontSize: 13 }}>
                   {u.ultimo_acceso || '—'}
                 </td>
+                  <td>
+                  <button
+                    className="gestion-btn-accion"
+                    onClick={() => setUsuarioTarjeta(u)}
+                  >
+                    🖨 Imprimir tarjeta
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
+      )}
+      {usuarioTarjeta && (
+        <TarjetaUsuario
+          usuario={usuarioTarjeta}
+          onCerrar={() => setUsuarioTarjeta(null)}
+        />
       )}
     </div>
   );
