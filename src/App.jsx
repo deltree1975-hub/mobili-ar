@@ -56,11 +56,17 @@ function App() {
   function handleDbConfigurada() { setEstado(ESTADO.LOGIN); }
 
   function handleLoginExitoso(sesionActiva) {
+    if (!sesionActiva || !sesionActiva.usuario) {
+      setSesion(null);
+      setEstado(ESTADO.LOGIN);
+      return;
+    }
+
     setSesion(sesionActiva);
-    if (sesionActiva.modoGestion) {
+    if (sesionActiva.modoGestion === true) {
       setEstado(ESTADO.GESTION);
     } else {
-     setEstado(ESTADO.DASHBOARD);
+      setEstado(ESTADO.DASHBOARD);
     }
   }
 
@@ -105,6 +111,37 @@ function App() {
 
   if (estado === ESTADO.SIN_DB) return <DbSetup onConfigurado={handleDbConfigurada} />;
   if (estado === ESTADO.LOGIN)  return <Login onLoginExitoso={handleLoginExitoso} />;
+
+  if (estado === ESTADO.GESTION && !sesion) {
+    return <Login onLoginExitoso={handleLoginExitoso} />;
+  }
+
+  if (estado === ESTADO.DASHBOARD && !sesion) {
+    return <Login onLoginExitoso={handleLoginExitoso} />;
+  }
+
+  if (estado === ESTADO.PROYECTO && !trabajoActivo) {
+    return (
+      <Dashboard
+        sesion={sesion}
+        onAbrirTrabajo={handleAbrirTrabajo}
+        onLogout={handleLogout}
+        onIrAGestion={handleIrAGestion}
+      />
+    );
+  }
+
+  if (estado === ESTADO.EDITOR && !moduloActivo) {
+    return (
+      <Dashboard
+        sesion={sesion}
+        onAbrirTrabajo={handleAbrirTrabajo}
+        onLogout={handleLogout}
+        onIrAGestion={handleIrAGestion}
+      />
+    );
+  }
+
   if (estado === ESTADO.GESTION) return (
     <Gestion
       sesion={sesion}
@@ -146,6 +183,8 @@ function App() {
       onModuloCreado={() => setEstado(ESTADO.PROYECTO)}
     />
   );
+
+  return <Login onLoginExitoso={handleLoginExitoso} />;
 }
 
 export default App;
