@@ -84,6 +84,16 @@ function App() {
     setEstado(ESTADO.LIBRERIA);
   }
 
+  function handleIrAlTaller() {
+    setSesion(prev => prev ? { ...prev, modoGestion: false } : prev);
+    setEstado(ESTADO.DASHBOARD);
+  }
+
+  function handleIrAGestion() {
+    setSesion(prev => prev ? { ...prev, modoGestion: true } : prev);
+    setEstado(ESTADO.GESTION);
+  }
+
   if (estado === ESTADO.VERIFICANDO) {
     return (
       <div className="app-cargando">
@@ -99,7 +109,7 @@ function App() {
     <Gestion
       sesion={sesion}
       onVolver={() => setEstado(ESTADO.LOGIN)}
-      onIrAlTaller={() => setEstado(ESTADO.DASHBOARD)}
+      onIrAlTaller={handleIrAlTaller}
     />
   );
   if (estado === ESTADO.DASHBOARD) return (
@@ -107,6 +117,7 @@ function App() {
       sesion={sesion}
       onAbrirTrabajo={handleAbrirTrabajo}
       onLogout={handleLogout}
+      onIrAGestion={handleIrAGestion}
     />
   );
 

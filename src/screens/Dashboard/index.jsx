@@ -19,7 +19,7 @@ import './Dashboard.css';
  *
  * @param {{ onAbrirTrabajo: (trabajo: Object) => void }} props
  */
-function Dashboard({ onAbrirTrabajo }) {
+function Dashboard({ onAbrirTrabajo, sesion, onLogout, onIrAGestion }) {
   // ── ESTADO ───────────────────────────────────────────────────
   const [trabajos, setTrabajos]         = useState([]);
   const [cargando, setCargando]         = useState(true);
@@ -69,12 +69,22 @@ function Dashboard({ onAbrirTrabajo }) {
           <span className="dashboard-logo">M</span>
           <h1>MOBILI-AR</h1>
         </div>
-        <button
-          className="btn-primario"
-          onClick={() => setModalAbierto(true)}
-        >
-          + Nuevo trabajo
-        </button>
+        <div className="dashboard-header-acciones">
+          {(sesion?.usuario?.rol === 'admin' || sesion?.usuario?.rol === 'dueno') && (
+            <button className="btn-secundario" onClick={onIrAGestion}>
+              ⚙️ Gestión
+            </button>
+          )}
+          <button
+            className="btn-primario"
+            onClick={() => setModalAbierto(true)}
+          >
+            + Nuevo trabajo
+          </button>
+          <button className="btn-secundario" onClick={onLogout}>
+            Cerrar sesión
+          </button>
+        </div>
       </header>
 
       {/* CONTENIDO */}
