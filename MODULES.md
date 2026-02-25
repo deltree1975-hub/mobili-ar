@@ -1,7 +1,7 @@
 # MOBILI-AR — Estado del Proyecto
 
-**Actualizado:** 2026-02-24
-**En curso:** F2-04 — Impresión tarjeta usuario
+**Actualizado:** 2026-02-25
+**En curso:** F2-08 — Sistema de permisos
 **Rama activa:** `work`
 
 ---
@@ -39,11 +39,11 @@
 | F2-01 | Tabla usuarios SQLite | ✅ COMPLETO | |
 | F2-02 | Gestión de usuarios | ✅ COMPLETO | Vista y alta de usuarios implementada |
 | F2-03 | Generación de token | ✅ COMPLETO | Token generado automáticamente al crear usuario |
-| F2-04 | Impresión tarjeta usuario | ⬜ PENDIENTE | depende de F2-03 |
+| F2-04 | Impresión tarjeta usuario | ✅ COMPLETO | Impresión desde Gestión de usuarios |
 | F2-05 | Pantalla de sesión | ✅ COMPLETO | Flujo de login por tarjeta y selección de mansión |
 | F2-06 | Validación de token | ✅ COMPLETO | Comando `validar_token` activo en backend |
-| F2-07 | Toggle de sesión | ⬜ PENDIENTE | depende de F2-06 |
-| F2-08 | Sistema de permisos | ⬜ PENDIENTE | depende de F2-06 |
+| F2-07 | Toggle de sesión | ✅ COMPLETO | Toggle Taller ↔ Gestión para admin/dueño |
+| F2-08 | Sistema de permisos | 🔵 EN CURSO | Guardas de acceso por rol en app |
 | F2-09 | Indicador sesión activa | ⬜ PENDIENTE | depende de F2-06 |
 | F2-10 | Cierre al cerrar la app | ⬜ PENDIENTE | depende de F2-06 |
 | F2-11 | Log de sesiones | ⬜ PENDIENTE | depende de F2-06 |

@@ -55,6 +55,12 @@ function App() {
 
   function handleDbConfigurada() { setEstado(ESTADO.LOGIN); }
 
+
+  function puedeEntrarGestion(sesionActiva) {
+    const rol = sesionActiva?.usuario?.rol;
+    return rol === 'admin' || rol === 'dueno';
+  }
+
   function handleLoginExitoso(sesionActiva) {
     if (!sesionActiva || !sesionActiva.usuario) {
       setSesion(null);
@@ -96,6 +102,10 @@ function App() {
   }
 
   function handleIrAGestion() {
+    if (!puedeEntrarGestion(sesion)) {
+      setEstado(ESTADO.DASHBOARD);
+      return;
+    }
     setSesion(prev => prev ? { ...prev, modoGestion: true } : prev);
     setEstado(ESTADO.GESTION);
   }
@@ -142,13 +152,26 @@ function App() {
     );
   }
 
-  if (estado === ESTADO.GESTION) return (
-    <Gestion
-      sesion={sesion}
-      onVolver={() => setEstado(ESTADO.LOGIN)}
-      onIrAlTaller={handleIrAlTaller}
-    />
-  );
+  if (estado === ESTADO.GESTION) {
+    if (!puedeEntrarGestion(sesion)) {
+      return (
+        <Dashboard
+          sesion={sesion}
+          onAbrirTrabajo={handleAbrirTrabajo}
+          onLogout={handleLogout}
+          onIrAGestion={handleIrAGestion}
+        />
+      );
+    }
+
+    return (
+      <Gestion
+        sesion={sesion}
+        onVolver={() => setEstado(ESTADO.LOGIN)}
+        onIrAlTaller={handleIrAlTaller}
+      />
+    );
+  }
   if (estado === ESTADO.DASHBOARD) return (
     <Dashboard
       sesion={sesion}
