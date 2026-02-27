@@ -8,8 +8,6 @@
 //            get_libreria()
 // Creado   : [fecha]
 // ============================================================
-use rusqlite::Connection;
-use rusqlite::params;
 use crate::db::{composiciones as db, DbState};
 use crate::types::{
     Composicion, CrearComposicionInput, CrearModuloInput, LibreriaModulo, Modulo,
