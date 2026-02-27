@@ -2,6 +2,7 @@
    MOBILI-AR — Panel de Gestión
    Archivo  : src/screens/Gestion/Gestion.css
    ============================================================ */
+@import './GestionUsuarios.css';
 
 .gestion {
   display: flex;
