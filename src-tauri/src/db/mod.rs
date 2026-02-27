@@ -20,3 +20,6 @@ pub struct DbState(pub Mutex<Option<Connection>>);
 pub mod usuarios;
 pub mod mansiones;
 pub mod sesiones;
+pub mod cantos;
+pub mod ensamble;
+pub mod piezas;
