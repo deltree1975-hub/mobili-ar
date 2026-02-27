@@ -203,7 +203,6 @@
    La tarjeta se imprime en tamaño carnet real (85 × 54 mm).
    ============================================================ */
 @media print {
-
   /* Ocultar TODO lo que no es la tarjeta */
   /* Ocultar visualmente todo excepto la tarjeta */
   body * {

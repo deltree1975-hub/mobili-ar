@@ -45,6 +45,7 @@ pub fn run() {
             commands::composiciones::get_libreria,
             commands::composiciones::actualizar_modulo_completo,
             commands::usuarios::validar_token,
+            commands::usuarios::crear_usuario_completo,
             auth::login,
             auth::logout,
             auth::get_sesion_activa,

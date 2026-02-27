@@ -84,6 +84,13 @@ function App() {
     setEstado(ESTADO.LIBRERIA);
   }
 
+  // Centraliza la lógica para cambiar entre el modo Taller y Gestión.
+  function handleCambiarModo(esModoGestion) {
+    if (!sesion) return; // Salvaguarda por si se llama sin sesión
+    setSesion({ ...sesion, modoGestion: esModoGestion });
+    setEstado(esModoGestion ? ESTADO.GESTION : ESTADO.DASHBOARD);
+  }
+
   if (estado === ESTADO.VERIFICANDO) {
     return (
       <div className="app-cargando">
@@ -98,8 +105,8 @@ function App() {
   if (estado === ESTADO.GESTION) return (
     <Gestion
       sesion={sesion}
-      onVolver={() => setEstado(ESTADO.LOGIN)}
-      onIrAlTaller={() => setEstado(ESTADO.DASHBOARD)}
+      onVolver={handleLogout}
+      onIrAlTaller={() => handleCambiarModo(false)}
     />
   );
   if (estado === ESTADO.DASHBOARD) return (
@@ -107,6 +114,7 @@ function App() {
       sesion={sesion}
       onAbrirTrabajo={handleAbrirTrabajo}
       onLogout={handleLogout}
+      onIrAGestion={() => handleCambiarModo(true)}
     />
   );
 

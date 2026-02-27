@@ -84,3 +84,8 @@
   transition: background 0.15s;
 }
 .btn-secundario:hover:not(:disabled) { background: #f5f5f5; }
+.dashboard-header-acciones {
+  display: flex;
+  align-items: center;
+  gap: 8px
+}

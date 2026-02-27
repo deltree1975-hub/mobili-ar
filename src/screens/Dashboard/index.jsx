@@ -75,6 +75,22 @@ function Dashboard({ onAbrirTrabajo }) {
         >
           + Nuevo trabajo
         </button>
+                <div className="dashboard-header-acciones">
+          {(sesion?.usuario?.rol === 'admin' || sesion?.usuario?.rol === 'dueno') && (
+            <button className="btn-secundario" onClick={onIrAGestion}>
+              ⚙️ Gestión
+            </button>
+          )}
+          <button
+            className="btn-primario"
+            onClick={() => setModalAbierto(true)}
+          >
+            + Nuevo trabajo
+          </button>
+          <button className="btn-secundario" onClick={onLogout}>
+            Cerrar sesión
+          </button>
+        </div>
       </header>
 
       {/* CONTENIDO */}

@@ -1,0 +1,345 @@
+/* ============================================================
+   MOBILI-AR — Gestión Usuarios F2-05
+   Archivo  : src/screens/Gestion/GestionUsuarios.css
+   Agregar  : @import './GestionUsuarios.css'; en Gestion.css
+   ============================================================ */
+
+/* ── Root ─────────────────────────────────────────────────── */
+.gu-root {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ── Botón nuevo usuario ──────────────────────────────────── */
+.gu-btn-nuevo {
+  padding: .45rem 1rem;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: .85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+}
+.gu-btn-nuevo:hover { background: #1d4ed8; }
+
+/* ── Banner éxito ─────────────────────────────────────────── */
+.gu-banner-exito {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: .75rem 1rem;
+  background: #052e16;
+  border: 1px solid #166534;
+  border-radius: 8px;
+  font-size: .88rem;
+  color: #86efac;
+  flex-wrap: wrap;
+}
+.gu-banner-exito__icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px; height: 20px;
+  background: #166534;
+  border-radius: 50%;
+  font-size: .75rem;
+  font-weight: 700;
+  color: #bbf7d0;
+  margin-right: .35rem;
+}
+.gu-banner-exito__texto { flex: 1; }
+.gu-banner-exito__token {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  font-size: .82rem;
+  color: #6ee7b7;
+}
+.gu-banner-exito__token code {
+  font-family: 'Courier New', monospace;
+  background: #064e3b;
+  padding: .15rem .45rem;
+  border-radius: 4px;
+  letter-spacing: .03em;
+}
+.gu-banner-exito__cerrar {
+  background: none;
+  border: none;
+  color: #4ade80;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0 .25rem;
+  opacity: .7;
+  transition: opacity .1s;
+}
+.gu-banner-exito__cerrar:hover { opacity: 1; }
+
+.gu-btn-imprimir-inline {
+  background: #064e3b;
+  border: 1px solid #166534;
+  color: #86efac;
+  border-radius: 5px;
+  padding: .2rem .55rem;
+  font-size: .78rem;
+  cursor: pointer;
+  transition: background .15s;
+}
+.gu-btn-imprimir-inline:hover { background: #065f46; }
+
+/* ── Formulario ───────────────────────────────────────────── */
+.gu-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 10px;
+  padding: 1.5rem;
+}
+
+.gu-form__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.gu-form__titulo {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f3f4f6;
+  margin: 0;
+}
+
+.gu-btn-cancelar {
+  background: none;
+  border: 1px solid #374151;
+  color: #9ca3af;
+  border-radius: 6px;
+  padding: .35rem .75rem;
+  font-size: .82rem;
+  cursor: pointer;
+  transition: border-color .15s, color .15s;
+}
+.gu-btn-cancelar:hover:not(:disabled) {
+  border-color: #6b7280;
+  color: #e5e7eb;
+}
+
+.gu-form__fila-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.gu-form__campo {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+.gu-label {
+  font-size: .78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+}
+.gu-label-hint {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: #4b5563;
+}
+
+.gu-input {
+  padding: .5rem .75rem;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  color: #f1f5f9;
+  font-size: .92rem;
+  transition: border-color .15s;
+}
+.gu-input:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+.gu-input::placeholder { color: #374151; }
+.gu-input:disabled { opacity: .5; }
+
+/* ── Selector de rol ──────────────────────────────────────── */
+.gu-rol-group {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+
+.gu-rol-btn {
+  padding: .4rem .9rem;
+  border-radius: 6px;
+  border: 1px solid #1e293b;
+  background: #0f172a;
+  color: #6b7280;
+  font-size: .85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .15s;
+}
+.gu-rol-btn:hover:not(:disabled):not(.activo) {
+  border-color: #374151;
+  color: #9ca3af;
+}
+.gu-rol-btn:disabled { opacity: .45; cursor: default; }
+
+/* Colores activos por rol */
+.gu-rol-btn--operario.activo  { background: #052e16; border-color: #166534; color: #86efac; }
+.gu-rol-btn--disenador.activo { background: #172554; border-color: #1e40af; color: #93c5fd; }
+.gu-rol-btn--admin.activo     { background: #431407; border-color: #9a3412; color: #fdba74; }
+.gu-rol-btn--dueno.activo     { background: #2e1065; border-color: #6d28d9; color: #c4b5fd; }
+
+/* ── Selector de mansiones ────────────────────────────────── */
+.gu-mansiones-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.gu-mansiones-acciones {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .8rem;
+}
+.gu-link {
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-size: .8rem;
+  cursor: pointer;
+  padding: 0;
+  transition: color .1s;
+}
+.gu-link:hover:not(:disabled) { color: #60a5fa; }
+.gu-link:disabled { opacity: .4; cursor: default; }
+.gu-sep { color: #374151; }
+
+.gu-mansiones-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: .5rem;
+}
+
+.gu-mansion-chip {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .5rem .75rem;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 7px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color .15s, background .15s;
+  width: 100%;
+}
+.gu-mansion-chip:hover:not(:disabled):not(.activa) {
+  border-color: #374151;
+  background: #111827;
+}
+.gu-mansion-chip.activa {
+  background: #0f2040;
+  border-color: #2563eb;
+}
+.gu-mansion-chip:disabled { opacity: .45; cursor: default; }
+
+.gu-mansion-chip__check {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #374151;
+  border-radius: 3px;
+  background: #0f172a;
+  font-size: .65rem;
+  font-weight: 700;
+  color: #60a5fa;
+  flex-shrink: 0;
+}
+.gu-mansion-chip.activa .gu-mansion-chip__check {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}
+.gu-mansion-chip__codigo {
+  font-size: .75rem;
+  font-weight: 700;
+  font-family: monospace;
+  color: #60a5fa;
+  flex-shrink: 0;
+}
+.gu-mansion-chip:not(.activa) .gu-mansion-chip__codigo { color: #4b5563; }
+.gu-mansion-chip__nombre {
+  font-size: .82rem;
+  color: #9ca3af;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gu-mansion-chip.activa .gu-mansion-chip__nombre { color: #e2e8f0; }
+
+/* ── Nota rol admin/dueño ─────────────────────────────────── */
+.gu-nota-rol {
+  font-size: .83rem;
+  color: #6b7280;
+  font-style: italic;
+  margin: 0;
+  padding: .6rem .9rem;
+  background: #0f172a;
+  border: 1px dashed #1e293b;
+  border-radius: 6px;
+}
+
+/* ── Error form ───────────────────────────────────────────── */
+.gu-error-form {
+  margin: 0;
+  padding: .6rem .9rem;
+  background: #1f0808;
+  border: 1px solid #7f1d1d;
+  border-radius: 6px;
+  color: #fca5a5;
+  font-size: .85rem;
+}
+
+/* ── Acciones del form ────────────────────────────────────── */
+.gu-form__acciones {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: .25rem;
+}
+
+.gu-btn-guardar {
+  padding: .55rem 1.4rem;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  font-size: .9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+}
+.gu-btn-guardar:hover:not(:disabled) { background: #1d4ed8; }
+.gu-btn-guardar:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+/* ── Tabla — fila inactiva ────────────────────────────────── */
+.gu-fila-inactiva td {
+  opacity: .45;
+}
