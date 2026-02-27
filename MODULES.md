@@ -3,6 +3,8 @@
 **Actualizado:** [fecha de hoy]
 **En curso:** F1-02 — Esquema SQLite en Rust
 **Rama activa:** `feat/F1-02-sqlite`
+**En curso:** F2-07 — Toggle de sesión
+**Rama activa:** `feat/F2-07-session-toggle`
 
 ---
 
@@ -25,7 +27,7 @@
 | F1-02b | Cifrado SQLCipher | ❌ CANCELADO | Protección: carpeta RAR con clave o permisos Windows |
 | F1-03 | Selector de carpeta    | ✅ COMPLETO | |
 | F1-04 | Capa de comandos Tauri | ✅ COMPLETO |  |
-| F1-05 | Migración JSON → SQLite | ⬜ PENDIENTE | depende de F1-04 |
+| F1-05 | Migración JSON → SQLite | ⛔ SUSPENDIDO | No hay datos legacy |
 | F1-06 | Dashboard trabajos | ✅ COMPLETO | |
 | F1-07 | Proyecto y Composición | ✅ COMPLETO | |
 | F1-08 | Editor de módulo | ✅ COMPLETO | |
@@ -36,13 +38,13 @@
 
 | Código | Módulo | Estado | Notas |
 |--------|--------|--------|-------|
-| F2-01 | Tabla usuarios SQLite | ⬜ PENDIENTE | depende de F1-02 |
-| F2-02 | Gestión de usuarios | ⬜ PENDIENTE | depende de F2-01 |
-| F2-03 | Generación de token | ⬜ PENDIENTE | depende de F2-01 |
-| F2-04 | Impresión tarjeta usuario | ⬜ PENDIENTE | depende de F2-03 |
-| F2-05 | Pantalla de sesión | ⬜ PENDIENTE | depende de F2-01 |
-| F2-06 | Validación de token | ⬜ PENDIENTE | depende de F2-05 |
-| F2-07 | Toggle de sesión | ⬜ PENDIENTE | depende de F2-06 |
+| F2-01 | Tabla usuarios SQLite | ✅ COMPLETO | |
+| F2-02 | Gestión de usuarios | ✅ COMPLETO | Vista y alta de usuarios implementada |
+| F2-03 | Generación de token | ✅ COMPLETO | Token generado automáticamente al crear usuario |
+| F2-04 | Impresión tarjeta usuario | ✅ COMPLETO | Funciona correctamente |
+| F2-05 | Pantalla de sesión | ✅ COMPLETO | Flujo de login por tarjeta y selección de mansión |
+| F2-06 | Validación de token | ✅ COMPLETO | Comando `validar_token` activo en backend |
+| F2-07 | Toggle de sesión | 🔵 EN CURSO | Cambio Taller/Gestión sin relogueo. Lógica centralizada en App.jsx. |
 | F2-08 | Sistema de permisos | ⬜ PENDIENTE | depende de F2-06 |
 | F2-09 | Indicador sesión activa | ⬜ PENDIENTE | depende de F2-06 |
 | F2-10 | Cierre al cerrar la app | ⬜ PENDIENTE | depende de F2-06 |
