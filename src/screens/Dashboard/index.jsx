@@ -1,38 +1,45 @@
 // ============================================================
 // MOBILI-AR — Dashboard principal
 // Archivo  : src/screens/Dashboard/index.jsx
-// Módulo   : F1-06 — Dashboard trabajos
-// Depende  : src/db/index.js → getTrabajosActivos, crearTrabajo
-// Expone   : <Dashboard onAbrirTrabajo={fn} />
-// Creado   : [fecha]
+// Módulo   : F1-06 — Dashboard trabajos | F2-07 — Toggle sesión
 // ============================================================
 
 import { useState, useEffect } from 'react';
 import { getTrabajosActivos, crearTrabajo } from '../../db/index';
-import TrabajosLista from './components/TrabajosLista';
+import TrabajosLista     from './components/TrabajosLista';
 import ModalNuevoTrabajo from './components/ModalNuevoTrabajo';
 import './Dashboard.css';
 
+const LABEL_MANSION = {
+  CORTE:    '🪚 Corte',
+  FILOS:    '📐 Filos',
+  CNC:      '🤖 CNC',
+  ARMADO:   '🔧 Armado',
+  PANOLERO: '📦 Pañolero',
+  LIMPIEZA: '🧹 Limpieza',
+  CONTROL:  '✅ Control',
+};
+
 /**
- * Pantalla principal de MOBILI-AR.
- * Muestra la lista de trabajos activos y permite crear nuevos.
- *
- * @param {{ onAbrirTrabajo: (trabajo: Object) => void }} props
+ * @param {{
+ *   sesion:       object,
+ *   onAbrirTrabajo: (trabajo: object) => void,
+ *   onLogout:     () => void,
+ *   onIrAGestion: (() => void) | undefined,  // solo admin/dueño
+ * }} props
  */
-function Dashboard({ onAbrirTrabajo }) {
-  // ── ESTADO ───────────────────────────────────────────────────
-  const [trabajos, setTrabajos]         = useState([]);
-  const [cargando, setCargando]         = useState(true);
-  const [error, setError]               = useState('');
+function Dashboard({ sesion, onAbrirTrabajo, onLogout, onIrAGestion }) {
+  const [trabajos,     setTrabajos]     = useState([]);
+  const [cargando,     setCargando]     = useState(true);
+  const [error,        setError]        = useState('');
   const [modalAbierto, setModalAbierto] = useState(false);
-  const [creando, setCreando]           = useState(false);
+  const [creando,      setCreando]      = useState(false);
 
-  // ── EFECTOS ──────────────────────────────────────────────────
-  useEffect(() => {
-    cargarTrabajos();
-  }, []);
+  const usuario = sesion?.usuario;
+  const mansion = sesion?.mansion;
 
-  // ── LÓGICA ───────────────────────────────────────────────────
+  useEffect(() => { cargarTrabajos(); }, []);
+
   async function cargarTrabajos() {
     setCargando(true);
     setError('');
@@ -59,7 +66,6 @@ function Dashboard({ onAbrirTrabajo }) {
     }
   }
 
-  // ── RENDER ───────────────────────────────────────────────────
   return (
     <div className="dashboard">
 
@@ -69,27 +75,51 @@ function Dashboard({ onAbrirTrabajo }) {
           <span className="dashboard-logo">M</span>
           <h1>MOBILI-AR</h1>
         </div>
-        <button
-          className="btn-primario"
-          onClick={() => setModalAbierto(true)}
-        >
-          + Nuevo trabajo
-        </button>
-                <div className="dashboard-header-acciones">
-          {(sesion?.usuario?.rol === 'admin' || sesion?.usuario?.rol === 'dueno') && (
-            <button className="btn-secundario" onClick={onIrAGestion}>
+
+        <div className="dashboard-header-der">
+          {/* Mansión activa */}
+          {mansion && (
+            <span className="dashboard-mansion">
+              {LABEL_MANSION[mansion.codigo] ?? mansion.nombre}
+            </span>
+          )}
+
+          {/* Info de usuario */}
+          {usuario && (
+            <span className="dashboard-usuario">
+              {usuario.nombre} {usuario.apellido}
+            </span>
+          )}
+
+          {/* Toggle → Gestión (solo admin/dueño) */}
+          {onIrAGestion && (
+            <button
+              className="dashboard-btn-gestion"
+              onClick={onIrAGestion}
+              title="Ir al panel de gestión"
+            >
               ⚙️ Gestión
             </button>
           )}
+
+          {/* Nuevo trabajo */}
           <button
             className="btn-primario"
             onClick={() => setModalAbierto(true)}
           >
             + Nuevo trabajo
           </button>
-          <button className="btn-secundario" onClick={onLogout}>
-            Cerrar sesión
-          </button>
+
+          {/* Cerrar sesión */}
+          {onLogout && (
+            <button
+              className="dashboard-btn-logout"
+              onClick={onLogout}
+              title="Cerrar sesión"
+            >
+              ←
+            </button>
+          )}
         </div>
       </header>
 
@@ -98,11 +128,9 @@ function Dashboard({ onAbrirTrabajo }) {
         {cargando && (
           <div className="dashboard-cargando">Cargando trabajos...</div>
         )}
-
         {error && (
           <div className="dashboard-error">⚠️ {error}</div>
         )}
-
         {!cargando && !error && (
           <TrabajosLista
             trabajos={trabajos}

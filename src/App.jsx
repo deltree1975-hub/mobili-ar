@@ -1,7 +1,7 @@
 // ============================================================
 // MOBILI-AR — Componente raíz de la aplicación
 // Archivo  : src/App.jsx
-// Módulo   : F2-03 — Pantalla de Login
+// Módulo   : F2-07 — Toggle sesión Taller ↔ Gestión
 // ============================================================
 
 import { useState, useEffect } from 'react';
@@ -12,23 +12,25 @@ import Dashboard from './screens/Dashboard';
 import Proyecto  from './screens/Proyecto';
 import Editor    from './screens/Editor';
 import Libreria  from './screens/Libreria';
+import Gestion   from './screens/Gestion';
+import SeleccionMansion from './components/SeleccionMansion';
 import './App.css';
-import Gestion from './screens/Gestion';
 
 const ESTADO = {
-  VERIFICANDO: 'verificando',
-  SIN_DB:      'sin_db',
-  LOGIN:       'login',
-  DASHBOARD:   'dashboard',
-  GESTION:     'gestion',    // ← nuevo
-  PROYECTO:    'proyecto',
-  EDITOR:      'editor',
-  LIBRERIA:    'libreria',
+  VERIFICANDO:       'verificando',
+  SIN_DB:            'sin_db',
+  LOGIN:             'login',
+  DASHBOARD:         'dashboard',
+  GESTION:           'gestion',
+  PROYECTO:          'proyecto',
+  EDITOR:            'editor',
+  LIBRERIA:          'libreria',
+  ELIGIENDO_MANSION: 'eligiendo_mansion', // ← F2-07: toggle Gestión → Taller
 };
 
 function App() {
   const [estado, setEstado]               = useState(ESTADO.VERIFICANDO);
-  const [sesion, setSesion]               = useState(null); // ← SesionActiva activa
+  const [sesion, setSesion]               = useState(null);
   const [trabajoActivo, setTrabajoActivo] = useState(null);
   const [moduloActivo, setModuloActivo]   = useState(null);
   const [composicionLibreria, setComposicionLibreria] = useState(null);
@@ -41,7 +43,7 @@ function App() {
       if (ruta && ruta.trim() !== '') {
         try {
           await invoke('abrir_db_existente', { ruta });
-          setEstado(ESTADO.LOGIN); // DB ok → ir a login
+          setEstado(ESTADO.LOGIN);
         } catch {
           setEstado(ESTADO.SIN_DB);
         }
@@ -60,7 +62,7 @@ function App() {
     if (sesionActiva.modoGestion) {
       setEstado(ESTADO.GESTION);
     } else {
-     setEstado(ESTADO.DASHBOARD);
+      setEstado(ESTADO.DASHBOARD);
     }
   }
 
@@ -69,6 +71,39 @@ function App() {
     setEstado(ESTADO.LOGIN);
   }
 
+  // ── F2-07: Gestión → Taller ──────────────────────────────────
+  // Admin/dueño puede ir al taller eligiendo mansión sin re-login.
+  function handleIrAlTaller() {
+    setEstado(ESTADO.ELIGIENDO_MANSION);
+  }
+
+  async function handleMansionElegida(mansion) {
+    try {
+      // Abrir nueva sesión en la mansión elegida (sin modoGestion)
+      const nuevaSesion = await invoke('login', {
+        token:     sesion.usuario.token,
+        mansionId: mansion.id,
+      });
+      setSesion(nuevaSesion); // sin modoGestion → va al taller
+      setEstado(ESTADO.DASHBOARD);
+    } catch (e) {
+      console.error('Error al cambiar de mansión:', e);
+    }
+  }
+
+  function handleCancelarEleccionMansion() {
+    // Volver a gestión si venía de ahí, o a dashboard si venía del taller
+    setEstado(sesion?.modoGestion ? ESTADO.GESTION : ESTADO.DASHBOARD);
+  }
+
+  // ── F2-07: Taller → Gestión ──────────────────────────────────
+  // Solo disponible para admin/dueño. Sin re-login, directo.
+  function handleIrAGestion() {
+    setSesion(s => ({ ...s, modoGestion: true }));
+    setEstado(ESTADO.GESTION);
+  }
+
+  // ── Navegación interna ───────────────────────────────────────
   function handleAbrirTrabajo(trabajo) {
     setTrabajoActivo(trabajo);
     setEstado(ESTADO.PROYECTO);
@@ -84,12 +119,7 @@ function App() {
     setEstado(ESTADO.LIBRERIA);
   }
 
-  // Centraliza la lógica para cambiar entre el modo Taller y Gestión.
-  function handleCambiarModo(esModoGestion) {
-    if (!sesion) return; // Salvaguarda por si se llama sin sesión
-    setSesion({ ...sesion, modoGestion: esModoGestion });
-    setEstado(esModoGestion ? ESTADO.GESTION : ESTADO.DASHBOARD);
-  }
+  // ── Renders ──────────────────────────────────────────────────
 
   if (estado === ESTADO.VERIFICANDO) {
     return (
@@ -100,49 +130,72 @@ function App() {
     );
   }
 
-  if (estado === ESTADO.SIN_DB) return <DbSetup onConfigurado={handleDbConfigurada} />;
-  if (estado === ESTADO.LOGIN)  return <Login onLoginExitoso={handleLoginExitoso} />;
-  if (estado === ESTADO.GESTION) return (
-    <Gestion
-      sesion={sesion}
-      onVolver={handleLogout}
-      onIrAlTaller={() => handleCambiarModo(false)}
-    />
-  );
-  if (estado === ESTADO.DASHBOARD) return (
-    <Dashboard
-      sesion={sesion}
-      onAbrirTrabajo={handleAbrirTrabajo}
-      onLogout={handleLogout}
-      onIrAGestion={() => handleCambiarModo(true)}
-    />
-  );
+  if (estado === ESTADO.SIN_DB)
+    return <DbSetup onConfigurado={handleDbConfigurada} />;
 
-  if (estado === ESTADO.PROYECTO) return (
-    <Proyecto
-      trabajo={trabajoActivo}
-      sesion={sesion}
-      onVolver={() => setEstado(ESTADO.DASHBOARD)}
-      onAbrirEditor={handleAbrirEditor}
-      onAbrirLibreria={handleAbrirLibreria}
-    />
-  );
+  if (estado === ESTADO.LOGIN)
+    return <Login onLoginExitoso={handleLoginExitoso} />;
 
-  if (estado === ESTADO.EDITOR) return (
-    <Editor
-      modulo={moduloActivo}
-      sesion={sesion}
-      onVolver={() => setEstado(ESTADO.PROYECTO)}
-    />
-  );
+  if (estado === ESTADO.ELIGIENDO_MANSION)
+    return (
+      <SeleccionMansion
+        sesion={sesion}
+        onMansionElegida={handleMansionElegida}
+        onCancelar={handleCancelarEleccionMansion}
+      />
+    );
 
-  if (estado === ESTADO.LIBRERIA) return (
-    <Libreria
-      composicionId={composicionLibreria}
-      onVolver={() => setEstado(ESTADO.PROYECTO)}
-      onModuloCreado={() => setEstado(ESTADO.PROYECTO)}
-    />
-  );
+  if (estado === ESTADO.GESTION)
+    return (
+      <Gestion
+        sesion={sesion}
+        onVolver={handleLogout}
+        onIrAlTaller={handleIrAlTaller}
+      />
+    );
+
+  if (estado === ESTADO.DASHBOARD)
+    return (
+      <Dashboard
+        sesion={sesion}
+        onAbrirTrabajo={handleAbrirTrabajo}
+        onLogout={handleLogout}
+        onIrAGestion={
+          sesion?.usuario?.rol === 'admin' || sesion?.usuario?.rol === 'dueno'
+            ? handleIrAGestion
+            : undefined
+        }
+      />
+    );
+
+  if (estado === ESTADO.PROYECTO)
+    return (
+      <Proyecto
+        trabajo={trabajoActivo}
+        sesion={sesion}
+        onVolver={() => setEstado(ESTADO.DASHBOARD)}
+        onAbrirEditor={handleAbrirEditor}
+        onAbrirLibreria={handleAbrirLibreria}
+      />
+    );
+
+  if (estado === ESTADO.EDITOR)
+    return (
+      <Editor
+        modulo={moduloActivo}
+        sesion={sesion}
+        onVolver={() => setEstado(ESTADO.PROYECTO)}
+      />
+    );
+
+  if (estado === ESTADO.LIBRERIA)
+    return (
+      <Libreria
+        composicionId={composicionLibreria}
+        onVolver={() => setEstado(ESTADO.PROYECTO)}
+        onModuloCreado={() => setEstado(ESTADO.PROYECTO)}
+      />
+    );
 }
 
 export default App;

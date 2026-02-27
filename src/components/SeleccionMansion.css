@@ -1,0 +1,183 @@
+/* ============================================================
+   MOBILI-AR — Selector de mansión
+   Archivo  : src/components/SeleccionMansion.css
+   Módulo   : F2-07
+   ============================================================ */
+
+.sm-root {
+  align-items: center;
+  background: var(--color-bg, #0f0f0f);
+  display: flex;
+  height: 100vh;
+  justify-content: center;
+  width: 100vw;
+}
+
+.sm-card {
+  background: #141414;
+  border: 1px solid #222;
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 400px;
+  padding: 28px 24px;
+  width: 100%;
+}
+
+/* Cabecera */
+.sm-header {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+}
+
+.sm-avatar {
+  align-items: center;
+  background: #1e293b;
+  border: 2px solid #334155;
+  border-radius: 50%;
+  color: #94a3b8;
+  display: flex;
+  flex-shrink: 0;
+  font-size: 16px;
+  font-weight: 700;
+  height: 44px;
+  justify-content: center;
+  width: 44px;
+}
+
+.sm-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sm-nombre {
+  color: #f1f5f9;
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.sm-rol {
+  color: #64748b;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+/* Instrucción */
+.sm-instruccion {
+  color: #94a3b8;
+  font-size: 13px;
+  margin: 0;
+  text-align: center;
+}
+
+/* Cargando */
+.sm-cargando {
+  color: #475569;
+  font-size: 13px;
+  margin: 0;
+  text-align: center;
+}
+
+/* Mansiones */
+.sm-mansiones {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sm-mansion-btn {
+  align-items: center;
+  background: #1e293b;
+  border: 1px solid #1e293b;
+  border-radius: 9px;
+  color: #cbd5e1;
+  cursor: pointer;
+  display: flex;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  gap: 12px;
+  padding: 14px 16px;
+  text-align: left;
+  transition: background 0.12s, border-color 0.12s;
+  width: 100%;
+}
+
+.sm-mansion-btn:hover:not(:disabled) {
+  background: #263448;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+
+.sm-mansion-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.sm-mansion-btn--cargando {
+  background: #1e3a5f !important;
+  border-color: #2563eb !important;
+  color: #93c5fd !important;
+  opacity: 1 !important;
+}
+
+.sm-mansion-icono {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.sm-mansion-nombre {
+  flex: 1;
+}
+
+.sm-mansion-spinner {
+  font-size: 14px;
+  animation: sm-spin 1s linear infinite;
+}
+
+@keyframes sm-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Error */
+.sm-error {
+  background: #1f0808;
+  border: 1px solid #7f1d1d;
+  border-radius: 6px;
+  color: #fca5a5;
+  font-size: 13px;
+  margin: 0;
+  padding: 8px 12px;
+  text-align: center;
+}
+
+/* Cancelar */
+.sm-cancelar {
+  background: none;
+  border: none;
+  color: #475569;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  padding: 4px 0;
+  text-align: center;
+  transition: color 0.12s;
+  width: 100%;
+}
+
+.sm-cancelar:hover:not(:disabled) {
+  color: #94a3b8;
+}
+
+.sm-cancelar:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
