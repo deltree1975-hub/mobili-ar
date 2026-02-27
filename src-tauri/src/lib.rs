@@ -9,6 +9,7 @@
 mod commands;
 mod db;
 mod types;
+pub mod engine;
 
 use db::DbState;
 use std::sync::Mutex;
