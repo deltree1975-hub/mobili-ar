@@ -230,5 +230,56 @@ CREATE INDEX IF NOT EXISTS idx_sesiones_usuario ON sesiones(usuario_id);
 CREATE INDEX IF NOT EXISTS idx_sesiones_mansion ON sesiones(mansion_id);
 
 -- ================================================================
+-- MIGRACIÓN v2 — F3-01 Motor de Cálculo de Piezas
+-- ================================================================
+
+INSERT INTO schema_version (version, descripcion)
+VALUES (2, 'F3-01 - Motor de calculo de piezas, cantos y ensamble');
+
+-- ----------------------------------------------------------------
+-- CANTOS (catálogo de depósito)
+-- ----------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS cantos (
+  id        TEXT PRIMARY KEY NOT NULL,
+  nombre    TEXT NOT NULL,
+  color     TEXT NOT NULL,
+  espesor   REAL NOT NULL,
+  material  TEXT NOT NULL CHECK (material IN ('pvc','abs','aluminio','madera','otro')),
+  activo    INTEGER NOT NULL DEFAULT 1 CHECK (activo IN (0,1)),
+  creado_en TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_cantos_activo ON cantos(activo);
+
+-- ----------------------------------------------------------------
+-- ENSAMBLE POR MÓDULO
+-- ----------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS modulo_ensamble (
+  modulo_id             TEXT PRIMARY KEY REFERENCES modulos(id) ON DELETE CASCADE,
+  costado_pasante_techo INTEGER NOT NULL DEFAULT 1 CHECK (costado_pasante_techo IN (0,1)),
+  costado_pasante_piso  INTEGER NOT NULL DEFAULT 1 CHECK (costado_pasante_piso  IN (0,1)),
+  fondo_tipo            TEXT NOT NULL DEFAULT 'interno' CHECK (fondo_tipo IN ('pasante','interno')),
+  fondo_retranqueo      REAL NOT NULL DEFAULT 12
+);
+
+-- ----------------------------------------------------------------
+-- PIEZAS — nuevas columnas
+-- ----------------------------------------------------------------
+ALTER TABLE piezas ADD COLUMN ancho_nominal      REAL NOT NULL DEFAULT 0;
+ALTER TABLE piezas ADD COLUMN alto_nominal        REAL NOT NULL DEFAULT 0;
+ALTER TABLE piezas ADD COLUMN ancho_corte         REAL NOT NULL DEFAULT 0;
+ALTER TABLE piezas ADD COLUMN alto_corte          REAL NOT NULL DEFAULT 0;
+ALTER TABLE piezas ADD COLUMN canto_frente_id     TEXT REFERENCES cantos(id);
+ALTER TABLE piezas ADD COLUMN canto_posterior_id  TEXT REFERENCES cantos(id);
+ALTER TABLE piezas ADD COLUMN canto_superior_id   TEXT REFERENCES cantos(id);
+ALTER TABLE piezas ADD COLUMN canto_inferior_id   TEXT REFERENCES cantos(id);
+ALTER TABLE piezas ADD COLUMN regaton_alto        REAL NOT NULL DEFAULT 0;
+
+-- ----------------------------------------------------------------
+-- OFFSET — actualizar default operativo
+-- ----------------------------------------------------------------
+UPDATE configuracion_terminal SET valor = '0.5' WHERE clave = 'offset_pieza';
+
+-- ================================================================
 -- FIN DEL SCHEMA
 -- ================================================================
