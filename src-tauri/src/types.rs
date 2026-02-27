@@ -202,3 +202,101 @@ pub struct CrearUsuarioInput {
     pub rol:       String,
     pub mansiones: Vec<String>, // IDs de mansiones habilitadas
 }
+// ── F3-01: Motor de Cálculo ───────────────────────────────────
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub enum FondoTipo {
+    #[serde(rename = "pasante")]
+    Pasante,
+    #[serde(rename = "interno")]
+    Interno,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub enum TipoPieza {
+    #[serde(rename = "side")]
+    Lateral,
+    #[serde(rename = "horizontal")]
+    Horizontal,
+    #[serde(rename = "back")]
+    Fondo,
+    #[serde(rename = "shelf")]
+    Estante,
+    #[serde(rename = "door")]
+    Puerta,
+}
+
+// Canto del catálogo de depósito
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Canto {
+    pub id:        String,
+    pub nombre:    String,
+    pub color:     String,
+    pub espesor:   f64,
+    pub material:  String,
+    pub activo:    bool,
+    pub creado_en: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CrearCantoInput {
+    pub nombre:   String,
+    pub color:    String,
+    pub espesor:  f64,
+    pub material: String,
+}
+
+// Configuración de ensamble de un módulo
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct EnsambleConfig {
+    pub modulo_id:             String,
+    pub costado_pasante_techo: bool,
+    pub costado_pasante_piso:  bool,
+    pub fondo_tipo:            FondoTipo,
+    pub fondo_retranqueo:      f64,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct SetEnsambleInput {
+    pub modulo_id:             String,
+    pub costado_pasante_techo: bool,
+    pub costado_pasante_piso:  bool,
+    pub fondo_tipo:            String, // "pasante" | "interno"
+    pub fondo_retranqueo:      f64,
+}
+
+// Cantos asignados a una pieza individual
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+pub struct CantosPieza {
+    pub frente_id:    Option<String>,
+    pub posterior_id: Option<String>,
+    pub superior_id:  Option<String>,
+    pub inferior_id:  Option<String>,
+}
+
+// Resultado del motor: pieza calculada (sin persistir aún)
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct PiezaCalculada {
+    pub tipo:          String, // usa los valores del enum TipoPieza
+    pub nombre:        String,
+    pub codigo:        String,
+    pub ancho_nominal: f64,
+    pub alto_nominal:  f64,
+    pub ancho_corte:   f64,
+    pub alto_corte:    f64,
+    pub espesor:       f64,
+    pub regaton_alto:  f64,
+}
+
+// Parámetros que el motor necesita para calcular
+#[derive(Debug, Clone)]
+pub struct MotorParams {
+    pub ancho:             f64,
+    pub alto:              f64,
+    pub profundidad:       f64,
+    pub espesor_tablero:   f64,
+    pub espesor_fondo:     f64,
+    pub offset:            f64, // de configuracion_terminal
+    pub cant_estantes:     i64,
+    pub ensamble:          EnsambleConfig,
+}
