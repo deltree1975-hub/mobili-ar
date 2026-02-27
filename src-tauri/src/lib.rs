@@ -16,6 +16,8 @@ use std::sync::Mutex;
 use commands::usuarios;
 use commands::auth;
 use commands::mansiones;
+use commands::cantos;
+use commands::piezas;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -55,6 +57,16 @@ pub fn run() {
             usuarios::get_mansiones_usuario,
             usuarios::asignar_mansiones,
             mansiones::get_mansiones,
+             // F3-01: cantos
+            cantos::get_cantos,
+            cantos::crear_canto,
+            cantos::desactivar_canto,
+            // F3-01: piezas y motor
+            piezas::calcular_piezas_modulo,
+            piezas::confirmar_piezas_modulo,
+            piezas::get_piezas_modulo,
+            piezas::get_ensamble_modulo,
+            piezas::set_ensamble_modulo,
             // F2-06: commands::usuarios::crear_usuario,
             // F4-02: commands::piezas::buscar_pieza_por_codigo,
         ])
