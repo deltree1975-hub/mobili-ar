@@ -229,21 +229,25 @@ pub enum TipoPieza {
 // Canto del catálogo de depósito
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Canto {
-    pub id:        String,
-    pub nombre:    String,
-    pub color:     String,
-    pub espesor:   f64,
-    pub material:  String,
-    pub activo:    bool,
-    pub creado_en: String,
+    pub id:           String,
+    pub nombre:       String,
+    pub color:        String,
+    pub material:     String,
+    pub espesor:      f64,
+    pub alto_canto:   f64,
+    pub stock_metros: f64,
+    pub activo:       bool,
+    pub creado_en:    String,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct CrearCantoInput {
-    pub nombre:   String,
-    pub color:    String,
-    pub espesor:  f64,
-    pub material: String,
+    pub nombre:       String,
+    pub color:        String,
+    pub material:     String,
+    pub espesor:      f64,
+    pub alto_canto:   f64,
+    pub stock_metros: Option<f64>,
 }
 
 // Configuración de ensamble de un módulo

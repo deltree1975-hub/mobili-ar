@@ -177,14 +177,17 @@ CREATE TABLE IF NOT EXISTS herrajes (
 -- CANTOS — catálogo de depósito (F3-01)
 -- DEBE ir ANTES de piezas porque piezas tiene FK a cantos
 -- ================================================================
+
 CREATE TABLE IF NOT EXISTS cantos (
-  id        TEXT PRIMARY KEY NOT NULL,
-  nombre    TEXT NOT NULL,
-  color     TEXT NOT NULL,
-  espesor   REAL NOT NULL,
-  material  TEXT NOT NULL CHECK (material IN ('pvc','abs','aluminio','madera','otro')),
-  activo    INTEGER NOT NULL DEFAULT 1 CHECK (activo IN (0,1)),
-  creado_en TEXT NOT NULL DEFAULT (datetime('now'))
+  id           TEXT PRIMARY KEY NOT NULL,
+  nombre       TEXT NOT NULL,
+  color        TEXT NOT NULL,
+  material     TEXT NOT NULL CHECK (material IN ('pvc','abs','aluminio','madera','otro')),
+  espesor      REAL NOT NULL,              -- espesor de la cinta: 0.5, 1, 2mm
+  alto_canto   REAL NOT NULL DEFAULT 22,   -- alto de la cinta: 22, 33, 42, 54mm
+  stock_metros REAL NOT NULL DEFAULT 0,    -- metros lineales en depósito
+  activo       INTEGER NOT NULL DEFAULT 1 CHECK (activo IN (0,1)),
+  creado_en    TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
 CREATE INDEX IF NOT EXISTS idx_cantos_activo ON cantos(activo);
