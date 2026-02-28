@@ -1,25 +1,59 @@
 // ============================================================
 // MOBILI-AR — Schema de base de datos
 // Archivo  : src-tauri/src/db/schema.rs
-// Módulo   : F1-02 — Esquema SQLite en Rust
-// Depende  : mobiliar-schema.sql (raíz del proyecto)
-// Expone   : inicializar()
-// Creado   : [fecha]
+// Módulo   : F1-02 / F3-01
 // ============================================================
 
-// RAZÓN: include_str! embebe el contenido del SQL dentro del
-// binario compilado. El instalador final no necesita distribuir
-// el archivo .sql por separado — va adentro del .exe.
-// La ruta es relativa a este archivo .rs.
 const SCHEMA_SQL: &str = include_str!("../../../mobiliar-schema.sql");
 
-/// Ejecuta el schema completo sobre la conexión dada.
-/// Usa CREATE TABLE IF NOT EXISTS por lo que es seguro
-/// llamar múltiples veces — no destruye datos existentes.
-///
-/// # Errores
-/// Retorna Err si alguna sentencia SQL falla.
 pub fn inicializar(conn: &rusqlite::Connection) -> anyhow::Result<()> {
+    // Ejecuta el schema base — solo CREATE TABLE IF NOT EXISTS
     conn.execute_batch(SCHEMA_SQL)?;
+    
+    // Ejecuta migraciones pendientes
+    migrar(conn)?;
+    
+    Ok(())
+}
+
+fn version_actual(conn: &rusqlite::Connection) -> i64 {
+    conn.query_row(
+        "SELECT MAX(version) FROM schema_version",
+        [],
+        |row| row.get::<_, Option<i64>>(0),
+    )
+    .unwrap_or(None)
+    .unwrap_or(0)
+}
+
+fn migrar(conn: &rusqlite::Connection) -> anyhow::Result<()> {
+    let version = version_actual(conn);
+
+    if version < 2 {
+        // F3-01: agregar columnas a piezas si no existen
+        let columnas_piezas = [
+            "ALTER TABLE piezas ADD COLUMN ancho_nominal      REAL NOT NULL DEFAULT 0",
+            "ALTER TABLE piezas ADD COLUMN alto_nominal        REAL NOT NULL DEFAULT 0",
+            "ALTER TABLE piezas ADD COLUMN ancho_corte         REAL NOT NULL DEFAULT 0",
+            "ALTER TABLE piezas ADD COLUMN alto_corte          REAL NOT NULL DEFAULT 0",
+            "ALTER TABLE piezas ADD COLUMN canto_frente_id     TEXT REFERENCES cantos(id)",
+            "ALTER TABLE piezas ADD COLUMN canto_posterior_id  TEXT REFERENCES cantos(id)",
+            "ALTER TABLE piezas ADD COLUMN canto_superior_id   TEXT REFERENCES cantos(id)",
+            "ALTER TABLE piezas ADD COLUMN canto_inferior_id   TEXT REFERENCES cantos(id)",
+            "ALTER TABLE piezas ADD COLUMN regaton_alto        REAL NOT NULL DEFAULT 0",
+        ];
+
+        for sql in &columnas_piezas {
+            // Ignorar error si la columna ya existe
+            let _ = conn.execute_batch(sql);
+        }
+
+        conn.execute_batch(
+            "UPDATE configuracion_terminal SET valor = '0.5' WHERE clave = 'offset_pieza';
+             INSERT OR IGNORE INTO schema_version (version, descripcion)
+             VALUES (2, 'F3-01 - Motor de calculo de piezas, cantos y ensamble');"
+        )?;
+    }
+
     Ok(())
 }

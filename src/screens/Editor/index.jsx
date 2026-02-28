@@ -1,8 +1,7 @@
 // ============================================================
 // MOBILI-AR — Editor paramétrico de módulo
 // Archivo  : src/screens/Editor/index.jsx
-// Módulo   : F1-08 — Editor de módulo
-// Creado   : [fecha]
+// Módulo   : F1-08 — Editor de módulo | F3-01 — Motor de cálculo
 // ============================================================
 
 import { useState } from 'react';
@@ -12,6 +11,8 @@ import SeccionConstructiva from './components/SeccionConstructiva';
 import SeccionMaterial from './components/SeccionMaterial';
 import SeccionCantos from './components/SeccionCantos';
 import SeccionPuertas from './components/SeccionPuertas';
+import SeccionEnsamble from './components/SeccionEnsamble';
+import SeccionPiezas from './components/SeccionPiezas';
 import ResumenModulo from './components/ResumenModulo';
 import './Editor.css';
 
@@ -27,9 +28,20 @@ function Editor({ modulo, onVolver }) {
   const [guardado, setGuardado]   = useState(false);
   const [error, setError]         = useState('');
 
+  const [ensamble, setEnsamble] = useState({
+    costado_pasante_techo: true,
+    costado_pasante_piso:  true,
+    fondo_tipo:            'interno',
+    fondo_retranqueo:      12,
+  });
+
   function actualizar(campo, valor) {
     setDatos(prev => ({ ...prev, [campo]: valor }));
     setGuardado(false);
+  }
+
+  function actualizarEnsamble(campo, valor) {
+    setEnsamble(prev => ({ ...prev, [campo]: valor }));
   }
 
   async function handleGuardar() {
@@ -68,6 +80,8 @@ function Editor({ modulo, onVolver }) {
           <SeccionConstructiva datos={datos} onChange={actualizar} />
           <SeccionMaterial datos={datos} onChange={actualizar} />
           <SeccionCantos datos={datos} onChange={actualizar} />
+          <SeccionEnsamble ensamble={ensamble} onChange={actualizarEnsamble} />
+          <SeccionPiezas moduloId={modulo.id} />
           {datos.cant_puertas > 0 && (
             <SeccionPuertas datos={datos} onChange={actualizar} />
           )}

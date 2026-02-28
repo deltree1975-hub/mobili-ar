@@ -1,6 +1,6 @@
 -- ================================================================
 -- MOBILI-AR — Schema de base de datos SQLite
--- Versión: 1.0 (corregida)
+-- Versión: 1.1 (migraciones seguras)
 -- ================================================================
 
 PRAGMA journal_mode = WAL;
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS schema_version (
   descripcion TEXT
 );
 
-INSERT INTO schema_version (version, descripcion)
+INSERT OR IGNORE INTO schema_version (version, descripcion)
 VALUES (1, 'Schema inicial MOBILI-AR v1.0');
 
 -- ================================================================
@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS configuracion_terminal (
 INSERT OR IGNORE INTO configuracion_terminal (clave, valor) VALUES
   ('nombre_terminal',       'Terminal Principal'),
   ('kerf_sierra',           '3.2'),
-  ('offset_pieza',          '0'),
+  ('offset_pieza',          '0.5'),
   ('modo_nesting_default',  'RAPIDO'),
   ('version_schema',        '1');
 
@@ -93,14 +93,14 @@ INSERT OR IGNORE INTO materiales (id, nombre, tipo, espesor, tiene_veta) VALUES
 -- STOCK PLACAS
 -- ================================================================
 CREATE TABLE IF NOT EXISTS stock_placas (
-  id           TEXT PRIMARY KEY NOT NULL,
-  material_id  TEXT NOT NULL REFERENCES materiales(id),
-  largo_util   REAL NOT NULL DEFAULT 2750,
-  ancho_util   REAL NOT NULL DEFAULT 1830,
-  cantidad     INTEGER NOT NULL DEFAULT 0 CHECK (cantidad >= 0),
-  estado       TEXT NOT NULL DEFAULT 'disponible'
-                 CHECK (estado IN ('disponible','reservada','consumida')),
-  ingresado_en TEXT NOT NULL DEFAULT (datetime('now')),
+  id            TEXT PRIMARY KEY NOT NULL,
+  material_id   TEXT NOT NULL REFERENCES materiales(id),
+  largo_util    REAL NOT NULL DEFAULT 2750,
+  ancho_util    REAL NOT NULL DEFAULT 1830,
+  cantidad      INTEGER NOT NULL DEFAULT 0 CHECK (cantidad >= 0),
+  estado        TEXT NOT NULL DEFAULT 'disponible'
+                  CHECK (estado IN ('disponible','reservada','consumida')),
+  ingresado_en  TEXT NOT NULL DEFAULT (datetime('now')),
   ingresado_por TEXT REFERENCES usuarios(id)
 );
 
@@ -144,101 +144,39 @@ CREATE TABLE IF NOT EXISTS composiciones (
 -- MÓDULOS
 -- ================================================================
 CREATE TABLE IF NOT EXISTS modulos (
-  id                  TEXT PRIMARY KEY NOT NULL,
-  composicion_id      TEXT NOT NULL REFERENCES composiciones(id) ON DELETE CASCADE,
-  nombre              TEXT NOT NULL,
-  codigo              TEXT,
-  disposicion         TEXT NOT NULL CHECK (disposicion IN ('bm','al','to','ca','es','ab','co','me')),
-  ancho               REAL NOT NULL DEFAULT 600,
-  alto                REAL NOT NULL DEFAULT 720,
-  profundidad         REAL NOT NULL DEFAULT 550,
-  espesor_tablero     REAL NOT NULL DEFAULT 18,
-  espesor_fondo       REAL NOT NULL DEFAULT 3,
-  tipo_union          TEXT NOT NULL DEFAULT 'cam_locks'
-                        CHECK (tipo_union IN ('cam_locks','dowels','screws','biscuits','pocket')),
-  estado              TEXT NOT NULL DEFAULT 'borrador'
-                        CHECK (estado IN ('borrador','en_produccion','pausado','completado')),
-  material_id         TEXT REFERENCES materiales(id),
-  creado_en           TEXT NOT NULL DEFAULT (datetime('now'))
+  id              TEXT PRIMARY KEY NOT NULL,
+  composicion_id  TEXT NOT NULL REFERENCES composiciones(id) ON DELETE CASCADE,
+  nombre          TEXT NOT NULL,
+  codigo          TEXT,
+  disposicion     TEXT NOT NULL CHECK (disposicion IN ('bm','al','to','ca','es','ab','co','me')),
+  ancho           REAL NOT NULL DEFAULT 600,
+  alto            REAL NOT NULL DEFAULT 720,
+  profundidad     REAL NOT NULL DEFAULT 550,
+  espesor_tablero REAL NOT NULL DEFAULT 18,
+  espesor_fondo   REAL NOT NULL DEFAULT 3,
+  tipo_union      TEXT NOT NULL DEFAULT 'cam_locks'
+                    CHECK (tipo_union IN ('cam_locks','dowels','screws','biscuits','pocket')),
+  estado          TEXT NOT NULL DEFAULT 'borrador'
+                    CHECK (estado IN ('borrador','en_produccion','pausado','completado')),
+  material_id     TEXT REFERENCES materiales(id),
+  creado_en       TEXT NOT NULL DEFAULT (datetime('now'))
 );
-
--- ================================================================
--- PIEZAS
--- ================================================================
-CREATE TABLE IF NOT EXISTS piezas (
-  id               TEXT PRIMARY KEY NOT NULL,
-  modulo_id        TEXT NOT NULL REFERENCES modulos(id) ON DELETE CASCADE,
-  tipo             TEXT NOT NULL CHECK (tipo IN ('side','horizontal','back','shelf','door')),
-  nombre           TEXT NOT NULL,
-  codigo_generico  TEXT NOT NULL,
-  codigo_instancia TEXT UNIQUE,
-  ancho            REAL NOT NULL,
-  alto             REAL NOT NULL,
-  espesor          REAL NOT NULL,
-  material_id      TEXT REFERENCES materiales(id),
-  estado_actual    TEXT NOT NULL DEFAULT 'pendiente_corte'
-                     CHECK (estado_actual IN (
-                       'pendiente_corte','cortada','canteada',
-                       'mecanizada','controlada','lista_armado',
-                       'dano','perdida'
-                     )),
-  creado_en        TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
-CREATE INDEX IF NOT EXISTS idx_piezas_estado ON piezas(estado_actual);
 
 -- ================================================================
 -- HERRAJES
 -- ================================================================
 CREATE TABLE IF NOT EXISTS herrajes (
-  id            TEXT PRIMARY KEY NOT NULL,
-  modulo_id     TEXT NOT NULL REFERENCES modulos(id) ON DELETE CASCADE,
-  tipo          TEXT NOT NULL,
-  descripcion   TEXT NOT NULL,
-  cantidad      INTEGER NOT NULL DEFAULT 0
+  id          TEXT PRIMARY KEY NOT NULL,
+  modulo_id   TEXT NOT NULL REFERENCES modulos(id) ON DELETE CASCADE,
+  tipo        TEXT NOT NULL,
+  descripcion TEXT NOT NULL,
+  cantidad    INTEGER NOT NULL DEFAULT 0
 );
 
 -- ================================================================
--- MANSIONES
+-- CANTOS — catálogo de depósito (F3-01)
+-- DEBE ir ANTES de piezas porque piezas tiene FK a cantos
 -- ================================================================
-CREATE TABLE IF NOT EXISTS mansiones (
-    id      TEXT PRIMARY KEY,
-    codigo  TEXT NOT NULL UNIQUE,
-    nombre  TEXT NOT NULL,
-    activo  INTEGER NOT NULL DEFAULT 1
-);
-
-CREATE TABLE IF NOT EXISTS usuario_mansiones (
-    usuario_id TEXT NOT NULL REFERENCES usuarios(id),
-    mansion_id TEXT NOT NULL REFERENCES mansiones(id),
-    PRIMARY KEY (usuario_id, mansion_id)
-);
-
--- ================================================================
--- SESIONES (VERSIÓN FINAL CORRECTA)
--- ================================================================
-CREATE TABLE IF NOT EXISTS sesiones (
-    id           TEXT PRIMARY KEY,
-    usuario_id   TEXT NOT NULL REFERENCES usuarios(id),
-    mansion_id   TEXT NOT NULL REFERENCES mansiones(id),
-    iniciada_en  TEXT NOT NULL DEFAULT (datetime('now')),
-    cerrada_en   TEXT,
-    activa       INTEGER NOT NULL DEFAULT 1
-);
-
-CREATE INDEX IF NOT EXISTS idx_sesiones_usuario ON sesiones(usuario_id);
-CREATE INDEX IF NOT EXISTS idx_sesiones_mansion ON sesiones(mansion_id);
-
--- ================================================================
--- MIGRACIÓN v2 — F3-01 Motor de Cálculo de Piezas
--- ================================================================
-
-INSERT INTO schema_version (version, descripcion)
-VALUES (2, 'F3-01 - Motor de calculo de piezas, cantos y ensamble');
-
--- ----------------------------------------------------------------
--- CANTOS (catálogo de depósito)
--- ----------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS cantos (
   id        TEXT PRIMARY KEY NOT NULL,
   nombre    TEXT NOT NULL,
@@ -251,9 +189,43 @@ CREATE TABLE IF NOT EXISTS cantos (
 
 CREATE INDEX IF NOT EXISTS idx_cantos_activo ON cantos(activo);
 
--- ----------------------------------------------------------------
--- ENSAMBLE POR MÓDULO
--- ----------------------------------------------------------------
+-- ================================================================
+-- PIEZAS
+-- ================================================================
+CREATE TABLE IF NOT EXISTS piezas (
+  id                 TEXT PRIMARY KEY NOT NULL,
+  modulo_id          TEXT NOT NULL REFERENCES modulos(id) ON DELETE CASCADE,
+  tipo               TEXT NOT NULL CHECK (tipo IN ('side','horizontal','back','shelf','door')),
+  nombre             TEXT NOT NULL,
+  codigo_generico    TEXT NOT NULL,
+  codigo_instancia   TEXT UNIQUE,
+  ancho              REAL NOT NULL,
+  alto               REAL NOT NULL,
+  espesor            REAL NOT NULL,
+  material_id        TEXT REFERENCES materiales(id),
+  estado_actual      TEXT NOT NULL DEFAULT 'pendiente_corte'
+                       CHECK (estado_actual IN (
+                         'pendiente_corte','cortada','canteada',
+                         'mecanizada','controlada','lista_armado',
+                         'dano','perdida'
+                       )),
+  ancho_nominal      REAL NOT NULL DEFAULT 0,
+  alto_nominal       REAL NOT NULL DEFAULT 0,
+  ancho_corte        REAL NOT NULL DEFAULT 0,
+  alto_corte         REAL NOT NULL DEFAULT 0,
+  canto_frente_id    TEXT REFERENCES cantos(id),
+  canto_posterior_id TEXT REFERENCES cantos(id),
+  canto_superior_id  TEXT REFERENCES cantos(id),
+  canto_inferior_id  TEXT REFERENCES cantos(id),
+  regaton_alto       REAL NOT NULL DEFAULT 0,
+  creado_en          TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_piezas_estado ON piezas(estado_actual);
+
+-- ================================================================
+-- ENSAMBLE POR MÓDULO (F3-01)
+-- ================================================================
 CREATE TABLE IF NOT EXISTS modulo_ensamble (
   modulo_id             TEXT PRIMARY KEY REFERENCES modulos(id) ON DELETE CASCADE,
   costado_pasante_techo INTEGER NOT NULL DEFAULT 1 CHECK (costado_pasante_techo IN (0,1)),
@@ -262,23 +234,51 @@ CREATE TABLE IF NOT EXISTS modulo_ensamble (
   fondo_retranqueo      REAL NOT NULL DEFAULT 12
 );
 
--- ----------------------------------------------------------------
--- PIEZAS — nuevas columnas
--- ----------------------------------------------------------------
-ALTER TABLE piezas ADD COLUMN ancho_nominal      REAL NOT NULL DEFAULT 0;
-ALTER TABLE piezas ADD COLUMN alto_nominal        REAL NOT NULL DEFAULT 0;
-ALTER TABLE piezas ADD COLUMN ancho_corte         REAL NOT NULL DEFAULT 0;
-ALTER TABLE piezas ADD COLUMN alto_corte          REAL NOT NULL DEFAULT 0;
-ALTER TABLE piezas ADD COLUMN canto_frente_id     TEXT REFERENCES cantos(id);
-ALTER TABLE piezas ADD COLUMN canto_posterior_id  TEXT REFERENCES cantos(id);
-ALTER TABLE piezas ADD COLUMN canto_superior_id   TEXT REFERENCES cantos(id);
-ALTER TABLE piezas ADD COLUMN canto_inferior_id   TEXT REFERENCES cantos(id);
-ALTER TABLE piezas ADD COLUMN regaton_alto        REAL NOT NULL DEFAULT 0;
+-- ================================================================
+-- MANSIONES
+-- ================================================================
+CREATE TABLE IF NOT EXISTS mansiones (
+    id      TEXT PRIMARY KEY,
+    codigo  TEXT NOT NULL UNIQUE,
+    nombre  TEXT NOT NULL,
+    activo  INTEGER NOT NULL DEFAULT 1
+);
 
--- ----------------------------------------------------------------
--- OFFSET — actualizar default operativo
--- ----------------------------------------------------------------
-UPDATE configuracion_terminal SET valor = '0.5' WHERE clave = 'offset_pieza';
+INSERT OR IGNORE INTO mansiones (id, codigo, nombre) VALUES
+  ('man-001','CORTE',   'Corte'),
+  ('man-002','FILOS',   'Pegado de filos'),
+  ('man-003','CNC',     'CNC'),
+  ('man-004','ARMADO',  'Armado'),
+  ('man-005','PANOLERO','Pañolero'),
+  ('man-006','LIMPIEZA','Limpieza'),
+  ('man-007','CONTROL', 'Control de calidad');
+
+CREATE TABLE IF NOT EXISTS usuario_mansiones (
+    usuario_id TEXT NOT NULL REFERENCES usuarios(id),
+    mansion_id TEXT NOT NULL REFERENCES mansiones(id),
+    PRIMARY KEY (usuario_id, mansion_id)
+);
+
+-- ================================================================
+-- SESIONES
+-- ================================================================
+CREATE TABLE IF NOT EXISTS sesiones (
+    id          TEXT PRIMARY KEY,
+    usuario_id  TEXT NOT NULL REFERENCES usuarios(id),
+    mansion_id  TEXT NOT NULL REFERENCES mansiones(id),
+    iniciada_en TEXT NOT NULL DEFAULT (datetime('now')),
+    cerrada_en  TEXT,
+    activa      INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE INDEX IF NOT EXISTS idx_sesiones_usuario ON sesiones(usuario_id);
+CREATE INDEX IF NOT EXISTS idx_sesiones_mansion ON sesiones(mansion_id);
+
+-- ================================================================
+-- VERSIÓN 2
+-- ================================================================
+INSERT OR IGNORE INTO schema_version (version, descripcion)
+VALUES (2, 'F3-01 - Motor de calculo de piezas, cantos y ensamble');
 
 -- ================================================================
 -- FIN DEL SCHEMA
