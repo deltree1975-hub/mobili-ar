@@ -284,5 +284,29 @@ INSERT OR IGNORE INTO schema_version (version, descripcion)
 VALUES (2, 'F3-01 - Motor de calculo de piezas, cantos y ensamble');
 
 -- ================================================================
+-- DISPOSICIONES (F3-01)
+-- ================================================================
+CREATE TABLE IF NOT EXISTS disposiciones (
+    id             TEXT PRIMARY KEY NOT NULL,
+    nombre         TEXT NOT NULL,
+    tiene_fajas    INTEGER NOT NULL DEFAULT 0,
+    posicion_faja  TEXT DEFAULT NULL CHECK (posicion_faja IN ('superior','inferior')),
+    alto_faja      REAL NOT NULL DEFAULT 80,
+    activo         INTEGER NOT NULL DEFAULT 1,
+    creado_en      TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+INSERT OR IGNORE INTO disposiciones (id, nombre, tiene_fajas, posicion_faja) VALUES
+    ('bm',      'Bajomesa',            1, 'superior'),
+    ('al',      'Aéreo',               0, NULL),
+    ('to',      'Torre',               0, NULL),
+    ('ca',      'Cajón',               0, NULL),
+    ('ab',      'Abierto',             0, NULL),
+    ('me',      'Mesa',                0, NULL),
+    ('es',      'Estante',             0, NULL),
+    ('co',      'Columna',             0, NULL),
+    ('caj-plac','Cajonera de placar',  1, 'inferior');
+    
+-- ================================================================
 -- FIN DEL SCHEMA
 -- ================================================================

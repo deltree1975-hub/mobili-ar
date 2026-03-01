@@ -7,12 +7,8 @@
 const SCHEMA_SQL: &str = include_str!("../../../mobiliar-schema.sql");
 
 pub fn inicializar(conn: &rusqlite::Connection) -> anyhow::Result<()> {
-    // Ejecuta el schema base — solo CREATE TABLE IF NOT EXISTS
     conn.execute_batch(SCHEMA_SQL)?;
-
-    // Ejecuta migraciones pendientes
     migrar(conn)?;
-
     Ok(())
 }
 
@@ -42,11 +38,9 @@ fn migrar(conn: &rusqlite::Connection) -> anyhow::Result<()> {
             "ALTER TABLE piezas ADD COLUMN canto_inferior_id   TEXT REFERENCES cantos(id)",
             "ALTER TABLE piezas ADD COLUMN regaton_alto        REAL NOT NULL DEFAULT 0",
         ];
-
         for sql in &columnas_piezas {
             let _ = conn.execute_batch(sql);
         }
-
         conn.execute_batch(
             "UPDATE configuracion_terminal SET valor = '0.5' WHERE clave = 'offset_pieza';
              INSERT OR IGNORE INTO schema_version (version, descripcion)
@@ -62,10 +56,52 @@ fn migrar(conn: &rusqlite::Connection) -> anyhow::Result<()> {
         let _ = conn.execute_batch(
             "ALTER TABLE cantos ADD COLUMN stock_metros REAL NOT NULL DEFAULT 0",
         );
-
         conn.execute_batch(
             "INSERT OR IGNORE INTO schema_version (version, descripcion)
              VALUES (3, 'F3-01 - alto_canto y stock_metros en tabla cantos');",
+        )?;
+    }
+
+    // ── Migración v4 ──────────────────────────────────────────
+    if version < 4 {
+        // Nueva tabla disposiciones
+        conn.execute_batch("
+            CREATE TABLE IF NOT EXISTS disposiciones (
+                id             TEXT PRIMARY KEY NOT NULL,
+                nombre         TEXT NOT NULL,
+                tiene_fajas    INTEGER NOT NULL DEFAULT 0,
+                posicion_faja  TEXT DEFAULT NULL
+                               CHECK (posicion_faja IN ('superior','inferior')),
+                alto_faja      REAL NOT NULL DEFAULT 80,
+                activo         INTEGER NOT NULL DEFAULT 1,
+                creado_en      TEXT NOT NULL DEFAULT (datetime('now'))
+            );
+
+            INSERT OR IGNORE INTO disposiciones (id, nombre, tiene_fajas, posicion_faja) VALUES
+                ('bm',       'Bajomesa',           1, 'superior'),
+                ('al',       'Aéreo',              0, NULL),
+                ('to',       'Torre',              0, NULL),
+                ('ca',       'Cajón',              0, NULL),
+                ('ab',       'Abierto',            0, NULL),
+                ('me',       'Mesa',               0, NULL),
+                ('es',       'Estante',            0, NULL),
+                ('co',       'Columna',            0, NULL),
+                ('caj-plac', 'Cajonera de placar', 1, 'inferior');
+        ")?;
+
+        // Nuevas columnas en modulos
+        // tiene_fondo: si el módulo lleva fondo (bajomesadas pueden no llevar)
+        let _ = conn.execute_batch(
+            "ALTER TABLE modulos ADD COLUMN tiene_fondo INTEGER NOT NULL DEFAULT 1",
+        );
+        // alto_faja: alto de las fajas en mm (default 80mm, configurable por módulo)
+        let _ = conn.execute_batch(
+            "ALTER TABLE modulos ADD COLUMN alto_faja REAL NOT NULL DEFAULT 80",
+        );
+
+        conn.execute_batch(
+            "INSERT OR IGNORE INTO schema_version (version, descripcion)
+             VALUES (4, 'F3-01 - disposiciones, fajas y tiene_fondo en modulos');",
         )?;
     }
 
