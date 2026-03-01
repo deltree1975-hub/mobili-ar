@@ -91,9 +91,12 @@ fn construir_params(
     conn:      &rusqlite::Connection,
     modulo_id: &str,
 ) -> Result<MotorParams, String> {
-    // Leer módulo
-    let (ancho, alto, prof, et, ef, cant_estantes) = conn.query_row(
-        "SELECT ancho, alto, profundidad, espesor_tablero, espesor_fondo, cant_estantes
+    // Leer módulo con los nuevos campos
+    let (ancho, alto, prof, et, ef, cant_estantes, tiene_fondo, alto_faja) = conn.query_row(
+        "SELECT ancho, alto, profundidad, espesor_tablero, espesor_fondo,
+                cant_estantes,
+                COALESCE(tiene_fondo, 1),
+                COALESCE(alto_faja, 80.0)
          FROM modulos WHERE id = ?1",
         rusqlite::params![modulo_id],
         |row| Ok((
@@ -103,8 +106,27 @@ fn construir_params(
             row.get::<_, f64>(3)?,
             row.get::<_, f64>(4)?,
             row.get::<_, i64>(5)?,
+            row.get::<_, i64>(6)? != 0,
+            row.get::<_, f64>(7)?,
         )),
     ).map_err(|e| format!("Módulo no encontrado: {}", e))?;
+
+    // Leer disposición para saber si tiene fajas y posición
+    let disposicion: String = conn.query_row(
+        "SELECT disposicion FROM modulos WHERE id = ?1",
+        rusqlite::params![modulo_id],
+        |row| row.get(0),
+    ).map_err(|e| format!("Error leyendo disposición: {}", e))?;
+
+    let (tiene_fajas, posicion_faja) = conn.query_row(
+        "SELECT tiene_fajas, COALESCE(posicion_faja, 'superior')
+         FROM disposiciones WHERE id = ?1",
+        rusqlite::params![disposicion],
+        |row| Ok((
+            row.get::<_, i64>(0)? != 0,
+            row.get::<_, String>(1)?,
+        )),
+    ).unwrap_or((false, "superior".to_string()));
 
     // Leer offset global
     let offset: f64 = conn.query_row(
@@ -117,13 +139,17 @@ fn construir_params(
     let ensamble = crate::db::ensamble::get_o_default(conn, modulo_id);
 
     Ok(MotorParams {
-        ancho: ancho,
-        alto: alto,
-        profundidad: prof,
+        ancho:         ancho,
+        alto:          alto,
+        profundidad:   prof,
         espesor_tablero: et,
-        espesor_fondo: ef,
+        espesor_fondo:   ef,
         offset,
         cant_estantes,
         ensamble,
+        tiene_fajas,
+        posicion_faja,
+        alto_faja,
+        tiene_fondo,
     })
 }

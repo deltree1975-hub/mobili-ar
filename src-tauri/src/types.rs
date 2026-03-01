@@ -92,6 +92,8 @@ pub struct Modulo {
     pub canto_izq:       bool,
     pub canto_der:       bool,
     pub apertura_puerta: String,
+    pub tiene_fondo:     bool,
+    pub alto_faja:       f64,
 }
 
 #[derive(Debug, Deserialize)]
@@ -122,6 +124,8 @@ pub struct CrearModuloInput {
     pub canto_izq:       Option<bool>,
     pub canto_der:       Option<bool>,
     pub apertura_puerta: Option<String>,
+    pub tiene_fondo:     Option<bool>,
+    pub alto_faja:       Option<f64>,
 }
 
 // ── LIBRERÍA ──────────────────────────────────────────────────
@@ -163,9 +167,11 @@ pub struct ActualizarModuloInput {
     pub canto_izq:          bool,
     pub canto_der:          bool,
     pub apertura_puerta:    String,
+    pub tiene_fondo:        bool,
+    pub alto_faja:          f64,
 }
 
-// ── F2-01: Usuarios y Sesiones ────────────────────────────
+// ── F2-01: Usuarios y Sesiones ────────────────────────────────
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Usuario {
@@ -200,8 +206,30 @@ pub struct CrearUsuarioInput {
     pub nombre:    String,
     pub apellido:  String,
     pub rol:       String,
-    pub mansiones: Vec<String>, // IDs de mansiones habilitadas
+    pub mansiones: Vec<String>,
 }
+
+// ── F3-01: Disposiciones ──────────────────────────────────────
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Disposicion {
+    pub id:            String,
+    pub nombre:        String,
+    pub tiene_fajas:   bool,
+    pub posicion_faja: Option<String>, // "superior" | "inferior"
+    pub alto_faja:     f64,
+    pub activo:        bool,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CrearDisposicionInput {
+    pub id:            String, // el usuario define el código, ej: "bm2"
+    pub nombre:        String,
+    pub tiene_fajas:   bool,
+    pub posicion_faja: Option<String>,
+    pub alto_faja:     Option<f64>,
+}
+
 // ── F3-01: Motor de Cálculo ───────────────────────────────────
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
@@ -224,6 +252,8 @@ pub enum TipoPieza {
     Estante,
     #[serde(rename = "door")]
     Puerta,
+    #[serde(rename = "faja")]
+    Faja,
 }
 
 // Canto del catálogo de depósito
@@ -278,10 +308,10 @@ pub struct CantosPieza {
     pub inferior_id:  Option<String>,
 }
 
-// Resultado del motor: pieza calculada (sin persistir aún)
+// Resultado del motor: pieza calculada
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PiezaCalculada {
-    pub tipo:          String, // usa los valores del enum TipoPieza
+    pub tipo:          String,
     pub nombre:        String,
     pub codigo:        String,
     pub ancho_nominal: f64,
@@ -295,12 +325,18 @@ pub struct PiezaCalculada {
 // Parámetros que el motor necesita para calcular
 #[derive(Debug, Clone)]
 pub struct MotorParams {
-    pub ancho:             f64,
-    pub alto:              f64,
-    pub profundidad:       f64,
-    pub espesor_tablero:   f64,
-    pub espesor_fondo:     f64,
-    pub offset:            f64, // de configuracion_terminal
-    pub cant_estantes:     i64,
-    pub ensamble:          EnsambleConfig,
+    pub ancho:           f64,
+    pub alto:            f64,
+    pub profundidad:     f64,
+    pub espesor_tablero: f64,
+    pub espesor_fondo:   f64,
+    pub offset:          f64,
+    pub cant_estantes:   i64,
+    pub ensamble:        EnsambleConfig,
+    // Fajas
+    pub tiene_fajas:     bool,
+    pub posicion_faja:   String, // "superior" | "inferior"
+    pub alto_faja:       f64,
+    // Fondo opcional
+    pub tiene_fondo:     bool,
 }

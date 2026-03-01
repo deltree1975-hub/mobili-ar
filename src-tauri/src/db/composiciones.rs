@@ -2,11 +2,6 @@
 // MOBILI-AR — Queries SQLite: Composiciones y Módulos
 // Archivo  : src-tauri/src/db/composiciones.rs
 // Módulo   : F1-04 — Capa de comandos Tauri
-// Depende  : rusqlite, types::{Composicion, Modulo}
-// Expone   : get_composiciones(), crear_composicion(),
-//            get_modulos(), crear_modulo(), actualizar_modulo(),
-//            eliminar_modulo(), get_libreria()
-// Creado   : [fecha]
 // ============================================================
 
 use crate::types::{
@@ -17,7 +12,6 @@ use uuid::Uuid;
 
 // ── COMPOSICIONES ─────────────────────────────────────────────
 
-/// Retorna todas las composiciones de un trabajo, ordenadas por orden ASC.
 pub fn get_composiciones(
     conn: &Connection,
     trabajo_id: &str,
@@ -44,7 +38,6 @@ pub fn get_composiciones(
     Ok(items)
 }
 
-/// Crea una nueva composición dentro de un trabajo.
 pub fn crear_composicion(
     conn: &Connection,
     datos: CrearComposicionInput,
@@ -52,7 +45,6 @@ pub fn crear_composicion(
     let id = Uuid::new_v4().to_string();
     let ahora = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
 
-    // Calcular el próximo orden
     let orden: i64 = conn.query_row(
         "SELECT COALESCE(MAX(orden), -1) + 1 FROM composiciones WHERE trabajo_id = ?1",
         params![datos.trabajo_id],
@@ -76,7 +68,7 @@ pub fn crear_composicion(
 }
 
 // ── MÓDULOS ───────────────────────────────────────────────────
-/// Retorna todos los módulos de una composición.
+
 pub fn get_modulos(conn: &Connection, composicion_id: &str) -> anyhow::Result<Vec<Modulo>> {
     let mut stmt = conn.prepare(
         "SELECT id, composicion_id, nombre, codigo, disposicion,
@@ -85,7 +77,8 @@ pub fn get_modulos(conn: &Connection, composicion_id: &str) -> anyhow::Result<Ve
                 cant_estantes, cant_puertas, overlap_puertas,
                 inset_estantes, offset_tirador, estado, creado_en,
                 material_id, color_material, tipo_canto, espesor_canto,
-                canto_sup, canto_inf, canto_izq, canto_der, apertura_puerta
+                canto_sup, canto_inf, canto_izq, canto_der, apertura_puerta,
+                COALESCE(tiene_fondo, 1), COALESCE(alto_faja, 80.0)
          FROM modulos
          WHERE composicion_id = ?1
          ORDER BY creado_en ASC",
@@ -123,6 +116,8 @@ pub fn get_modulos(conn: &Connection, composicion_id: &str) -> anyhow::Result<Ve
             canto_izq:          row.get::<_, i64>(27)? != 0,
             canto_der:          row.get::<_, i64>(28)? != 0,
             apertura_puerta:    row.get(29)?,
+            tiene_fondo:        row.get::<_, i64>(30)? != 0,
+            alto_faja:          row.get(31)?,
         })
     })?
     .collect::<Result<Vec<_>, _>>()?;
@@ -130,12 +125,10 @@ pub fn get_modulos(conn: &Connection, composicion_id: &str) -> anyhow::Result<Ve
     Ok(items)
 }
 
-/// Crea un nuevo módulo con valores por defecto para campos opcionales.
 pub fn crear_modulo(conn: &Connection, datos: CrearModuloInput) -> anyhow::Result<Modulo> {
     let id = Uuid::new_v4().to_string();
     let ahora = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
 
-    // ── VALORES POR DEFECTO ───────────────────────────────────
     let espesor_tablero  = datos.espesor_tablero.unwrap_or(18.0);
     let espesor_fondo    = datos.espesor_fondo.unwrap_or(3.0);
     let tipo_union       = datos.tipo_union.unwrap_or_else(|| "cam_locks".to_string());
@@ -154,8 +147,9 @@ pub fn crear_modulo(conn: &Connection, datos: CrearModuloInput) -> anyhow::Resul
     let canto_izq        = datos.canto_izq.unwrap_or(true);
     let canto_der        = datos.canto_der.unwrap_or(true);
     let apertura_puerta  = datos.apertura_puerta.unwrap_or_else(|| "derecha".to_string());
+    let tiene_fondo      = datos.tiene_fondo.unwrap_or(true);
+    let alto_faja        = datos.alto_faja.unwrap_or(80.0);
 
-    // ── INSERT ────────────────────────────────────────────────
     conn.execute(
         "INSERT INTO modulos (
             id, composicion_id, nombre, disposicion,
@@ -165,6 +159,7 @@ pub fn crear_modulo(conn: &Connection, datos: CrearModuloInput) -> anyhow::Resul
             inset_estantes, offset_tirador,
             material_id, color_material, tipo_canto, espesor_canto,
             canto_sup, canto_inf, canto_izq, canto_der, apertura_puerta,
+            tiene_fondo, alto_faja,
             estado, creado_en
          ) VALUES (
             ?1, ?2, ?3, ?4,
@@ -174,7 +169,8 @@ pub fn crear_modulo(conn: &Connection, datos: CrearModuloInput) -> anyhow::Resul
             ?17, ?18,
             ?19, ?20, ?21, ?22,
             ?23, ?24, ?25, ?26, ?27,
-            'borrador', ?28
+            ?28, ?29,
+            'borrador', ?30
          )",
         params![
             id, datos.composicion_id, datos.nombre, datos.disposicion,
@@ -187,11 +183,11 @@ pub fn crear_modulo(conn: &Connection, datos: CrearModuloInput) -> anyhow::Resul
             datos.material_id, datos.color_material, tipo_canto, espesor_canto,
             canto_sup as i64, canto_inf as i64, canto_izq as i64, canto_der as i64,
             apertura_puerta,
+            tiene_fondo as i64, alto_faja,
             ahora
         ],
     )?;
 
-    // ── RETORNAR MÓDULO CREADO ────────────────────────────────
     Ok(Modulo {
         id,
         composicion_id: datos.composicion_id,
@@ -221,12 +217,13 @@ pub fn crear_modulo(conn: &Connection, datos: CrearModuloInput) -> anyhow::Resul
         canto_izq,
         canto_der,
         apertura_puerta,
+        tiene_fondo,
+        alto_faja,
         estado:    "borrador".to_string(),
         creado_en: ahora,
     })
 }
 
-/// Elimina un módulo y todas sus piezas (CASCADE en el schema).
 pub fn eliminar_modulo(conn: &Connection, id: &str) -> anyhow::Result<()> {
     conn.execute("DELETE FROM modulos WHERE id = ?1", params![id])?;
     Ok(())
@@ -234,7 +231,6 @@ pub fn eliminar_modulo(conn: &Connection, id: &str) -> anyhow::Result<()> {
 
 // ── LIBRERÍA ──────────────────────────────────────────────────
 
-/// Retorna todos los módulos activos de la librería.
 pub fn get_libreria(conn: &Connection) -> anyhow::Result<Vec<LibreriaModulo>> {
     let mut stmt = conn.prepare(
         "SELECT id, codigo, disposicion, nombre, descripcion, config_json
@@ -257,6 +253,7 @@ pub fn get_libreria(conn: &Connection) -> anyhow::Result<Vec<LibreriaModulo>> {
 
     Ok(items)
 }
+
 pub fn actualizar_modulo(
     conn: &Connection,
     id: &str,
@@ -275,8 +272,9 @@ pub fn actualizar_modulo(
             color_material = ?18, tipo_canto = ?19,
             espesor_canto = ?20, canto_sup = ?21,
             canto_inf = ?22, canto_izq = ?23,
-            canto_der = ?24, apertura_puerta = ?25
-         WHERE id = ?26",
+            canto_der = ?24, apertura_puerta = ?25,
+            tiene_fondo = ?26, alto_faja = ?27
+         WHERE id = ?28",
         params![
             d.nombre, d.disposicion,
             d.ancho, d.alto, d.profundidad,
@@ -290,6 +288,7 @@ pub fn actualizar_modulo(
             d.espesor_canto, d.canto_sup as i64,
             d.canto_inf as i64, d.canto_izq as i64,
             d.canto_der as i64, d.apertura_puerta,
+            d.tiene_fondo as i64, d.alto_faja,
             id
         ],
     )?;
