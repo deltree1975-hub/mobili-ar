@@ -315,3 +315,185 @@
   text-align: center;
   padding: 20px 0;
 }
+/* ── F3-01: Piezas y lista de corte ── */
+
+.piezas-acciones {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.piezas-aviso {
+  font-size: 12px;
+  color: #cc6600;
+  font-weight: 600;
+}
+
+/* Vista SVG */
+.piezas-svg-wrap {
+  margin-bottom: 16px;
+  background: #f8f9fb;
+  border-radius: var(--radius);
+  border: 1px solid #e0e0e0;
+  padding: 12px;
+}
+
+.piezas-vista-btns {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.vista-btn {
+  padding: 5px 12px;
+  border: 1px solid #ddd;
+  border-radius: var(--radius);
+  background: white;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--color-mid);
+  transition: all 0.15s;
+}
+.vista-btn.activo {
+  background: var(--color-accent);
+  color: white;
+  border-color: var(--color-accent);
+}
+
+.piezas-svg-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 180px;
+}
+
+/* Tabla de corte */
+.piezas-tabla-wrap {
+  overflow-x: auto;
+}
+
+.piezas-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.piezas-tabla th {
+  background: var(--color-dark);
+  color: #fff;
+  padding: 6px 8px;
+  text-align: left;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.piezas-tabla th.num,
+.piezas-tabla td.num {
+  text-align: right;
+}
+
+.piezas-tabla th.filo-col {
+  text-align: center;
+  min-width: 90px;
+}
+
+.piezas-tabla td {
+  padding: 5px 8px;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+}
+
+.piezas-tabla tr:hover td {
+  background: var(--color-accent-light);
+}
+
+.piezas-tabla td.corte {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.piezas-tabla td.codigo {
+  font-family: monospace;
+  font-size: 11px;
+  color: #666;
+}
+
+.pieza-badge {
+  font-size: 10px;
+  font-weight: 700;
+  background: #eee;
+  padding: 2px 6px;
+  border-radius: 10px;
+  color: #555;
+  white-space: nowrap;
+}
+
+.pieza-tipo-back td   { background: #fff8f5; }
+.pieza-tipo-shelf td  { background: #f5fff5; }
+.pieza-tipo-door td   { background: #f5f5ff; }
+
+.pieza-tipo-back .pieza-badge   { background: #fde8d8; color: #b84a00; }
+.pieza-tipo-shelf .pieza-badge  { background: #e8f4e8; color: #2a6a2a; }
+.pieza-tipo-side .pieza-badge   { background: #ddeeff; color: #1a4a8a; }
+.pieza-tipo-door .pieza-badge   { background: #ede8fd; color: #4a1a8a; }
+
+.filo-td {
+  padding: 3px 4px;
+}
+
+.filo-select {
+  width: 100%;
+  min-width: 85px;
+  padding: 3px 4px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 11px;
+  background: white;
+}
+
+.filo-select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.btn-4lados {
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--color-accent);
+  transition: all 0.15s;
+}
+.btn-4lados:hover {
+  background: var(--color-accent);
+  color: white;
+  border-color: var(--color-accent);
+}
+
+.piezas-total {
+  font-size: 11px;
+  color: #aaa;
+  text-align: right;
+  margin-top: 6px;
+}
+
+.piezas-vacio {
+  font-size: 13px;
+  color: #aaa;
+  text-align: center;
+  padding: 20px 0;
+}
+
+/* ── F3-01: Info field ── */
+.editor-campo--info .campo-info-texto {
+  font-size: 13px;
+  color: var(--color-accent);
+  font-weight: 600;
+  padding: 8px 0;
+  display: block;
+}

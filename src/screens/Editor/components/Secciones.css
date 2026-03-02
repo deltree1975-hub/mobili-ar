@@ -200,3 +200,153 @@
   color: var(--color-mid);
   text-align: center;
 }
+/* ── Panel derecho editable (ResumenModulo) ── */
+
+.resumen-input-nombre {
+  width: 100%;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-dark);
+  border: none;
+  border-bottom: 2px solid #eee;
+  padding: 4px 0;
+  margin-bottom: 6px;
+  background: transparent;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+.resumen-input-nombre:focus {
+  outline: none;
+  border-bottom-color: var(--color-accent);
+}
+
+.resumen-select--tipo {
+  width: 100%;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-accent);
+  border: none;
+  background: var(--color-accent-light);
+  padding: 3px 8px;
+  border-radius: 12px;
+  margin-bottom: 4px;
+  cursor: pointer;
+}
+.resumen-select--tipo:focus { outline: none; }
+
+.resumen-fila--edit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 0;
+}
+
+.resumen-fila--edit .resumen-label {
+  flex: 1;
+  font-size: 12px;
+  color: var(--color-mid);
+}
+
+.resumen-input-num {
+  width: 70px;
+  padding: 3px 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-dark);
+  text-align: right;
+  background: white;
+  transition: border-color 0.15s;
+}
+.resumen-input-num:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.resumen-unidad {
+  font-size: 11px;
+  color: #aaa;
+  width: 20px;
+}
+
+.resumen-select {
+  padding: 3px 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--color-dark);
+  background: white;
+  cursor: pointer;
+}
+.resumen-select:focus { outline: none; border-color: var(--color-accent); }
+
+.resumen-toggle {
+  padding: 3px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--color-mid);
+  transition: all 0.15s;
+}
+.resumen-toggle.activo {
+  background: var(--color-accent);
+  color: white;
+  border-color: var(--color-accent);
+}
+
+.resumen-badge {
+  font-size: 11px;
+  font-weight: 700;
+  background: #eee;
+  padding: 2px 8px;
+  border-radius: 10px;
+  color: #555;
+}
+/* ── ResumenModulo extras ── */
+.resumen-nota {
+  font-size: 11px;
+  color: #aaa;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.resumen-input-texto {
+  flex: 1;
+  padding: 3px 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--color-dark);
+  background: white;
+  min-width: 0;
+}
+.resumen-input-texto:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+/* ── ResumenModulo extras ── */
+.resumen-nota {
+  font-size: 11px;
+  color: #aaa;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.resumen-input-texto {
+  flex: 1;
+  padding: 3px 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--color-dark);
+  background: white;
+  min-width: 0;
+}
+.resumen-input-texto:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
