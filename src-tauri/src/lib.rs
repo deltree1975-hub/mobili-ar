@@ -2,15 +2,11 @@
 // MOBILI-AR — Librería principal de Tauri
 // Archivo  : src-tauri/src/lib.rs
 // Módulo   : F1-04 — Capa de comandos Tauri
-// Depende  : db::DbState, commands::*
-// Creado   : [fecha]
 // ============================================================
-
 mod commands;
 mod db;
 mod types;
 pub mod engine;
-
 use db::DbState;
 use std::sync::Mutex;
 use commands::usuarios;
@@ -18,17 +14,18 @@ use commands::auth;
 use commands::mansiones;
 use commands::cantos;
 use commands::piezas;
+use commands::materiales;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        // ── PLUGINS ───────────────────────────────────────────
+        // ── PLUGINS ───────────────────────────────────────────────
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
-        // ── ESTADO GLOBAL ─────────────────────────────────────
+        // ── ESTADO GLOBAL ─────────────────────────────────────────
         .manage(DbState(Mutex::new(None)))
-        // ── COMANDOS ──────────────────────────────────────────
+        // ── COMANDOS ──────────────────────────────────────────────
         .invoke_handler(tauri::generate_handler![
             // F1-03: configuración de base de datos
             commands::config::get_db_path,
@@ -47,6 +44,7 @@ pub fn run() {
             commands::composiciones::eliminar_modulo,
             commands::composiciones::get_libreria,
             commands::composiciones::actualizar_modulo_completo,
+            // F2-01: usuarios y auth
             commands::usuarios::validar_token,
             commands::usuarios::crear_usuario_completo,
             auth::login,
@@ -57,18 +55,18 @@ pub fn run() {
             usuarios::get_mansiones_usuario,
             usuarios::asignar_mansiones,
             mansiones::get_mansiones,
-             // F3-01: cantos
+            // F3-01: cantos
             cantos::get_cantos,
             cantos::crear_canto,
             cantos::desactivar_canto,
+            // F3-01: materiales
+            materiales::get_materiales,
             // F3-01: piezas y motor
             piezas::calcular_piezas_modulo,
             piezas::confirmar_piezas_modulo,
             piezas::get_piezas_modulo,
             piezas::get_ensamble_modulo,
             piezas::set_ensamble_modulo,
-            // F2-06: commands::usuarios::crear_usuario,
-            // F4-02: commands::piezas::buscar_pieza_por_codigo,
         ])
         .run(tauri::generate_context!())
         .expect("Error al iniciar MOBILI-AR");

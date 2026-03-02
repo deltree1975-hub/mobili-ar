@@ -1,17 +1,12 @@
 // ============================================================
 // MOBILI-AR — Editor paramétrico de módulo
 // Archivo  : src/screens/Editor/index.jsx
-// Módulo   : F1-08 — Editor de módulo | F3-01 — Motor de cálculo
+// Módulo   : F1-08 / F3-01
 // ============================================================
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import SeccionDimensiones from './components/SeccionDimensiones';
-import SeccionConstructiva from './components/SeccionConstructiva';
-import SeccionMaterial from './components/SeccionMaterial';
-import SeccionCantos from './components/SeccionCantos';
-import SeccionPuertas from './components/SeccionPuertas';
-import SeccionEnsamble from './components/SeccionEnsamble';
 import SeccionPiezas from './components/SeccionPiezas';
 import ResumenModulo from './components/ResumenModulo';
 import './Editor.css';
@@ -19,7 +14,7 @@ import './Editor.css';
 const DISPOSICIONES = {
   bm: 'Bajomesa', al: 'Aéreo', to: 'Torre',
   ca: 'Cajón', ab: 'Abierto', me: 'Mesa',
-  es: 'Estante', co: 'Columna',
+  es: 'Estante', co: 'Columna', 'caj-plac': 'Cajonera placar',
 };
 
 function Editor({ modulo, onVolver }) {
@@ -27,6 +22,8 @@ function Editor({ modulo, onVolver }) {
   const [guardando, setGuardando] = useState(false);
   const [guardado, setGuardado]   = useState(false);
   const [error, setError]         = useState('');
+  const [cantos, setCantos]       = useState([]);
+  const [materiales, setMateriales] = useState([]);
 
   const [ensamble, setEnsamble] = useState({
     costado_pasante_techo: true,
@@ -35,6 +32,18 @@ function Editor({ modulo, onVolver }) {
     fondo_retranqueo:      12,
   });
 
+  useEffect(() => {
+    invoke('get_ensamble_modulo', { moduloId: modulo.id })
+      .then(e => setEnsamble(e))
+      .catch(() => {});
+    invoke('get_cantos')
+      .then(c => setCantos(c))
+      .catch(() => {});
+    invoke('get_materiales')
+      .then(m => setMateriales(m))
+      .catch(() => {});
+  }, [modulo.id]);
+
   function actualizar(campo, valor) {
     setDatos(prev => ({ ...prev, [campo]: valor }));
     setGuardado(false);
@@ -42,6 +51,7 @@ function Editor({ modulo, onVolver }) {
 
   function actualizarEnsamble(campo, valor) {
     setEnsamble(prev => ({ ...prev, [campo]: valor }));
+    setGuardado(false);
   }
 
   async function handleGuardar() {
@@ -49,6 +59,15 @@ function Editor({ modulo, onVolver }) {
     setError('');
     try {
       await invoke('actualizar_modulo_completo', { id: modulo.id, datos });
+      await invoke('set_ensamble_modulo', {
+        input: {
+          modulo_id:             modulo.id,
+          costado_pasante_techo: ensamble.costado_pasante_techo,
+          costado_pasante_piso:  ensamble.costado_pasante_piso,
+          fondo_tipo:            ensamble.fondo_tipo,
+          fondo_retranqueo:      ensamble.fondo_retranqueo,
+        }
+      });
       setGuardado(true);
     } catch (err) {
       setError(`Error al guardar: ${err}`);
@@ -77,17 +96,21 @@ function Editor({ modulo, onVolver }) {
       <div className="editor-body">
         <div className="editor-form">
           <SeccionDimensiones datos={datos} onChange={actualizar} />
-          <SeccionConstructiva datos={datos} onChange={actualizar} />
-          <SeccionMaterial datos={datos} onChange={actualizar} />
-          <SeccionCantos datos={datos} onChange={actualizar} />
-          <SeccionEnsamble ensamble={ensamble} onChange={actualizarEnsamble} />
-          <SeccionPiezas moduloId={modulo.id} />
-          {datos.cant_puertas > 0 && (
-            <SeccionPuertas datos={datos} onChange={actualizar} />
-          )}
+          <SeccionPiezas
+            moduloId={modulo.id}
+            datos={datos}
+            cantos={cantos}
+          />
         </div>
         <div className="editor-resumen">
-          <ResumenModulo datos={datos} />
+          <ResumenModulo
+            datos={datos}
+            ensamble={ensamble}
+            cantos={cantos}
+            materiales={materiales}
+            onChange={actualizar}
+            onEnsambleChange={actualizarEnsamble}
+          />
         </div>
       </div>
     </div>
