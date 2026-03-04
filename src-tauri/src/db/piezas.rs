@@ -1,7 +1,7 @@
 // ============================================================
-// MOBILI-AR — Persistencia de piezas calculadas
+// MOBILI-AR -- Persistencia de piezas calculadas
 // Archivo  : src-tauri/src/db/piezas.rs
-// Módulo   : F3-01
+// Modulo   : F3-01
 // ============================================================
 
 use rusqlite::{params, Connection};
@@ -13,26 +13,25 @@ pub fn guardar_piezas_modulo(
     modulo_id: &str,
     piezas: &[PiezaCalculada],
 ) -> rusqlite::Result<()> {
-    // Eliminar piezas anteriores del módulo antes de insertar
     conn.execute("DELETE FROM piezas WHERE modulo_id = ?1", params![modulo_id])?;
 
     for pieza in piezas {
         let id = Uuid::new_v4().to_string();
         conn.execute(
             "INSERT INTO piezas (
-                id, modulo_id, tipo, nombre, codigo_generico,
+                id, modulo_id, tipo, nombre, codigo,
                 ancho, alto, espesor,
                 ancho_nominal, alto_nominal, ancho_corte, alto_corte,
-                regaton_alto, estado_actual
-             ) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,'pendiente_corte')",
+                regaton_alto
+             ) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13)",
             params![
                 id,
                 modulo_id,
                 pieza.tipo,
                 pieza.nombre,
                 pieza.codigo,
-                pieza.ancho_nominal, // ancho legacy
-                pieza.alto_nominal,  // alto legacy
+                pieza.ancho_nominal,
+                pieza.alto_nominal,
                 pieza.espesor,
                 pieza.ancho_nominal,
                 pieza.alto_nominal,
@@ -50,11 +49,12 @@ pub fn get_piezas_modulo(
     modulo_id: &str,
 ) -> rusqlite::Result<Vec<PiezaCalculada>> {
     let mut stmt = conn.prepare(
-        "SELECT tipo, nombre, codigo_generico,
+        "SELECT tipo, nombre, codigo,
                 ancho_nominal, alto_nominal, ancho_corte, alto_corte,
                 espesor, regaton_alto
-         FROM piezas WHERE modulo_id = ?1 ORDER BY rowid"
+         FROM piezas WHERE modulo_id = ?1 ORDER BY rowid",
     )?;
+
     let rows = stmt.query_map(params![modulo_id], |row| {
         Ok(PiezaCalculada {
             tipo:          row.get(0)?,
@@ -68,5 +68,6 @@ pub fn get_piezas_modulo(
             regaton_alto:  row.get(8)?,
         })
     })?;
+
     rows.collect()
 }

@@ -1,15 +1,12 @@
 // ============================================================
-// MOBILI-AR — Tipos compartidos Rust ↔ React
+// MOBILI-AR -- Tipos compartidos Rust <-> React
 // Archivo  : src-tauri/src/types.rs
-// Módulo   : F1-04 — Capa de comandos Tauri
-// Depende  : serde
-// Expone   : Trabajo, Composicion, Modulo y sus inputs
-// Creado   : [fecha]
+// Modulo   : F1-04 / F3-01 / F3-02
 // ============================================================
 
 use serde::{Deserialize, Serialize};
 
-// ── TRABAJO ───────────────────────────────────────────────────
+// -- TRABAJO --------------------------------------------------
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Trabajo {
@@ -39,7 +36,7 @@ pub struct ActualizarTrabajoInput {
     pub fecha_entrega: Option<String>,
 }
 
-// ── COMPOSICION ───────────────────────────────────────────────
+// -- COMPOSICION ----------------------------------------------
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Composicion {
@@ -58,120 +55,102 @@ pub struct CrearComposicionInput {
     pub descripcion: Option<String>,
 }
 
-// ── MODULO ────────────────────────────────────────────────────
+// -- MODULO ---------------------------------------------------
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Modulo {
-    pub id: String,
-    pub composicion_id: String,
-    pub nombre: String,
-    pub codigo: Option<String>,
-    pub disposicion: String,
-    pub ancho: f64,
-    pub alto: f64,
-    pub profundidad: f64,
-    pub espesor_tablero: f64,
-    pub espesor_fondo: f64,
-    pub tipo_union: String,
-    pub costados_por_fuera: bool,
-    pub fondo_embutido: bool,
-    pub tapa_apoyada: bool,
-    pub cant_estantes: i64,
-    pub cant_puertas: i64,
-    pub overlap_puertas: f64,
-    pub inset_estantes: f64,
-    pub offset_tirador: f64,
-    pub estado: String,
-    pub creado_en: String,
-    pub material_id:     Option<String>,
-    pub color_material:  Option<String>,
-    pub tipo_canto:      String,
-    pub espesor_canto:   f64,
-    pub canto_sup:       bool,
-    pub canto_inf:       bool,
-    pub canto_izq:       bool,
-    pub canto_der:       bool,
-    pub apertura_puerta: String,
-    pub tiene_fondo:     bool,
-    pub alto_faja:       f64,
+    pub id:               String,
+    pub composicion_id:   String,
+    pub nombre:           String,
+    pub codigo:           Option<String>,
+    pub disposicion:      String,
+    pub ancho:            f64,
+    pub alto:             f64,
+    pub profundidad:      f64,
+    pub espesor_tablero:  f64,
+    pub espesor_fondo:    f64,
+    pub tipo_union:       String,
+    pub cant_estantes:    i64,
+    pub cant_puertas:     i64,
+    pub overlap_puertas:  f64,
+    pub offset_tirador:   f64,
+    pub apertura_puerta:  Option<String>,
+    pub estado:           String,
+    pub creado_en:        String,
+    pub material_id:      Option<String>,
+    pub color_material:   Option<String>,
+    pub color_puerta:     Option<String>,
+    pub canto_general_id: Option<String>,
+    pub tiene_fondo:      bool,
+    pub alto_faja:        f64,
+    pub material_fondo_id: Option<String>,
+    pub faja_acostada:    bool,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct CrearModuloInput {
-    pub composicion_id: String,
-    pub nombre: String,
-    pub disposicion: String,
-    pub ancho: f64,
-    pub alto: f64,
-    pub profundidad: f64,
-    pub espesor_tablero: Option<f64>,
-    pub espesor_fondo: Option<f64>,
-    pub tipo_union: Option<String>,
-    pub costados_por_fuera: Option<bool>,
-    pub fondo_embutido: Option<bool>,
-    pub tapa_apoyada: Option<bool>,
-    pub cant_estantes: Option<i64>,
-    pub cant_puertas: Option<i64>,
-    pub overlap_puertas: Option<f64>,
-    pub inset_estantes: Option<f64>,
-    pub offset_tirador: Option<f64>,
-    pub material_id:     Option<String>,
-    pub color_material:  Option<String>,
-    pub tipo_canto:      Option<String>,
-    pub espesor_canto:   Option<f64>,
-    pub canto_sup:       Option<bool>,
-    pub canto_inf:       Option<bool>,
-    pub canto_izq:       Option<bool>,
-    pub canto_der:       Option<bool>,
-    pub apertura_puerta: Option<String>,
-    pub tiene_fondo:     Option<bool>,
-    pub alto_faja:       Option<f64>,
-}
-
-// ── LIBRERÍA ──────────────────────────────────────────────────
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct LibreriaModulo {
-    pub id: String,
-    pub codigo: String,
-    pub disposicion: String,
-    pub nombre: String,
-    pub descripcion: Option<String>,
-    pub config_json: String,
+    pub composicion_id:   String,
+    pub nombre:           String,
+    pub disposicion:      String,
+    pub ancho:            f64,
+    pub alto:             f64,
+    pub profundidad:      f64,
+    pub espesor_tablero:  Option<f64>,
+    pub espesor_fondo:    Option<f64>,
+    pub tipo_union:       Option<String>,
+    pub cant_estantes:    Option<i64>,
+    pub cant_puertas:     Option<i64>,
+    pub overlap_puertas:  Option<f64>,
+    pub offset_tirador:   Option<f64>,
+    pub apertura_puerta:  Option<String>,
+    pub material_id:      Option<String>,
+    pub color_material:   Option<String>,
+    pub color_puerta:     Option<String>,
+    pub canto_general_id: Option<String>,
+    pub tiene_fondo:      Option<bool>,
+    pub alto_faja:        Option<f64>,
+    pub material_fondo_id: Option<String>,
+    pub faja_acostada:    Option<bool>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct ActualizarModuloInput {
-    pub nombre:             String,
-    pub disposicion:        String,
-    pub ancho:              f64,
-    pub alto:               f64,
-    pub profundidad:        f64,
-    pub espesor_tablero:    f64,
-    pub espesor_fondo:      f64,
-    pub tipo_union:         String,
-    pub costados_por_fuera: bool,
-    pub fondo_embutido:     bool,
-    pub tapa_apoyada:       bool,
-    pub cant_estantes:      i64,
-    pub cant_puertas:       i64,
-    pub overlap_puertas:    f64,
-    pub inset_estantes:     f64,
-    pub offset_tirador:     f64,
-    pub material_id:        Option<String>,
-    pub color_material:     Option<String>,
-    pub tipo_canto:         String,
-    pub espesor_canto:      f64,
-    pub canto_sup:          bool,
-    pub canto_inf:          bool,
-    pub canto_izq:          bool,
-    pub canto_der:          bool,
-    pub apertura_puerta:    String,
-    pub tiene_fondo:        bool,
-    pub alto_faja:          f64,
+    pub nombre:           String,
+    pub disposicion:      String,
+    pub ancho:            f64,
+    pub alto:             f64,
+    pub profundidad:      f64,
+    pub espesor_tablero:  f64,
+    pub espesor_fondo:    f64,
+    pub tipo_union:       String,
+    pub cant_estantes:    i64,
+    pub cant_puertas:     i64,
+    pub overlap_puertas:  f64,
+    pub offset_tirador:   f64,
+    pub apertura_puerta:  Option<String>,
+    pub material_id:      Option<String>,
+    pub color_material:   Option<String>,
+    pub color_puerta:     Option<String>,
+    pub canto_general_id: Option<String>,
+    pub tiene_fondo:      bool,
+    pub alto_faja:        f64,
+    pub material_fondo_id: Option<String>,
+    pub faja_acostada:    bool,
 }
 
-// ── F2-01: Usuarios y Sesiones ────────────────────────────────
+// -- LIBRERIA -------------------------------------------------
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct LibreriaModulo {
+    pub id:          String,
+    pub codigo:      String,
+    pub disposicion: String,
+    pub nombre:      String,
+    pub descripcion: Option<String>,
+    pub config_json: String,
+}
+
+// -- F2-01: Usuarios y Sesiones -------------------------------
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Usuario {
@@ -209,54 +188,46 @@ pub struct CrearUsuarioInput {
     pub mansiones: Vec<String>,
 }
 
-// ── F3-01: Disposiciones ──────────────────────────────────────
+// -- F3-01: Disposiciones -------------------------------------
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Disposicion {
     pub id:            String,
     pub nombre:        String,
     pub tiene_fajas:   bool,
-    pub posicion_faja: Option<String>, // "superior" | "inferior"
+    pub posicion_faja: Option<String>,
     pub alto_faja:     f64,
     pub activo:        bool,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct CrearDisposicionInput {
-    pub id:            String, // el usuario define el código, ej: "bm2"
+    pub id:            String,
     pub nombre:        String,
     pub tiene_fajas:   bool,
     pub posicion_faja: Option<String>,
     pub alto_faja:     Option<f64>,
 }
 
-// ── F3-01: Motor de Cálculo ───────────────────────────────────
+// -- F3-01: Motor de Calculo ----------------------------------
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub enum FondoTipo {
-    #[serde(rename = "pasante")]
-    Pasante,
-    #[serde(rename = "interno")]
-    Interno,
+    #[serde(rename = "pasante")] Pasante,
+    #[serde(rename = "interno")]  Interno,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub enum TipoPieza {
-    #[serde(rename = "side")]
-    Lateral,
-    #[serde(rename = "horizontal")]
-    Horizontal,
-    #[serde(rename = "back")]
-    Fondo,
-    #[serde(rename = "shelf")]
-    Estante,
-    #[serde(rename = "door")]
-    Puerta,
-    #[serde(rename = "faja")]
-    Faja,
+    #[serde(rename = "side")]       Lateral,
+    #[serde(rename = "horizontal")] Horizontal,
+    #[serde(rename = "back")]       Fondo,
+    #[serde(rename = "shelf")]      Estante,
+    #[serde(rename = "door")]       Puerta,
+    #[serde(rename = "faja")]       Faja,
+    #[serde(rename = "divisor")]    Divisor,
 }
 
-// Canto del catálogo de depósito
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Canto {
     pub id:           String,
@@ -280,7 +251,6 @@ pub struct CrearCantoInput {
     pub stock_metros: Option<f64>,
 }
 
-// Configuración de ensamble de un módulo
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct EnsambleConfig {
     pub modulo_id:             String,
@@ -295,11 +265,10 @@ pub struct SetEnsambleInput {
     pub modulo_id:             String,
     pub costado_pasante_techo: bool,
     pub costado_pasante_piso:  bool,
-    pub fondo_tipo:            String, // "pasante" | "interno"
+    pub fondo_tipo:            String,
     pub fondo_retranqueo:      f64,
 }
 
-// Cantos asignados a una pieza individual
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct CantosPieza {
     pub frente_id:    Option<String>,
@@ -308,7 +277,6 @@ pub struct CantosPieza {
     pub inferior_id:  Option<String>,
 }
 
-// Resultado del motor: pieza calculada
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PiezaCalculada {
     pub tipo:          String,
@@ -322,7 +290,6 @@ pub struct PiezaCalculada {
     pub regaton_alto:  f64,
 }
 
-// Parámetros que el motor necesita para calcular
 #[derive(Debug, Clone)]
 pub struct MotorParams {
     pub ancho:           f64,
@@ -333,10 +300,40 @@ pub struct MotorParams {
     pub offset:          f64,
     pub cant_estantes:   i64,
     pub ensamble:        EnsambleConfig,
-    // Fajas
     pub tiene_fajas:     bool,
-    pub posicion_faja:   String, // "superior" | "inferior"
+    pub posicion_faja:   String,
     pub alto_faja:       f64,
-    // Fondo opcional
     pub tiene_fondo:     bool,
+    pub faja_acostada:   bool,
+    pub material_fondo_id: Option<String>,
+    pub divisores:       Option<Vec<DivisorParams>>,
+}
+
+// -- F3-02: Divisores -----------------------------------------
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Divisor {
+    pub id:         String,
+    pub modulo_id:  String,
+    pub posicion_x: f64,
+    pub desde:      String,
+    pub hasta:      String,
+    pub orden:      i64,
+    pub creado_en:  String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CrearDivisorInput {
+    pub modulo_id:  String,
+    pub posicion_x: f64,
+    pub desde:      String,
+    pub hasta:      String,
+    pub orden:      Option<i64>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct DivisorParams {
+    pub posicion_x: f64,
+    pub desde:      String,
+    pub hasta:      String,
 }

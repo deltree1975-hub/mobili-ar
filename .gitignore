@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Base de datos
+mobiliar.db
+mobiliar.db-shm
+mobiliar.db-wal
+mobiliar_old.db
+mobiliar-schema.sql.bak

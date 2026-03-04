@@ -1,7 +1,7 @@
 // ============================================================
 // MOBILI-AR — Lista de corte con vista isométrica técnica
 // Archivo  : src/screens/Editor/components/SeccionPiezas.jsx
-// Módulo   : F3-01
+// Módulo   : F3-01 / F3-02
 // ============================================================
 
 import { useState, useEffect } from 'react';
@@ -15,6 +15,7 @@ const TIPO_LABEL = {
   shelf:      'Estante',
   door:       'Puerta',
   faja:       'Faja',
+  divisor:    'Divisor',
 };
 
 const CARAS = [
@@ -36,11 +37,14 @@ function useIso(W, H, P, ET, espejado) {
   const SX = Math.sin(Math.PI / 6);
 
   function project(x, z, y) {
-    const xi = espejado ? (w - x) : x;
-    return [xi * CX - z * CX, -(y) - xi * SX - z * SX];
+  if (espejado) {
+    const xr = w - x;
+    const zr = p - z;
+    return [xr * CX - zr * CX, -(y) - xr * SX - zr * SX];
   }
+  return [x * CX - z * CX, -(y) - x * SX - z * SX];
+}
 
-  // Calcula el bounding box de todos los vértices del mueble
   const corners = [
     [0,0,0],[w,0,0],[0,p,0],[w,p,0],
     [0,0,h],[w,0,h],[0,p,h],[w,p,h],
@@ -53,11 +57,10 @@ function useIso(W, H, P, ET, espejado) {
   const minY = Math.min(...ys);
   const maxY = Math.max(...ys);
 
-  const pad = 24; // padding para cotas
+  const pad = 24;
   const vbW = maxX - minX + pad * 2;
   const vbH = maxY - minY + pad * 2;
 
-  // Origen: trasladar para que minX,minY queden en (pad,pad)
   const ox = -minX + pad;
   const oy = -minY + pad;
 
@@ -74,20 +77,20 @@ function useIso(W, H, P, ET, espejado) {
 }
 
 // ── Vista isométrica técnica ──────────────────────────────────
-function VistaIso({ datos, vista }) {
+function VistaIso({ datos, vista, divisor }) {
   if (!datos) return (
     <div style={{ textAlign: 'center', color: '#aaa', padding: 30, fontSize: 12 }}>
       Calculá las piezas para ver la vista
     </div>
   );
 
-  const W  = datos.ancho        || 600;
-  const H  = datos.alto         || 720;
-  const P  = datos.profundidad  || 550;
+  const W  = datos.ancho           || 600;
+  const H  = datos.alto            || 720;
+  const P  = datos.profundidad     || 550;
   const ET = datos.espesor_tablero || 18;
   const EF = datos.espesor_fondo   || 3;
-  const nEstantes  = datos.cant_estantes || 0;
-  const nPuertas   = datos.cant_puertas  || 0;
+  const nEstantes  = datos.cant_estantes  || 0;
+  const nPuertas   = datos.cant_puertas   || 0;
   const overlap    = datos.overlap_puertas || 2;
   const tieneFondo = datos.tiene_fondo !== false;
 
@@ -95,7 +98,6 @@ function VistaIso({ datos, vista }) {
   const { w, h, p, et, escala, vbW, vbH, pt, ptXY } = useIso(W, H, P, ET, espejado);
   const ef = EF * escala;
 
-  // Colores
   const stroke    = '#1a3a5c';
   const strokeInt = '#4a7ab5';
   const fillFace  = 'rgba(220,235,250,0.18)';
@@ -103,23 +105,41 @@ function VistaIso({ datos, vista }) {
   const fillTop   = 'rgba(210,230,210,0.22)';
   const fillBack  = 'rgba(200,220,240,0.10)';
   const fillDoor  = 'rgba(230,240,255,0.38)';
+  const fillDiv   = 'rgba(180,210,235,0.45)';
   const swExt  = 1.4;
   const swInt  = 0.7;
   const dash   = '3,2';
   const dashSt = '5,3';
 
-  // Estantes: posición Y en píxeles desde abajo
   const estantes = Array.from({ length: nEstantes }, (_, i) => {
     const sep = (H - ET * 2) / (nEstantes + 1);
     return (ET + sep * (i + 1)) * escala;
   });
 
+  const divX = divisor ? (ET + divisor.posicion_x) * escala : null;
+  const divDesde = divisor?.desde || 'techo';
+  const divHasta = divisor?.hasta || 'piso';
+
+  function referenciaAY(ref) {
+    if (ref === 'techo') return h;
+    if (ref === 'piso')  return 0;
+    const match = ref.match(/^estante_(\d+)$/);
+    if (match) {
+      const idx = parseInt(match[1]) - 1;
+      return estantes[idx] ?? 0;
+    }
+    return 0;
+  }
+
+  const divY0 = divisor ? referenciaAY(divHasta) : 0;
+  const divY1 = divisor ? referenciaAY(divDesde) : h;
+
   // ── Vista frontal ─────────────────────────────────────────
   if (vista === 'frente') {
     const fox = 20;
     const foy = 20;
-    const fw = w;
-    const fh = h;
+    const fw  = w;
+    const fh  = h;
     const fet = et;
     const totalW = fw + 40;
     const totalH = fh + 44;
@@ -138,6 +158,17 @@ function VistaIso({ datos, vista }) {
             stroke={strokeInt} strokeWidth={swInt} strokeDasharray={dash}
           />
         ))}
+        {divisor && divX !== null && (
+          <rect
+            x={fox + divX - et / 2}
+            y={foy + fh - divY1}
+            width={et}
+            height={divY1 - divY0}
+            fill={fillDiv}
+            stroke={strokeInt}
+            strokeWidth={swInt}
+          />
+        )}
         {nPuertas > 0 && Array.from({ length: nPuertas }, (_, i) => {
           const pw = fw / nPuertas;
           return <rect key={i} x={fox + pw * i + 1} y={foy + 1} width={pw - 2} height={fh - 2} fill={fillDoor} stroke={stroke} strokeWidth={swExt * 0.8} />;
@@ -152,13 +183,21 @@ function VistaIso({ datos, vista }) {
   return (
     <svg width="100%" viewBox={`0 0 ${vbW} ${vbH}`} style={{ maxHeight: 240 }}>
 
+      {/* En vista izq la cara frontal queda atrás — se dibuja primero */}
+      {espejado && (
+        <polygon points={`${pt(0,0,0)} ${pt(w,0,0)} ${pt(w,0,h)} ${pt(0,0,h)}`}
+          fill={fillFace} stroke={stroke} strokeWidth={swExt} />
+      )}
+
       {/* Cara posterior */}
       <polygon points={`${pt(0,p,0)} ${pt(w,p,0)} ${pt(w,p,h)} ${pt(0,p,h)}`}
         fill={fillBack} stroke={stroke} strokeWidth={swExt * 0.5} opacity="0.6" />
 
-      {/* Laterales */}
+      {/* Lateral izquierdo */}
       <polygon points={`${pt(0,0,0)} ${pt(0,p,0)} ${pt(0,p,h)} ${pt(0,0,h)}`}
         fill={fillSide} stroke={stroke} strokeWidth={swExt} />
+
+      {/* Lateral derecho */}
       <polygon points={`${pt(w,0,0)} ${pt(w,p,0)} ${pt(w,p,h)} ${pt(w,0,h)}`}
         fill={fillSide} stroke={stroke} strokeWidth={swExt} />
 
@@ -189,6 +228,26 @@ function VistaIso({ datos, vista }) {
         </g>
       ))}
 
+      {/* Divisor vertical v5 */}
+      {divisor && divX !== null && (() => {
+        const dx  = divX;
+        const dy0 = divY0;
+        const dy1 = divY1;
+        return (
+          <g className="divisor-iso">
+            <polygon
+              points={`${pt(dx-et/2,0,dy1)} ${pt(dx+et/2,0,dy1)} ${pt(dx+et/2,p-et,dy1)} ${pt(dx-et/2,p-et,dy1)}`}
+              fill="rgba(200,225,240,0.40)" stroke={strokeInt} strokeWidth={swInt} />
+            <polygon
+              points={`${pt(dx-et/2,0,dy0)} ${pt(dx+et/2,0,dy0)} ${pt(dx+et/2,0,dy1)} ${pt(dx-et/2,0,dy1)}`}
+              fill={fillDiv} stroke={strokeInt} strokeWidth={swInt} />
+            <polygon
+              points={`${pt(dx-et/2,0,dy0)} ${pt(dx-et/2,p-et,dy0)} ${pt(dx-et/2,p-et,dy1)} ${pt(dx-et/2,0,dy1)}`}
+              fill="rgba(160,200,225,0.35)" stroke={strokeInt} strokeWidth={swInt} />
+          </g>
+        );
+      })()}
+
       {/* Techo */}
       <polygon points={`${pt(0,0,h)} ${pt(w,0,h)} ${pt(w,p,h)} ${pt(0,p,h)}`}
         fill={fillTop} stroke={stroke} strokeWidth={swExt} />
@@ -196,9 +255,11 @@ function VistaIso({ datos, vista }) {
             x2={ptXY(w-et,0,h-et)[0]} y2={ptXY(w-et,0,h-et)[1]}
         stroke={strokeInt} strokeWidth={swInt} strokeDasharray={dash} />
 
-      {/* Cara frontal */}
-      <polygon points={`${pt(0,0,0)} ${pt(w,0,0)} ${pt(w,0,h)} ${pt(0,0,h)}`}
-        fill={fillFace} stroke={stroke} strokeWidth={swExt} />
+      {/* En vista der la cara frontal se dibuja al final — queda encima */}
+      {!espejado && (
+        <polygon points={`${pt(0,0,0)} ${pt(w,0,0)} ${pt(w,0,h)} ${pt(0,0,h)}`}
+          fill={fillFace} stroke={stroke} strokeWidth={swExt} />
+      )}
 
       {/* Puertas */}
       {nPuertas > 0 && (() => {
@@ -241,7 +302,7 @@ function VistaIso({ datos, vista }) {
 }
 
 // ── Componente principal ──────────────────────────────────────
-function SeccionPiezas({ moduloId, datos, cantos }) {
+function SeccionPiezas({ moduloId, datos, cantos, divisor }) {
   const [piezas,      setPiezas]      = useState([]);
   const [filos,       setFilos]       = useState({});
   const [calculando,  setCalculando]  = useState(false);
@@ -355,7 +416,7 @@ function SeccionPiezas({ moduloId, datos, cantos }) {
           ))}
         </div>
         <div className="piezas-svg-container">
-          <VistaIso datos={datos} vista={vista} />
+          <VistaIso datos={datos} vista={vista} divisor={divisor} />
         </div>
       </div>
 

@@ -20,3 +20,5 @@ pub mod cantos;
 pub mod ensamble;
 pub mod piezas;
 pub mod materiales;
+// F3-02
+pub mod divisores;

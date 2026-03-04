@@ -12,3 +12,5 @@ pub mod mansiones;
 pub mod cantos;
 pub mod piezas;
 pub mod materiales;
+// F3-02
+pub mod divisores;

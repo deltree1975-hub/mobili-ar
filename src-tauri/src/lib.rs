@@ -1,7 +1,7 @@
 // ============================================================
 // MOBILI-AR — Librería principal de Tauri
 // Archivo  : src-tauri/src/lib.rs
-// Módulo   : F1-04 — Capa de comandos Tauri
+// Módulo   : F1-04 / F3-02
 // ============================================================
 mod commands;
 mod db;
@@ -15,6 +15,7 @@ use commands::mansiones;
 use commands::cantos;
 use commands::piezas;
 use commands::materiales;
+use commands::divisores;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -67,6 +68,11 @@ pub fn run() {
             piezas::get_piezas_modulo,
             piezas::get_ensamble_modulo,
             piezas::set_ensamble_modulo,
+            // F3-02: divisores
+            divisores::get_divisores_modulo,
+            divisores::crear_divisor,
+            divisores::actualizar_divisor,
+            divisores::eliminar_divisor,
         ])
         .run(tauri::generate_context!())
         .expect("Error al iniciar MOBILI-AR");

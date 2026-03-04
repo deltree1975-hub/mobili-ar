@@ -1,7 +1,7 @@
 // ============================================================
 // MOBILI-AR — Editor paramétrico de módulo
 // Archivo  : src/screens/Editor/index.jsx
-// Módulo   : F1-08 / F3-01
+// Módulo   : F1-08 / F3-01 / F3-02
 // ============================================================
 
 import { useState, useEffect } from 'react';
@@ -18,12 +18,13 @@ const DISPOSICIONES = {
 };
 
 function Editor({ modulo, onVolver }) {
-  const [datos, setDatos]         = useState({ ...modulo });
-  const [guardando, setGuardando] = useState(false);
-  const [guardado, setGuardado]   = useState(false);
-  const [error, setError]         = useState('');
-  const [cantos, setCantos]       = useState([]);
+  const [datos, setDatos]           = useState({ ...modulo });
+  const [guardando, setGuardando]   = useState(false);
+  const [guardado, setGuardado]     = useState(false);
+  const [error, setError]           = useState('');
+  const [cantos, setCantos]         = useState([]);
   const [materiales, setMateriales] = useState([]);
+  const [divisor, setDivisor]       = useState(null); // v5
 
   const [ensamble, setEnsamble] = useState({
     costado_pasante_techo: true,
@@ -52,6 +53,12 @@ function Editor({ modulo, onVolver }) {
   function actualizarEnsamble(campo, valor) {
     setEnsamble(prev => ({ ...prev, [campo]: valor }));
     setGuardado(false);
+  }
+
+  // v5 — recibe el divisor activo desde ResumenModulo
+  // (null cuando se desactiva, objeto cuando se crea/actualiza)
+  function handleDivisorChange(nuevoDivisor) {
+    setDivisor(nuevoDivisor);
   }
 
   async function handleGuardar() {
@@ -100,6 +107,7 @@ function Editor({ modulo, onVolver }) {
             moduloId={modulo.id}
             datos={datos}
             cantos={cantos}
+            divisor={divisor}
           />
         </div>
         <div className="editor-resumen">
@@ -110,6 +118,7 @@ function Editor({ modulo, onVolver }) {
             materiales={materiales}
             onChange={actualizar}
             onEnsambleChange={actualizarEnsamble}
+            onDivisorChange={handleDivisorChange}
           />
         </div>
       </div>

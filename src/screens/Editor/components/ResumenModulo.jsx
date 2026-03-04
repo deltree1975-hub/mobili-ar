@@ -1,9 +1,11 @@
 // ============================================================
 // MOBILI-AR — Panel derecho editable
 // Archivo  : src/screens/Editor/components/ResumenModulo.jsx
-// Módulo   : F1-08 / F3-01
+// Módulo   : F1-08 / F3-01 / F3-02
 // ============================================================
 
+import { useState, useEffect } from 'react';
+import { invoke } from '@tauri-apps/api/core';
 import './Secciones.css';
 
 const TIPOS_UNION = [
@@ -97,10 +99,113 @@ function CampoToggle({ label, labelOn, labelOff, valor, onClick }) {
 
 // ── Componente principal ──────────────────────────────────────
 
-function ResumenModulo({ datos, ensamble, cantos, materiales, onChange, onEnsambleChange }) {
+function ResumenModulo({ datos, ensamble, cantos, materiales, onChange, onEnsambleChange, onDivisorChange }) {
+
+  // ── State divisor ─────────────────────────────────────────
+  const [divisor,          setDivisor]          = useState(null);
+  const [tieneDivisor,     setTieneDivisor]     = useState(false);
+  const [posicionX,        setPosicionX]        = useState('');
+  const [divisorDesde,     setDivisorDesde]     = useState('techo');
+  const [divisorHasta,     setDivisorHasta]     = useState('piso');
+  const [guardandoDivisor, setGuardandoDivisor] = useState(false);
+
+  // ── Cargar divisor al cambiar módulo ─────────────────────
+  useEffect(() => {
+    if (!datos?.id) return;
+    setDivisor(null);
+    setTieneDivisor(false);
+    setPosicionX('');
+    setDivisorDesde('techo');
+    setDivisorHasta('piso');
+
+    invoke('get_divisores_modulo', { moduloId: datos.id })
+      .then(lista => {
+        if (lista.length > 0) {
+          const d = lista[0];
+          setDivisor(d);
+          setTieneDivisor(true);
+          setPosicionX(String(d.posicion_x));
+          setDivisorDesde(d.desde);
+          setDivisorHasta(d.hasta);
+          if (onDivisorChange) onDivisorChange(d);
+        }
+      })
+      .catch(console.error);
+  }, [datos?.id]);
+
+  // ── Toggle divisor ────────────────────────────────────────
+  async function handleToggleDivisor(activo) {
+    setTieneDivisor(activo);
+    if (!activo && divisor) {
+      try {
+        await invoke('eliminar_divisor', { id: divisor.id });
+      } catch (e) {
+        console.error('Error eliminando divisor:', e);
+      }
+      setDivisor(null);
+      setPosicionX('');
+      if (onDivisorChange) onDivisorChange(null);
+    }
+    if (activo && !divisor) {
+      // Posición inicial = centro del ancho interno
+      const centro = Math.round((datos.ancho - datos.espesor_tablero * 2) / 2);
+      setPosicionX(String(centro));
+    }
+  }
+
+  // ── Guardar divisor ───────────────────────────────────────
+  async function handleGuardarDivisor() {
+    const px = parseFloat(posicionX);
+    if (isNaN(px) || px <= 0) return;
+    setGuardandoDivisor(true);
+    try {
+      if (divisor) {
+        await invoke('actualizar_divisor', {
+          id:        divisor.id,
+          posicionX: px,
+          desde:     divisorDesde,
+          hasta:     divisorHasta,
+        });
+        const actualizado = { ...divisor, posicion_x: px, desde: divisorDesde, hasta: divisorHasta };
+        setDivisor(actualizado);
+        if (onDivisorChange) onDivisorChange(actualizado);
+      } else {
+        const nuevo = await invoke('crear_divisor', {
+          input: {
+            modulo_id:  datos.id,
+            posicion_x: px,
+            desde:      divisorDesde,
+            hasta:      divisorHasta,
+            orden:      0,
+          }
+        });
+        setDivisor(nuevo);
+        if (onDivisorChange) onDivisorChange(nuevo);
+      }
+    } catch (e) {
+      console.error('Error guardando divisor:', e);
+    } finally {
+      setGuardandoDivisor(false);
+    }
+  }
+
+  // ── Opciones de posición (techo, estantes, piso) ─────────
+  const opcionesPosicion = [
+    { value: 'techo', label: 'Techo' },
+    ...Array.from({ length: datos?.cant_estantes || 0 }, (_, i) => ({
+      value: `estante_${i + 1}`,
+      label: `Estante ${i + 1}`,
+    })),
+    { value: 'piso', label: 'Piso' },
+  ];
+
+  // ── Cálculo informativo de sectores ──────────────────────
+  const px = parseFloat(posicionX);
+  const anchoInterno = (datos?.ancho || 0) - (datos?.espesor_tablero || 18) * 2;
+  const sectorIzq = !isNaN(px) ? Math.round(px - datos?.espesor_tablero / 2) : null;
+  const sectorDer = !isNaN(px) ? Math.round(anchoInterno - px - datos?.espesor_tablero / 2) : null;
 
   // ── Opciones de material del stock ───────────────────────
-  // Agrupa: tableros para cuerpo, hdf/mdf para fondo
   const materialesTablero = [
     { value: '', label: '— Sin asignar —' },
     ...(materiales || [])
@@ -162,7 +267,6 @@ function ResumenModulo({ datos, ensamble, cantos, materiales, onChange, onEnsamb
       {/* ── MATERIAL DEL STOCK ── */}
       <div className="resumen-grupo-titulo">Material</div>
 
-      {/* Material del cuerpo — tablero principal */}
       <div className="resumen-fila resumen-fila--edit">
         <span className="resumen-label">Cuerpo</span>
         <select
@@ -171,7 +275,6 @@ function ResumenModulo({ datos, ensamble, cantos, materiales, onChange, onEnsamb
           onChange={e => {
             const mat = (materiales || []).find(m => m.id === e.target.value);
             onChange('material_id', e.target.value);
-            // Sincroniza el espesor del tablero automáticamente
             if (mat) onChange('espesor_tablero', mat.espesor);
           }}
         >
@@ -181,7 +284,6 @@ function ResumenModulo({ datos, ensamble, cantos, materiales, onChange, onEnsamb
         </select>
       </div>
 
-      {/* Material del fondo */}
       <div className="resumen-fila resumen-fila--edit">
         <span className="resumen-label">Fondo</span>
         <select
@@ -199,7 +301,6 @@ function ResumenModulo({ datos, ensamble, cantos, materiales, onChange, onEnsamb
         </select>
       </div>
 
-      {/* Color del módulo (referencia visual) */}
       <div className="resumen-fila resumen-fila--edit">
         <span className="resumen-label">Color</span>
         <input
@@ -210,7 +311,6 @@ function ResumenModulo({ datos, ensamble, cantos, materiales, onChange, onEnsamb
         />
       </div>
 
-      {/* Color puerta — solo si tiene puertas */}
       {datos.cant_puertas > 0 && (
         <div className="resumen-fila resumen-fila--edit">
           <span className="resumen-label">Color puerta</span>
@@ -249,7 +349,6 @@ function ResumenModulo({ datos, ensamble, cantos, materiales, onChange, onEnsamb
       <CampoInt    label="Estantes" campo="cant_estantes" valor={datos.cant_estantes} onChange={onChange} max={20} />
       <CampoInt    label="Puertas"  campo="cant_puertas"  valor={datos.cant_puertas}  onChange={onChange} max={10} />
 
-      {/* Fajas — solo bajomesa y cajonera placar */}
       {(datos.disposicion === 'bm' || datos.disposicion === 'caj-plac') && (
         <>
           <CampoToggle
@@ -306,18 +405,89 @@ function ResumenModulo({ datos, ensamble, cantos, materiales, onChange, onEnsamb
         />
       )}
 
-      {/* ── PUERTAS ── */}
-      {datos.cant_puertas > 0 && (
+      <div className="resumen-separador" />
+
+      {/* ── DIVISOR VERTICAL ── */}
+      <div className="resumen-grupo-titulo">Divisor vertical</div>
+
+      <CampoToggle
+        label="Divisor"
+        labelOn="Con divisor" labelOff="Sin divisor"
+        valor={tieneDivisor}
+        onClick={() => handleToggleDivisor(!tieneDivisor)}
+      />
+
+      {tieneDivisor && (
         <>
-          <div className="resumen-separador" />
-          <div className="resumen-grupo-titulo">Puertas</div>
-          <CampoSelect label="Apertura" campo="apertura_puerta" valor={datos.apertura_puerta} opciones={APERTURAS} onChange={onChange} />
-          <CampoNum    label="Overlap"  campo="overlap_puertas" valor={datos.overlap_puertas} onChange={onChange} min={0} max={50} />
-          <CampoNum    label="Tirador"  campo="offset_tirador"  valor={datos.offset_tirador}  onChange={onChange} min={0} max={300} />
+          <div className="resumen-fila resumen-fila--edit">
+            <span className="resumen-label">Posición X</span>
+            <input
+              className="resumen-input-num"
+              type="number"
+              min={datos.espesor_tablero + 10}
+              max={anchoInterno - datos.espesor_tablero - 10}
+              value={posicionX}
+              onChange={e => setPosicionX(e.target.value)}
+            />
+            <span className="resumen-unidad">mm</span>
+          </div>
+
+          <div className="resumen-fila resumen-fila--edit">
+            <span className="resumen-label">Desde</span>
+            <select
+              className="resumen-select"
+              value={divisorDesde}
+              onChange={e => setDivisorDesde(e.target.value)}
+            >
+              {opcionesPosicion.filter(o => o.value !== 'piso').map(o => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="resumen-fila resumen-fila--edit">
+            <span className="resumen-label">Hasta</span>
+            <select
+              className="resumen-select"
+              value={divisorHasta}
+              onChange={e => setDivisorHasta(e.target.value)}
+            >
+              {opcionesPosicion.filter(o => o.value !== 'techo').map(o => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </div>
+
+          {sectorIzq !== null && sectorDer !== null && (
+            <p className="resumen-nota">
+              Izq: {sectorIzq} mm &nbsp;|&nbsp; Der: {sectorDer} mm
+            </p>
+          )}
+
+          <div className="resumen-fila">
+            <button
+              className="resumen-btn-guardar"
+              onClick={handleGuardarDivisor}
+              disabled={guardandoDivisor || !posicionX}
+            >
+              {guardandoDivisor ? 'Guardando…' : divisor ? 'Actualizar divisor' : 'Guardar divisor'}
+            </button>
+          </div>
         </>
       )}
 
       <div className="resumen-separador" />
+
+      {/* ── PUERTAS ── */}
+      {datos.cant_puertas > 0 && (
+        <>
+          <div className="resumen-grupo-titulo">Puertas</div>
+          <CampoSelect label="Apertura" campo="apertura_puerta" valor={datos.apertura_puerta} opciones={APERTURAS} onChange={onChange} />
+          <CampoNum    label="Overlap"  campo="overlap_puertas" valor={datos.overlap_puertas} onChange={onChange} min={0} max={50} />
+          <CampoNum    label="Tirador"  campo="offset_tirador"  valor={datos.offset_tirador}  onChange={onChange} min={0} max={300} />
+          <div className="resumen-separador" />
+        </>
+      )}
 
       {/* ── ESTADO ── */}
       <CampoSelect

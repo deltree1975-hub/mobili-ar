@@ -1,7 +1,7 @@
 /* ============================================================
    MOBILI-AR — Estilos compartidos de secciones del editor
    Archivo  : src/screens/Editor/components/Secciones.css
-   Módulo   : F1-08
+   Módulo   : F1-08 / F3-01 / F3-02
    ============================================================ */
 
 .editor-seccion {
@@ -200,6 +200,7 @@
   color: var(--color-mid);
   text-align: center;
 }
+
 /* ── Panel derecho editable (ResumenModulo) ── */
 
 .resumen-input-nombre {
@@ -306,7 +307,7 @@
   border-radius: 10px;
   color: #555;
 }
-/* ── ResumenModulo extras ── */
+
 .resumen-nota {
   font-size: 11px;
   color: #aaa;
@@ -328,25 +329,33 @@
   outline: none;
   border-color: var(--color-accent);
 }
-/* ── ResumenModulo extras ── */
-.resumen-nota {
-  font-size: 11px;
-  color: #aaa;
+
+/* ── Divisor vertical (v5) ───────────────────────────────── */
+.resumen-btn-guardar {
+  width: 100%;
+  padding: 6px 12px;
+  border: 1px solid var(--color-accent);
+  border-radius: 4px;
+  background: white;
+  color: var(--color-accent);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
   margin-top: 4px;
-  line-height: 1.4;
+}
+.resumen-btn-guardar:hover:not(:disabled) {
+  background: var(--color-accent);
+  color: white;
+}
+.resumen-btn-guardar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-.resumen-input-texto {
-  flex: 1;
-  padding: 3px 6px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 12px;
-  color: var(--color-dark);
-  background: white;
-  min-width: 0;
+.divisor-iso polygon {
+  transition: opacity 0.2s;
 }
-.resumen-input-texto:focus {
-  outline: none;
-  border-color: var(--color-accent);
+.divisor-iso:hover polygon {
+  opacity: 0.75;
 }
