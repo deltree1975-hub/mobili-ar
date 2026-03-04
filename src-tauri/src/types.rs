@@ -337,3 +337,38 @@ pub struct DivisorParams {
     pub desde:      String,
     pub hasta:      String,
 }
+// -- F3-01: Materiales ----------------------------------------
+// Agregar en src-tauri/src/types.rs
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Material {
+    pub id:        String,
+    pub tipo:      String,   // Melamina, MDF, Multilaminado
+    pub color:     String,   // Blanco Polar, Grafito
+    pub largo:     f64,      // mm
+    pub ancho:     f64,      // mm
+    pub espesor:   f64,      // mm — sincroniza con espesor_tablero/fondo
+    pub cantidad:  i64,      // placas en stock
+    pub activo:    bool,
+    pub creado_en: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CrearMaterialInput {
+    pub tipo:     String,
+    pub color:    String,
+    pub largo:    f64,
+    pub ancho:    f64,
+    pub espesor:  f64,
+    pub cantidad: Option<i64>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ActualizarMaterialInput {
+    pub tipo:     String,
+    pub color:    String,
+    pub largo:    f64,
+    pub ancho:    f64,
+    pub espesor:  f64,
+    pub cantidad: i64,
+}

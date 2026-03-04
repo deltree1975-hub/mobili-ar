@@ -1,0 +1,338 @@
+/* ============================================================
+   MOBILI-AR — Materiales
+   Archivo  : src/screens/Materiales/Materiales.css
+   ============================================================ */
+
+/* Reutiliza clases de Libreria.css (.libreria, .libreria-header,
+   .libreria-filtros, .libreria-grid, .libreria-card, etc.)
+   Solo se definen las clases específicas de materiales. */
+
+.mat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mat-card--vacio {
+  opacity: 0.65;
+  border-color: #e0e0e0;
+}
+
+/* Stock counter */
+.mat-stock {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 4px 0;
+}
+
+.mat-stock-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border, #ddd);
+  background: var(--color-surface, #f5f5f5);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.mat-stock-btn:hover:not(:disabled) {
+  background: var(--color-accent, #1a6b3c);
+  color: white;
+  border-color: var(--color-accent, #1a6b3c);
+}
+.mat-stock-btn:disabled { opacity: 0.3; cursor: default; }
+
+.mat-stock-num {
+  font-size: 14px;
+  font-weight: 600;
+  min-width: 70px;
+  text-align: center;
+}
+.mat-stock--agotado { color: #cc3333; }
+
+/* Acciones de card */
+.mat-card-acciones {
+  display: flex;
+  gap: 6px;
+  margin-top: auto;
+}
+.mat-card-acciones .libreria-card-btn {
+  flex: 1;
+}
+.mat-btn-eliminar {
+  padding: 6px 10px;
+  border: 1px solid #e0e0e0;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #999;
+  font-size: 13px;
+  transition: all 0.15s;
+}
+.mat-btn-eliminar:hover {
+  background: #fff0f0;
+  color: #cc3333;
+  border-color: #cc3333;
+}
+
+/* Formulario modal */
+.mat-form-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.mat-form {
+  background: white;
+  border-radius: 12px;
+  padding: 28px;
+  width: 400px;
+  max-width: 95vw;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mat-form h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  color: var(--color-dark, #1a3a5c);
+}
+
+.mat-form-fila {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.mat-form-fila label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.mat-form-fila input,
+.mat-form-fila select {
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.mat-form-fila input:focus,
+.mat-form-fila select:focus {
+  border-color: var(--color-accent, #1a6b3c);
+}
+
+/* Botones de espesor rápido */
+.mat-espesor-btns {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.mat-esp-btn {
+  padding: 5px 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #f5f5f5;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.mat-esp-btn.activo {
+  background: var(--color-accent, #1a6b3c);
+  color: white;
+  border-color: var(--color-accent, #1a6b3c);
+}
+.mat-esp-input {
+  width: 60px;
+  padding: 5px 8px !important;
+  text-align: center;
+}
+
+.mat-form-acciones {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+/* ── Toggle vista + header acciones ─────────────────────────── */
+.mat-header-acciones {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mat-vista-toggle {
+  display: flex;
+  border: 1px solid var(--color-border, #ddd);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.mat-vista-btn {
+  padding: 6px 12px;
+  border: none;
+  background: white;
+  font-size: 16px;
+  cursor: pointer;
+  color: #888;
+  transition: all 0.15s;
+}
+.mat-vista-btn:hover { background: #f0f0f0; }
+.mat-vista-btn.activo {
+  background: var(--color-accent, #1a6b3c);
+  color: white;
+}
+
+/* ── Vista lista (tabla) ─────────────────────────────────────── */
+.mat-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.mat-tabla th {
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 2px solid var(--color-border, #e0e0e0);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #888;
+}
+
+.mat-tabla td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--color-border, #f0f0f0);
+  vertical-align: middle;
+}
+
+.mat-tabla tr:hover td { background: #f8f9fa; }
+
+.mat-tabla .num { text-align: right; }
+
+.mat-fila--vacio td { opacity: 0.55; }
+
+.mat-badge {
+  display: inline-block;
+  font-size: 11px !important;
+  padding: 2px 8px !important;
+}
+
+.mat-stock--inline {
+  justify-content: flex-end;
+  margin: 0;
+}
+
+.mat-acciones--inline {
+  justify-content: flex-end;
+  margin: 0;
+}
+
+.mat-acciones--inline .libreria-card-btn {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+/* ── Confirmación inline ─────────────────────────────────────── */
+.mat-confirm {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #cc3333;
+  font-weight: 600;
+}
+.mat-confirm-si {
+  padding: 3px 10px;
+  background: #cc3333;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.mat-confirm-no {
+  padding: 3px 10px;
+  background: #f0f0f0;
+  color: #444;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.mat-confirm-si:hover { background: #aa2222; }
+.mat-confirm-no:hover { background: #e0e0e0; }
+
+/* ── Botón ingreso ───────────────────────────────────────────── */
+.mat-btn-ingreso {
+  padding: 6px 12px;
+  border: 1px solid var(--color-accent, #1a6b3c);
+  background: white;
+  color: var(--color-accent, #1a6b3c);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+.mat-btn-ingreso:hover {
+  background: var(--color-accent, #1a6b3c);
+  color: white;
+}
+
+.mat-stock-display {
+  text-align: center;
+  padding: 4px 0;
+}
+
+/* ── Ingreso por remito ──────────────────────────────────────── */
+.mat-ingreso-desc {
+  font-size: 13px;
+  color: #555;
+  margin: -8px 0 4px;
+}
+.mat-ingreso-actual {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 4px;
+}
+
+.mat-btn-ingreso {
+  padding: 5px 12px;
+  background: var(--color-accent, #1a6b3c);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.mat-btn-ingreso:hover { background: #155530; }
+
+/* Stock display en grid (sin +/-) */
+.mat-stock-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 4px 0;
+}

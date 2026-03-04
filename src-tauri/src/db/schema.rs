@@ -22,6 +22,19 @@ fn version_actual(conn: &rusqlite::Connection) -> i64 {
     .unwrap_or(0)
 }
 
+fn columna_existe(conn: &rusqlite::Connection, tabla: &str, columna: &str) -> bool {
+    let sql = format!("PRAGMA table_info({})", tabla);
+    let mut stmt = match conn.prepare(&sql) {
+        Ok(s) => s,
+        Err(_) => return false,
+    };
+    let existe = stmt.query_map([], |row| row.get::<_, String>(1))
+        .ok()
+        .map(|rows| rows.flatten().any(|col| col == columna))
+        .unwrap_or(false);
+    existe
+}
+
 fn migrar(conn: &rusqlite::Connection) -> anyhow::Result<()> {
     let version = version_actual(conn);
 
@@ -124,8 +137,6 @@ fn migrar(conn: &rusqlite::Connection) -> anyhow::Result<()> {
     }
 
     // -- Migracion v6 ------------------------------------------
-    // Amplia CHECK de piezas.tipo para incluir faja y divisor.
-    // SQLite requiere recrear la tabla para modificar constraints.
     if version < 6 {
         let _ = conn.execute_batch("DROP TABLE IF EXISTS piezas_old;");
         conn.execute_batch("
@@ -179,6 +190,49 @@ fn migrar(conn: &rusqlite::Connection) -> anyhow::Result<()> {
         conn.execute_batch(
             "INSERT OR IGNORE INTO schema_version (version, descripcion)
              VALUES (6, 'F3-02 - piezas.tipo acepta faja y divisor, sin estado_actual');",
+        )?;
+    }
+
+    // -- Migracion v7 ------------------------------------------
+    // Si la columna 'nombre' existe en materiales, hay que migrar al schema nuevo.
+    // Si no existe, la tabla ya tiene el schema nuevo (DB creada con schema.sql actualizado).
+    if version < 7 {
+        if columna_existe(conn, "materiales", "nombre") {
+            let _ = conn.execute_batch("DROP TABLE IF EXISTS materiales_v7_new;");
+            conn.execute_batch("
+                PRAGMA foreign_keys = OFF;
+
+                CREATE TABLE materiales_v7_new (
+                    id        TEXT PRIMARY KEY,
+                    tipo      TEXT NOT NULL,
+                    color     TEXT NOT NULL DEFAULT '',
+                    largo     REAL NOT NULL DEFAULT 2750.0,
+                    ancho     REAL NOT NULL DEFAULT 1830.0,
+                    espesor   REAL NOT NULL DEFAULT 18.0,
+                    cantidad  INTEGER NOT NULL DEFAULT 0,
+                    activo    INTEGER NOT NULL DEFAULT 1,
+                    creado_en TEXT NOT NULL DEFAULT (datetime('now'))
+                );
+
+                INSERT INTO materiales_v7_new (id, tipo, color, espesor, activo, creado_en)
+                SELECT
+                    id, tipo,
+                    COALESCE(nombre, ''),
+                    espesor,
+                    COALESCE(activo, 1),
+                    COALESCE(creado_en, datetime('now'))
+                FROM materiales;
+
+                DROP TABLE materiales;
+
+                ALTER TABLE materiales_v7_new RENAME TO materiales;
+
+                PRAGMA foreign_keys = ON;
+            ")?;
+        }
+        conn.execute_batch(
+            "INSERT OR IGNORE INTO schema_version (version, descripcion)
+             VALUES (7, 'F3-01 - materiales: tipo, color, largo, ancho, cantidad');",
         )?;
     }
 

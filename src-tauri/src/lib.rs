@@ -17,6 +17,7 @@ use commands::piezas;
 use commands::materiales;
 use commands::divisores;
 
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -62,6 +63,10 @@ pub fn run() {
             cantos::desactivar_canto,
             // F3-01: materiales
             materiales::get_materiales,
+            materiales::crear_material,
+            materiales::actualizar_material,
+            materiales::ajustar_cantidad_material,
+            materiales::desactivar_material,
             // F3-01: piezas y motor
             piezas::calcular_piezas_modulo,
             piezas::confirmar_piezas_modulo,

@@ -13,7 +13,9 @@ import Proyecto  from './screens/Proyecto';
 import Editor    from './screens/Editor';
 import Libreria  from './screens/Libreria';
 import Gestion   from './screens/Gestion';
+import Materiales from './screens/Materiales';
 import SeleccionMansion from './components/SeleccionMansion';
+
 import './App.css';
 
 const ESTADO = {
@@ -25,7 +27,8 @@ const ESTADO = {
   PROYECTO:          'proyecto',
   EDITOR:            'editor',
   LIBRERIA:          'libreria',
-  ELIGIENDO_MANSION: 'eligiendo_mansion', // ← F2-07: toggle Gestión → Taller
+  MATERIALES:        'materiales',
+  ELIGIENDO_MANSION: 'eligiendo_mansion',
 };
 
 function App() {
@@ -71,20 +74,17 @@ function App() {
     setEstado(ESTADO.LOGIN);
   }
 
-  // ── F2-07: Gestión → Taller ──────────────────────────────────
-  // Admin/dueño puede ir al taller eligiendo mansión sin re-login.
   function handleIrAlTaller() {
     setEstado(ESTADO.ELIGIENDO_MANSION);
   }
 
   async function handleMansionElegida(mansion) {
     try {
-      // Abrir nueva sesión en la mansión elegida (sin modoGestion)
       const nuevaSesion = await invoke('login', {
         token:     sesion.usuario.token,
         mansionId: mansion.id,
       });
-      setSesion(nuevaSesion); // sin modoGestion → va al taller
+      setSesion(nuevaSesion);
       setEstado(ESTADO.DASHBOARD);
     } catch (e) {
       console.error('Error al cambiar de mansión:', e);
@@ -92,18 +92,14 @@ function App() {
   }
 
   function handleCancelarEleccionMansion() {
-    // Volver a gestión si venía de ahí, o a dashboard si venía del taller
     setEstado(sesion?.modoGestion ? ESTADO.GESTION : ESTADO.DASHBOARD);
   }
 
-  // ── F2-07: Taller → Gestión ──────────────────────────────────
-  // Solo disponible para admin/dueño. Sin re-login, directo.
   function handleIrAGestion() {
     setSesion(s => ({ ...s, modoGestion: true }));
     setEstado(ESTADO.GESTION);
   }
 
-  // ── Navegación interna ───────────────────────────────────────
   function handleAbrirTrabajo(trabajo) {
     setTrabajoActivo(trabajo);
     setEstado(ESTADO.PROYECTO);
@@ -151,6 +147,14 @@ function App() {
         sesion={sesion}
         onVolver={handleLogout}
         onIrAlTaller={handleIrAlTaller}
+        onIrAMateriales={() => setEstado(ESTADO.MATERIALES)}
+      />
+    );
+
+  if (estado === ESTADO.MATERIALES)
+    return (
+      <Materiales
+        onVolver={() => setEstado(ESTADO.GESTION)}
       />
     );
 

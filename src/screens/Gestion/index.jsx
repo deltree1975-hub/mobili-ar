@@ -6,15 +6,17 @@
 // ============================================================
 
 import { useState } from 'react';
-import GestionUsuarios from './sections/GestionUsuarios';
-import GestionMansiones from './sections/GestionMansiones';
-import GestionLibreria  from './sections/GestionLibreria';
+import GestionUsuarios   from './sections/GestionUsuarios';
+import GestionMansiones  from './sections/GestionMansiones';
+import GestionLibreria   from './sections/GestionLibreria';
+import GestionMateriales from './sections/GestionMateriales';
 import './Gestion.css';
 
 const SECCIONES = [
-  { id: 'usuarios',  label: 'Usuarios',  icono: '👤' },
-  { id: 'mansiones', label: 'Mansiones', icono: '🏭' },
-  { id: 'libreria',  label: 'Librería',  icono: '📚' },
+  { id: 'usuarios',   label: 'Usuarios',   icono: '👤' },
+  { id: 'mansiones',  label: 'Mansiones',  icono: '🏭' },
+  { id: 'libreria',   label: 'Librería',   icono: '📚' },
+  { id: 'materiales', label: 'Materiales', icono: '🪵' },
 ];
 
 function Gestion({ sesion, onVolver, onIrAlTaller }) {
@@ -60,9 +62,10 @@ function Gestion({ sesion, onVolver, onIrAlTaller }) {
 
       {/* CONTENIDO */}
       <main className="gestion-main">
-        {seccion === 'usuarios'  && <GestionUsuarios sesion={sesion} />}
-        {seccion === 'mansiones' && <GestionMansiones />}
-        {seccion === 'libreria'  && <GestionLibreria />}
+        {seccion === 'usuarios'   && <GestionUsuarios sesion={sesion} />}
+        {seccion === 'mansiones'  && <GestionMansiones />}
+        {seccion === 'libreria'   && <GestionLibreria />}
+        {seccion === 'materiales' && <GestionMateriales />}
       </main>
 
     </div>

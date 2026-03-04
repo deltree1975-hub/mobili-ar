@@ -28,25 +28,16 @@ CREATE TABLE IF NOT EXISTS historial_tokens (
   revocado_en TEXT NOT NULL DEFAULT (datetime('now')), revocado_por TEXT REFERENCES usuarios(id));
 
 CREATE TABLE IF NOT EXISTS materiales (
-  id TEXT PRIMARY KEY NOT NULL, nombre TEXT NOT NULL,
-  tipo TEXT NOT NULL CHECK (tipo IN ('tablero','hdf','mdf','madera','otro')),
-  espesor REAL NOT NULL, tiene_veta INTEGER NOT NULL DEFAULT 0,
-  activo INTEGER NOT NULL DEFAULT 1, creado_en TEXT NOT NULL DEFAULT (datetime('now')));
+  id        TEXT PRIMARY KEY NOT NULL,
+  tipo      TEXT NOT NULL,
+  color     TEXT NOT NULL DEFAULT '',
+  largo     REAL NOT NULL DEFAULT 2750.0,
+  ancho     REAL NOT NULL DEFAULT 1830.0,
+  espesor   REAL NOT NULL DEFAULT 18.0,
+  cantidad  INTEGER NOT NULL DEFAULT 0,
+  activo    INTEGER NOT NULL DEFAULT 1,
+  creado_en TEXT NOT NULL DEFAULT (datetime('now')));
 CREATE INDEX IF NOT EXISTS idx_materiales_activo ON materiales(activo);
-INSERT OR IGNORE INTO materiales (id, nombre, tipo, espesor, tiene_veta) VALUES
-  ('mat-mel-bl-18','Melamina Blanca 18mm','tablero',18,0),
-  ('mat-mel-bl-15','Melamina Blanca 15mm','tablero',15,0),
-  ('mat-mel-bl-25','Melamina Blanca 25mm','tablero',25,0),
-  ('mat-hdf-3','HDF 3mm','hdf',3,0),
-  ('mat-mdf-18','MDF 18mm','mdf',18,0),
-  ('mat-mdf-3','MDF 3mm','mdf',3,0);
-
-CREATE TABLE IF NOT EXISTS stock_placas (
-  id TEXT PRIMARY KEY NOT NULL, material_id TEXT NOT NULL REFERENCES materiales(id),
-  largo_util REAL NOT NULL DEFAULT 2750, ancho_util REAL NOT NULL DEFAULT 1830,
-  cantidad INTEGER NOT NULL DEFAULT 0,
-  estado TEXT NOT NULL DEFAULT 'disponible' CHECK (estado IN ('disponible','reservada','consumida')),
-  ingresado_en TEXT NOT NULL DEFAULT (datetime('now')), ingresado_por TEXT REFERENCES usuarios(id));
 
 CREATE TABLE IF NOT EXISTS trabajos (
   id TEXT PRIMARY KEY NOT NULL, nombre TEXT NOT NULL, cliente TEXT, notas TEXT,
