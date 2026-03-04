@@ -1,7 +1,7 @@
 // ============================================================
 // MOBILI-AR — Editor paramétrico de módulo
 // Archivo  : src/screens/Editor/index.jsx
-// Módulo   : F1-08 / F3-01 / F3-02
+// Módulo   : F1-08 / F3-01 / F3-02 / F3-03
 // ============================================================
 
 import { useState, useEffect } from 'react';
@@ -24,7 +24,7 @@ function Editor({ modulo, onVolver }) {
   const [error, setError]           = useState('');
   const [cantos, setCantos]         = useState([]);
   const [materiales, setMateriales] = useState([]);
-  const [divisor, setDivisor]       = useState(null); // v5
+  const [divisor, setDivisor]       = useState(null);
 
   const [ensamble, setEnsamble] = useState({
     costado_pasante_techo: true,
@@ -55,8 +55,6 @@ function Editor({ modulo, onVolver }) {
     setGuardado(false);
   }
 
-  // v5 — recibe el divisor activo desde ResumenModulo
-  // (null cuando se desactiva, objeto cuando se crea/actualiza)
   function handleDivisorChange(nuevoDivisor) {
     setDivisor(nuevoDivisor);
   }
@@ -107,6 +105,7 @@ function Editor({ modulo, onVolver }) {
             moduloId={modulo.id}
             datos={datos}
             cantos={cantos}
+            materiales={materiales}
             divisor={divisor}
           />
         </div>

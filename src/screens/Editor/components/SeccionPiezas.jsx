@@ -1,7 +1,7 @@
 // ============================================================
 // MOBILI-AR — Lista de corte con vista isométrica técnica
 // Archivo  : src/screens/Editor/components/SeccionPiezas.jsx
-// Módulo   : F3-01 / F3-02
+// Módulo   : F3-01 / F3-02 / F3-03
 // ============================================================
 
 import { useState, useEffect } from 'react';
@@ -32,18 +32,17 @@ function useIso(W, H, P, ET, espejado) {
   const h  = H  * escala;
   const p  = P  * escala;
   const et = ET * escala;
-
   const CX = Math.cos(Math.PI / 6);
   const SX = Math.sin(Math.PI / 6);
 
   function project(x, z, y) {
-  if (espejado) {
-    const xr = w - x;
-    const zr = p - z;
-    return [xr * CX - zr * CX, -(y) - xr * SX - zr * SX];
+    if (espejado) {
+      const xr = w - x;
+      const zr = p - z;
+      return [xr * CX - zr * CX, -(y) - xr * SX - zr * SX];
+    }
+    return [x * CX - z * CX, -(y) - x * SX - z * SX];
   }
-  return [x * CX - z * CX, -(y) - x * SX - z * SX];
-}
 
   const corners = [
     [0,0,0],[w,0,0],[0,p,0],[w,p,0],
@@ -56,13 +55,11 @@ function useIso(W, H, P, ET, espejado) {
   const maxX = Math.max(...xs);
   const minY = Math.min(...ys);
   const maxY = Math.max(...ys);
-
-  const pad = 24;
-  const vbW = maxX - minX + pad * 2;
-  const vbH = maxY - minY + pad * 2;
-
-  const ox = -minX + pad;
-  const oy = -minY + pad;
+  const pad  = 24;
+  const vbW  = maxX - minX + pad * 2;
+  const vbH  = maxY - minY + pad * 2;
+  const ox   = -minX + pad;
+  const oy   = -minY + pad;
 
   function pt(x, z, y) {
     const [sx, sy] = project(x, z, y);
@@ -76,7 +73,7 @@ function useIso(W, H, P, ET, espejado) {
   return { w, h, p, et, escala, vbW, vbH, pt, ptXY };
 }
 
-// ── Vista isométrica técnica ──────────────────────────────────
+// ── Vista isométrica del módulo ───────────────────────────────
 function VistaIso({ datos, vista, divisor }) {
   if (!datos) return (
     <div style={{ textAlign: 'center', color: '#aaa', padding: 30, fontSize: 12 }}>
@@ -89,8 +86,8 @@ function VistaIso({ datos, vista, divisor }) {
   const P  = datos.profundidad     || 550;
   const ET = datos.espesor_tablero || 18;
   const EF = datos.espesor_fondo   || 3;
-  const nEstantes  = datos.cant_estantes  || 0;
-  const nPuertas   = datos.cant_puertas   || 0;
+  const nEstantes  = datos.cant_estantes   || 0;
+  const nPuertas   = datos.cant_puertas    || 0;
   const overlap    = datos.overlap_puertas || 2;
   const tieneFondo = datos.tiene_fondo !== false;
 
@@ -106,17 +103,15 @@ function VistaIso({ datos, vista, divisor }) {
   const fillBack  = 'rgba(200,220,240,0.10)';
   const fillDoor  = 'rgba(230,240,255,0.38)';
   const fillDiv   = 'rgba(180,210,235,0.45)';
-  const swExt  = 1.4;
-  const swInt  = 0.7;
-  const dash   = '3,2';
-  const dashSt = '5,3';
+  const swExt = 1.4; const swInt = 0.7;
+  const dash = '3,2'; const dashSt = '5,3';
 
   const estantes = Array.from({ length: nEstantes }, (_, i) => {
     const sep = (H - ET * 2) / (nEstantes + 1);
     return (ET + sep * (i + 1)) * escala;
   });
 
-  const divX = divisor ? (ET + divisor.posicion_x) * escala : null;
+  const divX     = divisor ? (ET + divisor.posicion_x) * escala : null;
   const divDesde = divisor?.desde || 'techo';
   const divHasta = divisor?.hasta || 'piso';
 
@@ -124,193 +119,282 @@ function VistaIso({ datos, vista, divisor }) {
     if (ref === 'techo') return h;
     if (ref === 'piso')  return 0;
     const match = ref.match(/^estante_(\d+)$/);
-    if (match) {
-      const idx = parseInt(match[1]) - 1;
-      return estantes[idx] ?? 0;
-    }
+    if (match) { const idx = parseInt(match[1]) - 1; return estantes[idx] ?? 0; }
     return 0;
   }
 
   const divY0 = divisor ? referenciaAY(divHasta) : 0;
   const divY1 = divisor ? referenciaAY(divDesde) : h;
 
-  // ── Vista frontal ─────────────────────────────────────────
   if (vista === 'frente') {
-    const fox = 20;
-    const foy = 20;
-    const fw  = w;
-    const fh  = h;
-    const fet = et;
-    const totalW = fw + 40;
-    const totalH = fh + 44;
+    const fox = 20, foy = 20, fw = w, fh = h, fet = et;
     return (
-      <svg width="100%" viewBox={`0 0 ${totalW} ${totalH}`} style={{ maxHeight: 220 }}>
+      <svg width="100%" viewBox={`0 0 ${fw + 40} ${fh + 44}`} style={{ maxHeight: 220 }}>
         <rect x={fox} y={foy} width={fw} height={fh} fill="rgba(220,235,250,0.3)" stroke={stroke} strokeWidth={swExt} />
-        <rect x={fox} y={foy} width={fet} height={fh} fill="rgba(190,215,240,0.3)" stroke={stroke} strokeWidth={swExt * 0.6} />
-        <rect x={fox + fw - fet} y={foy} width={fet} height={fh} fill="rgba(190,215,240,0.3)" stroke={stroke} strokeWidth={swExt * 0.6} />
-        <rect x={fox} y={foy} width={fw} height={fet} fill="rgba(210,230,210,0.3)" stroke={stroke} strokeWidth={swExt * 0.6} />
-        <rect x={fox} y={foy + fh - fet} width={fw} height={fet} fill="rgba(210,230,210,0.3)" stroke={stroke} strokeWidth={swExt * 0.6} />
-        {tieneFondo && <line x1={fox + fw - 2} y1={foy + fet} x2={fox + fw - 2} y2={foy + fh - fet} stroke={strokeInt} strokeWidth={swInt} strokeDasharray={dash} />}
+        <rect x={fox} y={foy} width={fet} height={fh} fill="rgba(190,215,240,0.3)" stroke={stroke} strokeWidth={swExt*0.6} />
+        <rect x={fox+fw-fet} y={foy} width={fet} height={fh} fill="rgba(190,215,240,0.3)" stroke={stroke} strokeWidth={swExt*0.6} />
+        <rect x={fox} y={foy} width={fw} height={fet} fill="rgba(210,230,210,0.3)" stroke={stroke} strokeWidth={swExt*0.6} />
+        <rect x={fox} y={foy+fh-fet} width={fw} height={fet} fill="rgba(210,230,210,0.3)" stroke={stroke} strokeWidth={swExt*0.6} />
+        {tieneFondo && <line x1={fox+fw-2} y1={foy+fet} x2={fox+fw-2} y2={foy+fh-fet} stroke={strokeInt} strokeWidth={swInt} strokeDasharray={dash} />}
         {estantes.map((sy, i) => (
-          <line key={i}
-            x1={fox + fet} y1={foy + fh - sy}
-            x2={fox + fw - fet} y2={foy + fh - sy}
-            stroke={strokeInt} strokeWidth={swInt} strokeDasharray={dash}
-          />
+          <line key={i} x1={fox+fet} y1={foy+fh-sy} x2={fox+fw-fet} y2={foy+fh-sy} stroke={strokeInt} strokeWidth={swInt} strokeDasharray={dash} />
         ))}
         {divisor && divX !== null && (
-          <rect
-            x={fox + divX - et / 2}
-            y={foy + fh - divY1}
-            width={et}
-            height={divY1 - divY0}
-            fill={fillDiv}
-            stroke={strokeInt}
-            strokeWidth={swInt}
-          />
+          <rect x={fox+divX-et/2} y={foy+fh-divY1} width={et} height={divY1-divY0} fill={fillDiv} stroke={strokeInt} strokeWidth={swInt} />
         )}
         {nPuertas > 0 && Array.from({ length: nPuertas }, (_, i) => {
           const pw = fw / nPuertas;
-          return <rect key={i} x={fox + pw * i + 1} y={foy + 1} width={pw - 2} height={fh - 2} fill={fillDoor} stroke={stroke} strokeWidth={swExt * 0.8} />;
+          return <rect key={i} x={fox+pw*i+1} y={foy+1} width={pw-2} height={fh-2} fill={fillDoor} stroke={stroke} strokeWidth={swExt*0.8} />;
         })}
-        <text x={fox + fw / 2} y={foy + fh + 14} textAnchor="middle" fontSize="9" fill="#555">{W}mm</text>
-        <text x={fox - 10} y={foy + fh / 2} textAnchor="middle" fontSize="9" fill="#555" transform={`rotate(-90,${fox - 10},${foy + fh / 2})`}>{H}mm</text>
+        <text x={fox+fw/2} y={foy+fh+14} textAnchor="middle" fontSize="9" fill="#555">{W}mm</text>
+        <text x={fox-10} y={foy+fh/2} textAnchor="middle" fontSize="9" fill="#555" transform={`rotate(-90,${fox-10},${foy+fh/2})`}>{H}mm</text>
       </svg>
     );
   }
 
-  // ── Vista isométrica der / izq ────────────────────────────
   return (
     <svg width="100%" viewBox={`0 0 ${vbW} ${vbH}`} style={{ maxHeight: 240 }}>
-
-      {/* En vista izq la cara frontal queda atrás — se dibuja primero */}
-      {espejado && (
-        <polygon points={`${pt(0,0,0)} ${pt(w,0,0)} ${pt(w,0,h)} ${pt(0,0,h)}`}
-          fill={fillFace} stroke={stroke} strokeWidth={swExt} />
-      )}
-
-      {/* Cara posterior */}
-      <polygon points={`${pt(0,p,0)} ${pt(w,p,0)} ${pt(w,p,h)} ${pt(0,p,h)}`}
-        fill={fillBack} stroke={stroke} strokeWidth={swExt * 0.5} opacity="0.6" />
-
-      {/* Lateral izquierdo */}
-      <polygon points={`${pt(0,0,0)} ${pt(0,p,0)} ${pt(0,p,h)} ${pt(0,0,h)}`}
-        fill={fillSide} stroke={stroke} strokeWidth={swExt} />
-
-      {/* Lateral derecho */}
-      <polygon points={`${pt(w,0,0)} ${pt(w,p,0)} ${pt(w,p,h)} ${pt(w,0,h)}`}
-        fill={fillSide} stroke={stroke} strokeWidth={swExt} />
-
-      {/* Piso */}
-      <polygon points={`${pt(0,0,0)} ${pt(w,0,0)} ${pt(w,p,0)} ${pt(0,p,0)}`}
-        fill={fillTop} stroke={stroke} strokeWidth={swExt} />
-
-      {/* Fondo interno */}
-      {tieneFondo && (
-        <polygon points={`${pt(et,0,ef)} ${pt(w-et,0,ef)} ${pt(w-et,p-ef,ef)} ${pt(et,p-ef,ef)}`}
-          fill="none" stroke={strokeInt} strokeWidth={swInt} strokeDasharray={dash} />
-      )}
-
-      {/* Aristas internas laterales */}
-      <line x1={ptXY(et,0,0)[0]} y1={ptXY(et,0,0)[1]} x2={ptXY(et,0,h)[0]} y2={ptXY(et,0,h)[1]}
-        stroke={strokeInt} strokeWidth={swInt} strokeDasharray={dash} />
-      <line x1={ptXY(w-et,0,0)[0]} y1={ptXY(w-et,0,0)[1]} x2={ptXY(w-et,0,h)[0]} y2={ptXY(w-et,0,h)[1]}
-        stroke={strokeInt} strokeWidth={swInt} strokeDasharray={dash} />
-
-      {/* Estantes */}
+      {espejado && <polygon points={`${pt(0,0,0)} ${pt(w,0,0)} ${pt(w,0,h)} ${pt(0,0,h)}`} fill={fillFace} stroke={stroke} strokeWidth={swExt} />}
+      <polygon points={`${pt(0,p,0)} ${pt(w,p,0)} ${pt(w,p,h)} ${pt(0,p,h)}`} fill={fillBack} stroke={stroke} strokeWidth={swExt*0.5} opacity="0.6" />
+      <polygon points={`${pt(0,0,0)} ${pt(0,p,0)} ${pt(0,p,h)} ${pt(0,0,h)}`} fill={fillSide} stroke={stroke} strokeWidth={swExt} />
+      <polygon points={`${pt(w,0,0)} ${pt(w,p,0)} ${pt(w,p,h)} ${pt(w,0,h)}`} fill={fillSide} stroke={stroke} strokeWidth={swExt} />
+      <polygon points={`${pt(0,0,0)} ${pt(w,0,0)} ${pt(w,p,0)} ${pt(0,p,0)}`} fill={fillTop} stroke={stroke} strokeWidth={swExt} />
+      {tieneFondo && <polygon points={`${pt(et,0,ef)} ${pt(w-et,0,ef)} ${pt(w-et,p-ef,ef)} ${pt(et,p-ef,ef)}`} fill="none" stroke={strokeInt} strokeWidth={swInt} strokeDasharray={dash} />}
+      <line x1={ptXY(et,0,0)[0]} y1={ptXY(et,0,0)[1]} x2={ptXY(et,0,h)[0]} y2={ptXY(et,0,h)[1]} stroke={strokeInt} strokeWidth={swInt} strokeDasharray={dash} />
+      <line x1={ptXY(w-et,0,0)[0]} y1={ptXY(w-et,0,0)[1]} x2={ptXY(w-et,0,h)[0]} y2={ptXY(w-et,0,h)[1]} stroke={strokeInt} strokeWidth={swInt} strokeDasharray={dash} />
       {estantes.map((sy, i) => (
         <g key={i}>
-          <polygon points={`${pt(et,0,sy)} ${pt(w-et,0,sy)} ${pt(w-et,p-et,sy)} ${pt(et,p-et,sy)}`}
-            fill="rgba(200,220,240,0.20)" stroke={strokeInt} strokeWidth={swInt} strokeDasharray={dash} />
-          <line x1={ptXY(et,0,sy)[0]} y1={ptXY(et,0,sy)[1]}
-                x2={ptXY(w-et,0,sy)[0]} y2={ptXY(w-et,0,sy)[1]}
-            stroke={strokeInt} strokeWidth={swInt} strokeDasharray={dashSt} />
+          <polygon points={`${pt(et,0,sy)} ${pt(w-et,0,sy)} ${pt(w-et,p-et,sy)} ${pt(et,p-et,sy)}`} fill="rgba(200,220,240,0.20)" stroke={strokeInt} strokeWidth={swInt} strokeDasharray={dash} />
+          <line x1={ptXY(et,0,sy)[0]} y1={ptXY(et,0,sy)[1]} x2={ptXY(w-et,0,sy)[0]} y2={ptXY(w-et,0,sy)[1]} stroke={strokeInt} strokeWidth={swInt} strokeDasharray={dashSt} />
         </g>
       ))}
-
-      {/* Divisor vertical v5 */}
       {divisor && divX !== null && (() => {
-        const dx  = divX;
-        const dy0 = divY0;
-        const dy1 = divY1;
+        const dx = divX, dy0 = divY0, dy1 = divY1;
         return (
-          <g className="divisor-iso">
-            <polygon
-              points={`${pt(dx-et/2,0,dy1)} ${pt(dx+et/2,0,dy1)} ${pt(dx+et/2,p-et,dy1)} ${pt(dx-et/2,p-et,dy1)}`}
-              fill="rgba(200,225,240,0.40)" stroke={strokeInt} strokeWidth={swInt} />
-            <polygon
-              points={`${pt(dx-et/2,0,dy0)} ${pt(dx+et/2,0,dy0)} ${pt(dx+et/2,0,dy1)} ${pt(dx-et/2,0,dy1)}`}
-              fill={fillDiv} stroke={strokeInt} strokeWidth={swInt} />
-            <polygon
-              points={`${pt(dx-et/2,0,dy0)} ${pt(dx-et/2,p-et,dy0)} ${pt(dx-et/2,p-et,dy1)} ${pt(dx-et/2,0,dy1)}`}
-              fill="rgba(160,200,225,0.35)" stroke={strokeInt} strokeWidth={swInt} />
+          <g>
+            <polygon points={`${pt(dx-et/2,0,dy1)} ${pt(dx+et/2,0,dy1)} ${pt(dx+et/2,p-et,dy1)} ${pt(dx-et/2,p-et,dy1)}`} fill="rgba(200,225,240,0.40)" stroke={strokeInt} strokeWidth={swInt} />
+            <polygon points={`${pt(dx-et/2,0,dy0)} ${pt(dx+et/2,0,dy0)} ${pt(dx+et/2,0,dy1)} ${pt(dx-et/2,0,dy1)}`} fill={fillDiv} stroke={strokeInt} strokeWidth={swInt} />
+            <polygon points={`${pt(dx-et/2,0,dy0)} ${pt(dx-et/2,p-et,dy0)} ${pt(dx-et/2,p-et,dy1)} ${pt(dx-et/2,0,dy1)}`} fill="rgba(160,200,225,0.35)" stroke={strokeInt} strokeWidth={swInt} />
           </g>
         );
       })()}
-
-      {/* Techo */}
-      <polygon points={`${pt(0,0,h)} ${pt(w,0,h)} ${pt(w,p,h)} ${pt(0,p,h)}`}
-        fill={fillTop} stroke={stroke} strokeWidth={swExt} />
-      <line x1={ptXY(et,0,h-et)[0]} y1={ptXY(et,0,h-et)[1]}
-            x2={ptXY(w-et,0,h-et)[0]} y2={ptXY(w-et,0,h-et)[1]}
-        stroke={strokeInt} strokeWidth={swInt} strokeDasharray={dash} />
-
-      {/* En vista der la cara frontal se dibuja al final — queda encima */}
-      {!espejado && (
-        <polygon points={`${pt(0,0,0)} ${pt(w,0,0)} ${pt(w,0,h)} ${pt(0,0,h)}`}
-          fill={fillFace} stroke={stroke} strokeWidth={swExt} />
-      )}
-
-      {/* Puertas */}
+      <polygon points={`${pt(0,0,h)} ${pt(w,0,h)} ${pt(w,p,h)} ${pt(0,p,h)}`} fill={fillTop} stroke={stroke} strokeWidth={swExt} />
+      <line x1={ptXY(et,0,h-et)[0]} y1={ptXY(et,0,h-et)[1]} x2={ptXY(w-et,0,h-et)[0]} y2={ptXY(w-et,0,h-et)[1]} stroke={strokeInt} strokeWidth={swInt} strokeDasharray={dash} />
+      {!espejado && <polygon points={`${pt(0,0,0)} ${pt(w,0,0)} ${pt(w,0,h)} ${pt(0,0,h)}`} fill={fillFace} stroke={stroke} strokeWidth={swExt} />}
       {nPuertas > 0 && (() => {
-        const pw = w / nPuertas;
-        const po = overlap * escala;
-        return Array.from({ length: nPuertas }, (_, i) => {
-          const px0 = pw * i - po / 2;
-          const px1 = pw * (i + 1) + po / 2;
-          return (
-            <polygon key={i}
-              points={`${pt(px0,0,-po/2)} ${pt(px1,0,-po/2)} ${pt(px1,0,h+po/2)} ${pt(px0,0,h+po/2)}`}
-              fill={fillDoor} stroke={stroke} strokeWidth={swExt * 0.9} />
-          );
-        });
+        const pw = w / nPuertas, po = overlap * escala;
+        return Array.from({ length: nPuertas }, (_, i) => (
+          <polygon key={i} points={`${pt(pw*i-po/2,0,-po/2)} ${pt(pw*(i+1)+po/2,0,-po/2)} ${pt(pw*(i+1)+po/2,0,h+po/2)} ${pt(pw*i-po/2,0,h+po/2)}`} fill={fillDoor} stroke={stroke} strokeWidth={swExt*0.9} />
+        ));
       })()}
-
-      {/* Cotas */}
-      {(() => {
-        const [ax,ay] = ptXY(0,0,0);
-        const [bx,by] = ptXY(w,0,0);
-        return <><line x1={ax} y1={ay+8} x2={bx} y2={by+8} stroke="#888" strokeWidth={0.7}/>
-          <text x={(ax+bx)/2} y={(ay+by)/2+18} textAnchor="middle" fontSize="9" fill="#555">{W}mm</text></>;
-      })()}
-      {(() => {
-        const [ax,ay] = ptXY(espejado?w:0,0,0);
-        const [bx,by] = ptXY(espejado?w:0,0,h);
-        const mx = ax - 8;
-        return <><line x1={ax-5} y1={ay} x2={bx-5} y2={by} stroke="#888" strokeWidth={0.7}/>
-          <text x={mx} y={(ay+by)/2} textAnchor="middle" fontSize="9" fill="#555"
-            transform={`rotate(-90,${mx},${(ay+by)/2})`}>{H}mm</text></>;
-      })()}
-      {(() => {
-        const [ax,ay] = ptXY(espejado?0:w,0,0);
-        const [bx,by] = ptXY(espejado?0:w,p,0);
-        return <><line x1={ax} y1={ay+5} x2={bx} y2={by+5} stroke="#888" strokeWidth={0.7}/>
-          <text x={(ax+bx)/2+8} y={(ay+by)/2+14} textAnchor="start" fontSize="9" fill="#555">{P}mm</text></>;
-      })()}
+      {(() => { const [ax,ay]=ptXY(0,0,0); const [bx,by]=ptXY(w,0,0); return <><line x1={ax} y1={ay+8} x2={bx} y2={by+8} stroke="#888" strokeWidth={0.7}/><text x={(ax+bx)/2} y={(ay+by)/2+18} textAnchor="middle" fontSize="9" fill="#555">{W}mm</text></>; })()}
+      {(() => { const [ax,ay]=ptXY(espejado?w:0,0,0); const [bx,by]=ptXY(espejado?w:0,0,h); const mx=ax-8; return <><line x1={ax-5} y1={ay} x2={bx-5} y2={by} stroke="#888" strokeWidth={0.7}/><text x={mx} y={(ay+by)/2} textAnchor="middle" fontSize="9" fill="#555" transform={`rotate(-90,${mx},${(ay+by)/2})`}>{H}mm</text></>; })()}
+      {(() => { const [ax,ay]=ptXY(espejado?0:w,0,0); const [bx,by]=ptXY(espejado?0:w,p,0); return <><line x1={ax} y1={ay+5} x2={bx} y2={by+5} stroke="#888" strokeWidth={0.7}/><text x={(ax+bx)/2+8} y={(ay+by)/2+14} textAnchor="start" fontSize="9" fill="#555">{P}mm</text></>; })()}
     </svg>
   );
 }
 
+// ── Vista 2D técnica de pieza individual (para modal) ─────────
+function VistaPieza2D({ pieza, filos, cantos }) {
+  const A  = pieza.ancho_corte;
+  const L  = pieza.alto_corte;
+  const E  = pieza.espesor;
+
+  const escala  = Math.min(200 / A, 160 / L);
+  const pw      = A * escala;
+  const ph      = L * escala;
+  const pad     = 40;
+  const totalW  = pw + pad * 2;
+  const totalH  = ph + pad * 2;
+  const ox      = pad;
+  const oy      = pad;
+
+  const stroke   = '#1a3a5c';
+  const fillBody = 'rgba(220,235,250,0.35)';
+  const GROSOR_CANTO = 5;
+
+  function colorCanto(cantoId) {
+    if (!cantoId) return 'rgba(200,200,200,0.3)';
+    return 'rgba(26,107,60,0.55)';
+  }
+
+  function labelCanto(cantoId) {
+    if (!cantoId) return '—';
+    const c = cantos?.find(c => c.id === cantoId);
+    return c ? `${c.espesor}/${c.alto_canto}` : '?';
+  }
+
+  const cantoPieza = filos || {};
+
+  return (
+    <svg width="100%" viewBox={`0 0 ${totalW} ${totalH}`} style={{ maxHeight: 220 }}>
+      {/* Cuerpo pieza */}
+      <rect x={ox} y={oy} width={pw} height={ph}
+        fill={fillBody} stroke={stroke} strokeWidth={1.5} />
+
+      {/* Canto superior */}
+      <rect x={ox} y={oy} width={pw} height={GROSOR_CANTO}
+        fill={colorCanto(cantoPieza.superior)} stroke={stroke} strokeWidth={0.8} />
+      {/* Canto inferior */}
+      <rect x={ox} y={oy+ph-GROSOR_CANTO} width={pw} height={GROSOR_CANTO}
+        fill={colorCanto(cantoPieza.inferior)} stroke={stroke} strokeWidth={0.8} />
+      {/* Canto izquierdo (frente) */}
+      <rect x={ox} y={oy} width={GROSOR_CANTO} height={ph}
+        fill={colorCanto(cantoPieza.frente)} stroke={stroke} strokeWidth={0.8} />
+      {/* Canto derecho (posterior) */}
+      <rect x={ox+pw-GROSOR_CANTO} y={oy} width={GROSOR_CANTO} height={ph}
+        fill={colorCanto(cantoPieza.posterior)} stroke={stroke} strokeWidth={0.8} />
+
+      {/* Labels cantos */}
+      <text x={ox+pw/2} y={oy-6} textAnchor="middle" fontSize="8" fill="#444">
+        Su: {labelCanto(cantoPieza.superior)}
+      </text>
+      <text x={ox+pw/2} y={oy+ph+14} textAnchor="middle" fontSize="8" fill="#444">
+        In: {labelCanto(cantoPieza.inferior)}
+      </text>
+      <text x={ox-6} y={oy+ph/2} textAnchor="middle" fontSize="8" fill="#444"
+        transform={`rotate(-90,${ox-6},${oy+ph/2})`}>
+        Fr: {labelCanto(cantoPieza.frente)}
+      </text>
+      <text x={ox+pw+6} y={oy+ph/2} textAnchor="middle" fontSize="8" fill="#444"
+        transform={`rotate(90,${ox+pw+6},${oy+ph/2})`}>
+        Po: {labelCanto(cantoPieza.posterior)}
+      </text>
+
+      {/* Cotas */}
+      <line x1={ox} y1={oy+ph+22} x2={ox+pw} y2={oy+ph+22} stroke="#888" strokeWidth={0.7} />
+      <text x={ox+pw/2} y={oy+ph+32} textAnchor="middle" fontSize="9" fill="#555">{A}mm</text>
+      <line x1={ox+pw+22} y1={oy} x2={ox+pw+22} y2={oy+ph} stroke="#888" strokeWidth={0.7} />
+      <text x={ox+pw+32} y={oy+ph/2} textAnchor="middle" fontSize="9" fill="#555"
+        transform={`rotate(90,${ox+pw+32},${oy+ph/2})`}>{L}mm</text>
+
+      {/* Espesor */}
+      <text x={ox+pw/2} y={oy+ph/2} textAnchor="middle" fontSize="10" fill="#888">{E}mm</text>
+    </svg>
+  );
+}
+
+// ── Modal configuración avanzada de pieza ─────────────────────
+function ModalPieza({ pieza, idx, filos, cantos, materiales, moduloDatos, onGuardar, onCerrar }) {
+  const [filосLocal, setFilosLocal] = useState({ ...filos });
+  const [materialId, setMaterialId] = useState(pieza.material_id || moduloDatos?.material_id || '');
+
+  function setFilo(cara, valor) {
+    setFilosLocal(prev => ({ ...prev, [cara]: valor }));
+  }
+
+  function aplicar4Lados() {
+    const cantoId = moduloDatos?.canto_general_id || cantos?.[0]?.id || '';
+    setFilosLocal({ frente: cantoId, posterior: cantoId, superior: cantoId, inferior: cantoId });
+  }
+
+  function handleGuardar() {
+    onGuardar(idx, filосLocal, materialId);
+  }
+
+  const cantosOpciones = [
+    { value: '', label: '— Sin canto —' },
+    ...(cantos || []).map(c => ({
+      value: c.id,
+      label: `${c.color} ${c.espesor}/${c.alto_canto}mm`,
+      sinStock: c.stock_metros === 0,
+    }))
+  ];
+
+  const materialesOpciones = [
+    { value: '', label: '— General del módulo —' },
+    ...(materiales || []).map(m => ({
+      value: m.id,
+      label: `${m.tipo} ${m.color} ${m.espesor}mm`,
+    }))
+  ];
+
+  return (
+    <div className="modal-pieza-overlay">
+      <div className="modal-pieza">
+
+        <div className="modal-pieza-header">
+          <div>
+            <span className="modal-pieza-codigo">{pieza.codigo}</span>
+            <span className="modal-pieza-nombre">{pieza.nombre}</span>
+            <span className={`pieza-badge pieza-badge--modal`}>{TIPO_LABEL[pieza.tipo] || pieza.tipo}</span>
+          </div>
+          <button className="modal-pieza-cerrar" onClick={onCerrar}>✕</button>
+        </div>
+
+        <div className="modal-pieza-body">
+
+          {/* Vista 2D */}
+          <div className="modal-pieza-vista">
+            <VistaPieza2D
+              pieza={pieza}
+              filos={filосLocal}
+              cantos={cantos} />
+          </div>
+
+          {/* Configuración */}
+          <div className="modal-pieza-config">
+
+            {/* Material */}
+            <div className="modal-pieza-seccion">
+              <h4>Material</h4>
+              <select className="modal-pieza-select"
+                value={materialId}
+                onChange={e => setMaterialId(e.target.value)}>
+                {materialesOpciones.map(o => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Cantos por cara */}
+            <div className="modal-pieza-seccion">
+              <div className="modal-pieza-seccion-header">
+                <h4>Cantos</h4>
+                <button className="btn-4lados-modal" onClick={aplicar4Lados}>⊞ 4 lados</button>
+              </div>
+              {CARAS.map(cara => (
+                <div key={cara.key} className="modal-pieza-fila">
+                  <label>{cara.label}</label>
+                  <select className="modal-pieza-select"
+                    value={filосLocal[cara.key] || ''}
+                    onChange={e => setFilo(cara.key, e.target.value)}>
+                    {cantosOpciones.map(o => (
+                      <option key={o.value} value={o.value}
+                        style={o.sinStock ? { color: '#cc0000' } : {}}>
+                        {o.sinStock ? `⚠ ${o.label}` : o.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ))}
+            </div>
+
+          </div>
+        </div>
+
+        <div className="modal-pieza-footer">
+          <button className="btn-secundario" onClick={onCerrar}>Cancelar</button>
+          <button className="btn-primario" onClick={handleGuardar}>✓ Aplicar</button>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
 // ── Componente principal ──────────────────────────────────────
-function SeccionPiezas({ moduloId, datos, cantos, divisor }) {
+function SeccionPiezas({ moduloId, datos, cantos, materiales, divisor }) {
   const [piezas,      setPiezas]      = useState([]);
   const [filos,       setFilos]       = useState({});
+  const [materiales_,  setMateriales_] = useState({});
   const [calculando,  setCalculando]  = useState(false);
   const [confirmando, setConfirmando] = useState(false);
   const [confirmado,  setConfirmado]  = useState(false);
   const [sinGuardar,  setSinGuardar]  = useState(false);
   const [error,       setError]       = useState('');
   const [vista,       setVista]       = useState('der');
+  const [modalPieza,  setModalPieza]  = useState(null); // índice de pieza abierta
 
   useEffect(() => {
     if (!piezas.length) return;
@@ -327,20 +411,12 @@ function SeccionPiezas({ moduloId, datos, cantos, divisor }) {
     });
   }, [piezas, datos?.canto_general_id]);
 
-  function actualizarFilo(idx, cara, cantoId) {
-    setFilos(prev => ({ ...prev, [idx]: { ...prev[idx], [cara]: cantoId } }));
+  function handleGuardarModal(idx, filosNuevos, materialId) {
+    setFilos(prev => ({ ...prev, [idx]: filosNuevos }));
+    setMateriales_(prev => ({ ...prev, [idx]: materialId }));
     setSinGuardar(true);
     setConfirmado(false);
-  }
-
-  function aplicar4Lados(idx) {
-    const cantoId = datos?.canto_general_id || cantos?.[0]?.id || '';
-    setFilos(prev => ({
-      ...prev,
-      [idx]: { frente: cantoId, posterior: cantoId, superior: cantoId, inferior: cantoId }
-    }));
-    setSinGuardar(true);
-    setConfirmado(false);
+    setModalPieza(null);
   }
 
   async function handleCalcular() {
@@ -429,12 +505,12 @@ function SeccionPiezas({ moduloId, datos, cantos, divisor }) {
                 <th className="num">A</th><th className="num">L</th><th className="num">E</th>
                 <th className="filo-col">Fr</th><th className="filo-col">Po</th>
                 <th className="filo-col">Su</th><th className="filo-col">In</th>
-                <th>4L</th>
+                <th title="Configuración avanzada">⚙</th>
               </tr>
             </thead>
             <tbody>
               {piezas.map((p, i) => (
-                <tr key={i} className={`pieza-fila pieza-tipo-${p.tipo}`}>
+                <tr key={i} className={`pieza-fila pieza-tipo-${p.tipo} ${materiales_[i] ? 'pieza-mat-custom' : ''}`}>
                   <td className="codigo">{p.codigo}</td>
                   <td>{p.nombre}</td>
                   <td><span className="pieza-badge">{TIPO_LABEL[p.tipo] || p.tipo}</span></td>
@@ -445,7 +521,11 @@ function SeccionPiezas({ moduloId, datos, cantos, divisor }) {
                     <td key={cara.key} className="filo-td">
                       <select className="filo-select"
                         value={filos[i]?.[cara.key] || ''}
-                        onChange={e => actualizarFilo(i, cara.key, e.target.value)}>
+                        onChange={e => {
+                          setFilos(prev => ({ ...prev, [i]: { ...prev[i], [cara.key]: e.target.value } }));
+                          setSinGuardar(true);
+                          setConfirmado(false);
+                        }}>
                         {cantosOpciones.map(o => (
                           <option key={o.value} value={o.value}
                             style={o.sinStock ? { color: '#cc0000' } : {}}>
@@ -456,7 +536,12 @@ function SeccionPiezas({ moduloId, datos, cantos, divisor }) {
                     </td>
                   ))}
                   <td>
-                    <button className="btn-4lados" onClick={() => aplicar4Lados(i)}>⊞</button>
+                    <button
+                      className={`btn-config-pieza ${materiales_[i] ? 'btn-config-pieza--custom' : ''}`}
+                      onClick={() => setModalPieza(i)}
+                      title="Configuración avanzada">
+                      ⚙
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -468,6 +553,18 @@ function SeccionPiezas({ moduloId, datos, cantos, divisor }) {
 
       {piezas.length === 0 && !calculando && (
         <p className="piezas-vacio">Presioná "Recalcular" para generar la lista de corte.</p>
+      )}
+
+      {modalPieza !== null && (
+        <ModalPieza
+          pieza={piezas[modalPieza]}
+          idx={modalPieza}
+          filos={filos[modalPieza] || {}}
+          cantos={cantos}
+          materiales={materiales}
+          moduloDatos={datos}
+          onGuardar={handleGuardarModal}
+          onCerrar={() => setModalPieza(null)} />
       )}
     </div>
   );
