@@ -26,25 +26,28 @@ function Editor({ modulo, onVolver }) {
   const [materiales, setMateriales] = useState([]);
   const [divisor, setDivisor]       = useState(null);
 
+  // ── Estado ensamble con los 4 campos independientes ───────
   const [ensamble, setEnsamble] = useState({
-    costado_pasante_techo: true,
-    costado_pasante_piso:  true,
-    fondo_tipo:            'interno',
-    fondo_retranqueo:      12,
+    costado_izq_pasante_techo: true,
+    costado_der_pasante_techo: true,
+    costado_izq_pasante_piso:  true,
+    costado_der_pasante_piso:  true,
+    fondo_tipo:                'interno',
+    fondo_retranqueo:          12,
   });
 
   useEffect(() => {
-  invoke('get_ensamble_modulo', { moduloId: modulo.id })
-    .then(e => setEnsamble(e))
-    .catch(() => {});
-  invoke('get_cantos')
-    .then(c => { console.log('CANTOS:', c); setCantos(c); })
-    .catch(err => console.error('ERROR cantos:', err));
-  invoke('get_materiales')
-    .then(m => { console.log('MATERIALES:', m); setMateriales(m); })
-    .catch(err => console.error('ERROR materiales:', err));
+    invoke('get_ensamble_modulo', { moduloId: modulo.id })
+      .then(e => setEnsamble(e))
+      .catch(() => {});
+    invoke('get_cantos')
+      .then(c => { console.log('CANTOS:', c); setCantos(c); })
+      .catch(err => console.error('ERROR cantos:', err));
+    invoke('get_materiales')
+      .then(m => { console.log('MATERIALES:', m); setMateriales(m); })
+      .catch(err => console.error('ERROR materiales:', err));
   }, [modulo.id]);
-  
+
   function actualizar(campo, valor) {
     setDatos(prev => ({ ...prev, [campo]: valor }));
     setGuardado(false);
@@ -66,11 +69,13 @@ function Editor({ modulo, onVolver }) {
       await invoke('actualizar_modulo_completo', { id: modulo.id, datos });
       await invoke('set_ensamble_modulo', {
         input: {
-          modulo_id:             modulo.id,
-          costado_pasante_techo: ensamble.costado_pasante_techo,
-          costado_pasante_piso:  ensamble.costado_pasante_piso,
-          fondo_tipo:            ensamble.fondo_tipo,
-          fondo_retranqueo:      ensamble.fondo_retranqueo,
+          modulo_id:                 modulo.id,
+          costado_izq_pasante_techo: ensamble.costado_izq_pasante_techo ?? true,
+          costado_der_pasante_techo: ensamble.costado_der_pasante_techo ?? true,
+          costado_izq_pasante_piso:  ensamble.costado_izq_pasante_piso  ?? true,
+          costado_der_pasante_piso:  ensamble.costado_der_pasante_piso  ?? true,
+          fondo_tipo:                ensamble.fondo_tipo       || 'interno',
+          fondo_retranqueo:          ensamble.fondo_retranqueo ?? 12,
         }
       });
       setGuardado(true);
@@ -104,6 +109,7 @@ function Editor({ modulo, onVolver }) {
           <SeccionPiezas
             moduloId={modulo.id}
             datos={datos}
+            ensamble={ensamble}
             cantos={cantos}
             materiales={materiales}
             divisor={divisor}

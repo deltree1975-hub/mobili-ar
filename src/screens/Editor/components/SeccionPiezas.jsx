@@ -1,7 +1,7 @@
 // ============================================================
 // MOBILI-AR — Lista de corte con vista isométrica técnica
 // Archivo  : src/screens/Editor/components/SeccionPiezas.jsx
-// Módulo   : F3-01 / F3-02 / F3-03
+// Módulo   : F3-01 / F3-02 / F3-03 / F3-04
 // ============================================================
 
 import { useState, useEffect } from 'react';
@@ -25,6 +25,94 @@ const CARAS = [
   { key: 'inferior',  label: 'In' },
 ];
 
+// ── Lógica de filos por defecto ───────────────────────────────
+//
+// Reglas:
+//   back     → sin filos (fondo de 3mm, queda oculto)
+//   door     → 4 filos (puertas siempre 4 lados)
+//   faja     → solo frente
+//   shelf    → solo frente
+//   divisor  → solo frente
+//   horizontal (techo/piso del cuerpo) → frente + posterior
+//              los lados quedan cubiertos por los costados
+//   side (costado) → 4 filos base, luego se descuentan los extremos
+//              que quedan cubiertos según ensamble:
+//              - superior libre si izq/der pasante en techo
+//              - inferior libre si izq/der pasante en piso
+//              El motor recibe el lado de la pieza (izq=índice 0, der=índice 1)
+//              pero como el motor no expone eso aún, usamos la regla conservadora:
+//              si AMBOS costados son pasantes en ese extremo → el horizontal
+//              queda tapado → el side no necesita canto en ese lado.
+//
+// cantoDef : ID del canto general del módulo (string o '')
+// canto2mm : ID del canto de 2mm (para puertas), fallback a cantoDef
+// ensamble : objeto con los 4 campos costado_*_pasante_*
+
+function filosPorDefecto(pieza, idx, cantoDef, canto2mm, ensamble) {
+  const vacio = { frente: '', posterior: '', superior: '', inferior: '' };
+
+  switch (pieza.tipo) {
+    case 'back':
+      return { ...vacio };
+
+    case 'door':
+      return { frente: canto2mm, posterior: canto2mm, superior: canto2mm, inferior: canto2mm };
+
+    case 'faja':
+      return { frente: cantoDef, posterior: '', superior: '', inferior: '' };
+
+    case 'shelf':
+      return { frente: cantoDef, posterior: '', superior: '', inferior: '' };
+
+    case 'divisor':
+      return { frente: cantoDef, posterior: '', superior: '', inferior: '' };
+
+    case 'horizontal': {
+      // Techo/piso: solo frente y posterior, los lados los tapan los costados
+      return { frente: cantoDef, posterior: cantoDef, superior: '', inferior: '' };
+    }
+
+    case 'side': {
+      // Base: 4 filos
+      let superior = cantoDef;
+      let inferior = cantoDef;
+
+      // Si ambos costados son pasantes en techo → el horizontal tapa el extremo superior del side
+      const pasanteTecho = (ensamble?.costado_izq_pasante_techo ?? true) &&
+                           (ensamble?.costado_der_pasante_techo ?? true);
+      // Si ambos costados son pasantes en piso → el horizontal tapa el extremo inferior
+      const pasantePiso  = (ensamble?.costado_izq_pasante_piso  ?? true) &&
+                           (ensamble?.costado_der_pasante_piso  ?? true);
+
+      if (pasanteTecho) superior = '';
+      if (pasantePiso)  inferior = '';
+
+      return { frente: cantoDef, posterior: cantoDef, superior, inferior };
+    }
+
+    default:
+      return { frente: cantoDef, posterior: cantoDef, superior: cantoDef, inferior: cantoDef };
+  }
+}
+
+// ── Restaurar filos y materiales desde PiezaCalculada[] ───────
+function restaurarDesdeDB(resultado) {
+  const filos = {};
+  const mats  = {};
+  resultado.forEach((p, i) => {
+    if (p.canto_frente_id || p.canto_posterior_id || p.canto_superior_id || p.canto_inferior_id) {
+      filos[i] = {
+        frente:    p.canto_frente_id    || '',
+        posterior: p.canto_posterior_id || '',
+        superior:  p.canto_superior_id  || '',
+        inferior:  p.canto_inferior_id  || '',
+      };
+    }
+    if (p.material_id) mats[i] = p.material_id;
+  });
+  return { filos, mats };
+}
+
 // ── Proyección isométrica ─────────────────────────────────────
 function useIso(W, H, P, ET, espejado) {
   const escala = Math.min(160 / W, 160 / H, 120 / P);
@@ -37,8 +125,7 @@ function useIso(W, H, P, ET, espejado) {
 
   function project(x, z, y) {
     if (espejado) {
-      const xr = w - x;
-      const zr = p - z;
+      const xr = w - x; const zr = p - z;
       return [xr * CX - zr * CX, -(y) - xr * SX - zr * SX];
     }
     return [x * CX - z * CX, -(y) - x * SX - z * SX];
@@ -51,15 +138,13 @@ function useIso(W, H, P, ET, espejado) {
 
   const xs = corners.map(c => c[0]);
   const ys = corners.map(c => c[1]);
-  const minX = Math.min(...xs);
-  const maxX = Math.max(...xs);
-  const minY = Math.min(...ys);
-  const maxY = Math.max(...ys);
-  const pad  = 24;
-  const vbW  = maxX - minX + pad * 2;
-  const vbH  = maxY - minY + pad * 2;
-  const ox   = -minX + pad;
-  const oy   = -minY + pad;
+  const minX = Math.min(...xs); const maxX = Math.max(...xs);
+  const minY = Math.min(...ys); const maxY = Math.max(...ys);
+  const pad = 24;
+  const vbW = maxX - minX + pad * 2;
+  const vbH = maxY - minY + pad * 2;
+  const ox  = -minX + pad;
+  const oy  = -minY + pad;
 
   function pt(x, z, y) {
     const [sx, sy] = project(x, z, y);
@@ -95,14 +180,10 @@ function VistaIso({ datos, vista, divisor }) {
   const { w, h, p, et, escala, vbW, vbH, pt, ptXY } = useIso(W, H, P, ET, espejado);
   const ef = EF * escala;
 
-  const stroke    = '#1a3a5c';
-  const strokeInt = '#4a7ab5';
-  const fillFace  = 'rgba(220,235,250,0.18)';
-  const fillSide  = 'rgba(190,215,240,0.20)';
-  const fillTop   = 'rgba(210,230,210,0.22)';
-  const fillBack  = 'rgba(200,220,240,0.10)';
-  const fillDoor  = 'rgba(230,240,255,0.38)';
-  const fillDiv   = 'rgba(180,210,235,0.45)';
+  const stroke = '#1a3a5c'; const strokeInt = '#4a7ab5';
+  const fillFace = 'rgba(220,235,250,0.18)'; const fillSide = 'rgba(190,215,240,0.20)';
+  const fillTop  = 'rgba(210,230,210,0.22)'; const fillBack = 'rgba(200,220,240,0.10)';
+  const fillDoor = 'rgba(230,240,255,0.38)'; const fillDiv  = 'rgba(180,210,235,0.45)';
   const swExt = 1.4; const swInt = 0.7;
   const dash = '3,2'; const dashSt = '5,3';
 
@@ -196,79 +277,40 @@ function VistaIso({ datos, vista, divisor }) {
 
 // ── Vista 2D técnica de pieza individual (para modal) ─────────
 function VistaPieza2D({ pieza, filos, cantos }) {
-  const A  = pieza.ancho_corte;
-  const L  = pieza.alto_corte;
-  const E  = pieza.espesor;
+  const A = pieza.ancho_corte;
+  const L = pieza.alto_corte;
+  const E = pieza.espesor;
+  const escala = Math.min(200 / A, 160 / L);
+  const pw = A * escala; const ph = L * escala;
+  const pad = 40;
+  const totalW = pw + pad * 2; const totalH = ph + pad * 2;
+  const ox = pad; const oy = pad;
+  const stroke = '#1a3a5c'; const fillBody = 'rgba(220,235,250,0.35)';
+  const GROSOR = 5;
 
-  const escala  = Math.min(200 / A, 160 / L);
-  const pw      = A * escala;
-  const ph      = L * escala;
-  const pad     = 40;
-  const totalW  = pw + pad * 2;
-  const totalH  = ph + pad * 2;
-  const ox      = pad;
-  const oy      = pad;
-
-  const stroke   = '#1a3a5c';
-  const fillBody = 'rgba(220,235,250,0.35)';
-  const GROSOR_CANTO = 5;
-
-  function colorCanto(cantoId) {
-    if (!cantoId) return 'rgba(200,200,200,0.3)';
-    return 'rgba(26,107,60,0.55)';
-  }
-
-  function labelCanto(cantoId) {
-    if (!cantoId) return '—';
-    const c = cantos?.find(c => c.id === cantoId);
+  function colorCanto(id) { return id ? 'rgba(26,107,60,0.55)' : 'rgba(200,200,200,0.3)'; }
+  function labelCanto(id) {
+    if (!id) return '—';
+    const c = cantos?.find(c => c.id === id);
     return c ? `${c.espesor}/${c.alto_canto}` : '?';
   }
-
-  const cantoPieza = filos || {};
+  const cp = filos || {};
 
   return (
     <svg width="100%" viewBox={`0 0 ${totalW} ${totalH}`} style={{ maxHeight: 220 }}>
-      {/* Cuerpo pieza */}
-      <rect x={ox} y={oy} width={pw} height={ph}
-        fill={fillBody} stroke={stroke} strokeWidth={1.5} />
-
-      {/* Canto superior */}
-      <rect x={ox} y={oy} width={pw} height={GROSOR_CANTO}
-        fill={colorCanto(cantoPieza.superior)} stroke={stroke} strokeWidth={0.8} />
-      {/* Canto inferior */}
-      <rect x={ox} y={oy+ph-GROSOR_CANTO} width={pw} height={GROSOR_CANTO}
-        fill={colorCanto(cantoPieza.inferior)} stroke={stroke} strokeWidth={0.8} />
-      {/* Canto izquierdo (frente) */}
-      <rect x={ox} y={oy} width={GROSOR_CANTO} height={ph}
-        fill={colorCanto(cantoPieza.frente)} stroke={stroke} strokeWidth={0.8} />
-      {/* Canto derecho (posterior) */}
-      <rect x={ox+pw-GROSOR_CANTO} y={oy} width={GROSOR_CANTO} height={ph}
-        fill={colorCanto(cantoPieza.posterior)} stroke={stroke} strokeWidth={0.8} />
-
-      {/* Labels cantos */}
-      <text x={ox+pw/2} y={oy-6} textAnchor="middle" fontSize="8" fill="#444">
-        Su: {labelCanto(cantoPieza.superior)}
-      </text>
-      <text x={ox+pw/2} y={oy+ph+14} textAnchor="middle" fontSize="8" fill="#444">
-        In: {labelCanto(cantoPieza.inferior)}
-      </text>
-      <text x={ox-6} y={oy+ph/2} textAnchor="middle" fontSize="8" fill="#444"
-        transform={`rotate(-90,${ox-6},${oy+ph/2})`}>
-        Fr: {labelCanto(cantoPieza.frente)}
-      </text>
-      <text x={ox+pw+6} y={oy+ph/2} textAnchor="middle" fontSize="8" fill="#444"
-        transform={`rotate(90,${ox+pw+6},${oy+ph/2})`}>
-        Po: {labelCanto(cantoPieza.posterior)}
-      </text>
-
-      {/* Cotas */}
+      <rect x={ox} y={oy} width={pw} height={ph} fill={fillBody} stroke={stroke} strokeWidth={1.5} />
+      <rect x={ox} y={oy} width={pw} height={GROSOR} fill={colorCanto(cp.superior)} stroke={stroke} strokeWidth={0.8} />
+      <rect x={ox} y={oy+ph-GROSOR} width={pw} height={GROSOR} fill={colorCanto(cp.inferior)} stroke={stroke} strokeWidth={0.8} />
+      <rect x={ox} y={oy} width={GROSOR} height={ph} fill={colorCanto(cp.frente)} stroke={stroke} strokeWidth={0.8} />
+      <rect x={ox+pw-GROSOR} y={oy} width={GROSOR} height={ph} fill={colorCanto(cp.posterior)} stroke={stroke} strokeWidth={0.8} />
+      <text x={ox+pw/2} y={oy-6} textAnchor="middle" fontSize="8" fill="#444">Su: {labelCanto(cp.superior)}</text>
+      <text x={ox+pw/2} y={oy+ph+14} textAnchor="middle" fontSize="8" fill="#444">In: {labelCanto(cp.inferior)}</text>
+      <text x={ox-6} y={oy+ph/2} textAnchor="middle" fontSize="8" fill="#444" transform={`rotate(-90,${ox-6},${oy+ph/2})`}>Fr: {labelCanto(cp.frente)}</text>
+      <text x={ox+pw+6} y={oy+ph/2} textAnchor="middle" fontSize="8" fill="#444" transform={`rotate(90,${ox+pw+6},${oy+ph/2})`}>Po: {labelCanto(cp.posterior)}</text>
       <line x1={ox} y1={oy+ph+22} x2={ox+pw} y2={oy+ph+22} stroke="#888" strokeWidth={0.7} />
       <text x={ox+pw/2} y={oy+ph+32} textAnchor="middle" fontSize="9" fill="#555">{A}mm</text>
       <line x1={ox+pw+22} y1={oy} x2={ox+pw+22} y2={oy+ph} stroke="#888" strokeWidth={0.7} />
-      <text x={ox+pw+32} y={oy+ph/2} textAnchor="middle" fontSize="9" fill="#555"
-        transform={`rotate(90,${ox+pw+32},${oy+ph/2})`}>{L}mm</text>
-
-      {/* Espesor */}
+      <text x={ox+pw+32} y={oy+ph/2} textAnchor="middle" fontSize="9" fill="#555" transform={`rotate(90,${ox+pw+32},${oy+ph/2})`}>{L}mm</text>
       <text x={ox+pw/2} y={oy+ph/2} textAnchor="middle" fontSize="10" fill="#888">{E}mm</text>
     </svg>
   );
@@ -276,20 +318,14 @@ function VistaPieza2D({ pieza, filos, cantos }) {
 
 // ── Modal configuración avanzada de pieza ─────────────────────
 function ModalPieza({ pieza, idx, filos, cantos, materiales, moduloDatos, onGuardar, onCerrar }) {
-  const [filосLocal, setFilosLocal] = useState({ ...filos });
+  const [filosLocal, setFilosLocal] = useState({ ...filos });
   const [materialId, setMaterialId] = useState(pieza.material_id || moduloDatos?.material_id || '');
 
-  function setFilo(cara, valor) {
-    setFilosLocal(prev => ({ ...prev, [cara]: valor }));
-  }
+  function setFilo(cara, valor) { setFilosLocal(prev => ({ ...prev, [cara]: valor })); }
 
   function aplicar4Lados() {
-    const cantoId = moduloDatos?.canto_general_id || cantos?.[0]?.id || '';
-    setFilosLocal({ frente: cantoId, posterior: cantoId, superior: cantoId, inferior: cantoId });
-  }
-
-  function handleGuardar() {
-    onGuardar(idx, filосLocal, materialId);
+    const id = moduloDatos?.canto_general_id || cantos?.[0]?.id || '';
+    setFilosLocal({ frente: id, posterior: id, superior: id, inferior: id });
   }
 
   const cantosOpciones = [
@@ -312,42 +348,25 @@ function ModalPieza({ pieza, idx, filos, cantos, materiales, moduloDatos, onGuar
   return (
     <div className="modal-pieza-overlay">
       <div className="modal-pieza">
-
         <div className="modal-pieza-header">
           <div>
             <span className="modal-pieza-codigo">{pieza.codigo}</span>
             <span className="modal-pieza-nombre">{pieza.nombre}</span>
-            <span className={`pieza-badge pieza-badge--modal`}>{TIPO_LABEL[pieza.tipo] || pieza.tipo}</span>
+            <span className="pieza-badge pieza-badge--modal">{TIPO_LABEL[pieza.tipo] || pieza.tipo}</span>
           </div>
           <button className="modal-pieza-cerrar" onClick={onCerrar}>✕</button>
         </div>
-
         <div className="modal-pieza-body">
-
-          {/* Vista 2D */}
           <div className="modal-pieza-vista">
-            <VistaPieza2D
-              pieza={pieza}
-              filos={filосLocal}
-              cantos={cantos} />
+            <VistaPieza2D pieza={pieza} filos={filosLocal} cantos={cantos} />
           </div>
-
-          {/* Configuración */}
           <div className="modal-pieza-config">
-
-            {/* Material */}
             <div className="modal-pieza-seccion">
               <h4>Material</h4>
-              <select className="modal-pieza-select"
-                value={materialId}
-                onChange={e => setMaterialId(e.target.value)}>
-                {materialesOpciones.map(o => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
+              <select className="modal-pieza-select" value={materialId} onChange={e => setMaterialId(e.target.value)}>
+                {materialesOpciones.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
             </div>
-
-            {/* Cantos por cara */}
             <div className="modal-pieza-seccion">
               <div className="modal-pieza-seccion-header">
                 <h4>Cantos</h4>
@@ -356,12 +375,10 @@ function ModalPieza({ pieza, idx, filos, cantos, materiales, moduloDatos, onGuar
               {CARAS.map(cara => (
                 <div key={cara.key} className="modal-pieza-fila">
                   <label>{cara.label}</label>
-                  <select className="modal-pieza-select"
-                    value={filосLocal[cara.key] || ''}
+                  <select className="modal-pieza-select" value={filosLocal[cara.key] || ''}
                     onChange={e => setFilo(cara.key, e.target.value)}>
                     {cantosOpciones.map(o => (
-                      <option key={o.value} value={o.value}
-                        style={o.sinStock ? { color: '#cc0000' } : {}}>
+                      <option key={o.value} value={o.value} style={o.sinStock ? { color: '#cc0000' } : {}}>
                         {o.sinStock ? `⚠ ${o.label}` : o.label}
                       </option>
                     ))}
@@ -369,47 +386,63 @@ function ModalPieza({ pieza, idx, filos, cantos, materiales, moduloDatos, onGuar
                 </div>
               ))}
             </div>
-
           </div>
         </div>
-
         <div className="modal-pieza-footer">
           <button className="btn-secundario" onClick={onCerrar}>Cancelar</button>
-          <button className="btn-primario" onClick={handleGuardar}>✓ Aplicar</button>
+          <button className="btn-primario" onClick={() => onGuardar(idx, filosLocal, materialId)}>✓ Aplicar</button>
         </div>
-
       </div>
     </div>
   );
 }
 
 // ── Componente principal ──────────────────────────────────────
-function SeccionPiezas({ moduloId, datos, cantos, materiales, divisor }) {
+function SeccionPiezas({ moduloId, datos, ensamble, cantos, materiales, divisor }) {
   const [piezas,      setPiezas]      = useState([]);
   const [filos,       setFilos]       = useState({});
-  const [materiales_,  setMateriales_] = useState({});
+  const [materiales_, setMateriales_] = useState({});
   const [calculando,  setCalculando]  = useState(false);
   const [confirmando, setConfirmando] = useState(false);
   const [confirmado,  setConfirmado]  = useState(false);
   const [sinGuardar,  setSinGuardar]  = useState(false);
   const [error,       setError]       = useState('');
   const [vista,       setVista]       = useState('der');
-  const [modalPieza,  setModalPieza]  = useState(null); // índice de pieza abierta
+  const [modalPieza,  setModalPieza]  = useState(null);
 
+  // ── Carga automática al montar o cambiar módulo ───────────
+  useEffect(() => {
+    if (!moduloId) return;
+    invoke('get_piezas_modulo', { moduloId })
+      .then(resultado => {
+        if (resultado.length > 0) {
+          setPiezas(resultado);
+          const { filos: f, mats: m } = restaurarDesdeDB(resultado);
+          setFilos(f);
+          setMateriales_(m);
+          setSinGuardar(false);
+          setConfirmado(true);
+        }
+      })
+      .catch(console.error);
+  }, [moduloId]);
+
+  // ── Defaults de filos cuando llegan piezas nuevas ─────────
+  // Solo aplica sobre piezas que NO tienen filos restaurados desde DB
   useEffect(() => {
     if (!piezas.length) return;
-    const cantoGeneralId = datos?.canto_general_id || '';
-    const canto2mm = cantos?.find(c => c.espesor === 2)?.id || cantoGeneralId;
+    const cantoDef = datos?.canto_general_id || '';
+    const canto2mm = cantos?.find(c => c.espesor === 2)?.id || cantoDef;
+
     setFilos(prev => {
       const nuevo = {};
       piezas.forEach((p, i) => {
-        if (prev[i]) { nuevo[i] = prev[i]; return; }
-        const cantoDef = p.tipo === 'door' ? canto2mm : cantoGeneralId;
-        nuevo[i] = { frente: cantoDef, posterior: cantoDef, superior: cantoDef, inferior: cantoDef };
+        if (prev[i]) { nuevo[i] = prev[i]; return; } // ya tiene valor (DB o edición)
+        nuevo[i] = filosPorDefecto(p, i, cantoDef, canto2mm, ensamble);
       });
       return nuevo;
     });
-  }, [piezas, datos?.canto_general_id]);
+  }, [piezas, datos?.canto_general_id, ensamble]);
 
   function handleGuardarModal(idx, filosNuevos, materialId) {
     setFilos(prev => ({ ...prev, [idx]: filosNuevos }));
@@ -419,6 +452,7 @@ function SeccionPiezas({ moduloId, datos, cantos, materiales, divisor }) {
     setModalPieza(null);
   }
 
+  // ── BUG 1 FIX: restaurar filos desde DB tras recalcular ───
   async function handleCalcular() {
     setCalculando(true);
     setError('');
@@ -426,6 +460,10 @@ function SeccionPiezas({ moduloId, datos, cantos, materiales, divisor }) {
     try {
       const resultado = await invoke('calcular_piezas_modulo', { moduloId });
       setPiezas(resultado);
+      const { filos: f, mats: m } = restaurarDesdeDB(resultado);
+      // prev tiene edits no guardados — se preservan sobre los restaurados
+      setFilos(prev => ({ ...f, ...prev }));
+      setMateriales_(m);
       setSinGuardar(true);
     } catch (err) {
       setError(`Error: ${err}`);
@@ -435,28 +473,26 @@ function SeccionPiezas({ moduloId, datos, cantos, materiales, divisor }) {
   }
 
   async function handleConfirmar() {
-  setConfirmando(true);
-  setError('');
-  try {
-    // Construir configs en el mismo orden que piezas[]
-    const configs = piezas.map((_, i) => ({
-      material_id:        materiales_[i] || null,
-      canto_frente_id:    filos[i]?.frente    || null,
-      canto_posterior_id: filos[i]?.posterior || null,
-      canto_superior_id:  filos[i]?.superior  || null,
-      canto_inferior_id:  filos[i]?.inferior  || null,
-    }));
-
-    const resultado = await invoke('confirmar_piezas_modulo', { moduloId, configs });
-    setPiezas(resultado);
-    setConfirmado(true);
-    setSinGuardar(false);
-  } catch (err) {
-    setError(`Error: ${err}`);
-  } finally {
-    setConfirmando(false);
+    setConfirmando(true);
+    setError('');
+    try {
+      const configs = piezas.map((_, i) => ({
+        material_id:        materiales_[i] || null,
+        canto_frente_id:    filos[i]?.frente    || null,
+        canto_posterior_id: filos[i]?.posterior || null,
+        canto_superior_id:  filos[i]?.superior  || null,
+        canto_inferior_id:  filos[i]?.inferior  || null,
+      }));
+      const resultado = await invoke('confirmar_piezas_modulo', { moduloId, configs });
+      setPiezas(resultado);
+      setConfirmado(true);
+      setSinGuardar(false);
+    } catch (err) {
+      setError(`Error: ${err}`);
+    } finally {
+      setConfirmando(false);
+    }
   }
-}
 
   const cantosOpciones = [
     { value: '', label: '—' },
@@ -489,8 +525,8 @@ function SeccionPiezas({ moduloId, datos, cantos, materiales, divisor }) {
       <div className="piezas-svg-wrap">
         <div className="piezas-vista-btns">
           {[
-            { id: 'der',    label: '◱ Der' },
-            { id: 'izq',    label: '◲ Izq' },
+            { id: 'der',    label: '◱ Der'    },
+            { id: 'izq',    label: '◲ Izq'    },
             { id: 'frente', label: '⬜ Frente' },
           ].map(v => (
             <button key={v.id}
@@ -536,8 +572,7 @@ function SeccionPiezas({ moduloId, datos, cantos, materiales, divisor }) {
                           setConfirmado(false);
                         }}>
                         {cantosOpciones.map(o => (
-                          <option key={o.value} value={o.value}
-                            style={o.sinStock ? { color: '#cc0000' } : {}}>
+                          <option key={o.value} value={o.value} style={o.sinStock ? { color: '#cc0000' } : {}}>
                             {o.sinStock ? `⚠ ${o.label}` : o.label}
                           </option>
                         ))}

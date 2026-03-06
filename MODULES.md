@@ -1,6 +1,6 @@
 # MOBILI-AR — Estado del Proyecto
 
-**Actualizado:** 2026-03-04
+**Actualizado:** 2026-03-06
 **Rama activa:** `main`
 
 ---
@@ -55,7 +55,8 @@
 | F3-01 | Gestión de materiales | ✅ COMPLETO | Schema v7, CRUD, ingreso por remito, vista grid/lista |
 | F3-02 | Divisores de módulo | ✅ COMPLETO | Schema v5/v6, divisores verticales con sectores |
 | F3-03 | Configuración por pieza | ✅ COMPLETO | Modal con vista 2D técnica, material y cantos individuales |
-| F3-04 | Motor de cálculo | ⬜ PENDIENTE | depende de F3-03 |
+| F3-04 | Motor de cálculo | 🟡 EN PAUSA | Backend completo. Bugs pendientes — ver notas |
+| F3-04b | Gestión de cantos | ✅ COMPLETO | GestionCantos en sidebar, CRUD completo |
 | F3-05 | Orientación de veta | ⬜ PENDIENTE | depende de F3-01 |
 | F3-06 | Cálculo de cantos | ⬜ PENDIENTE | depende de F3-04 |
 | F3-07 | Motor de herrajes | ⬜ PENDIENTE | depende de F3-04 |
@@ -126,6 +127,14 @@
 - `mobiliar-schema.sql` es la fuente de verdad para DBs nuevas — debe mantenerse sincronizado con las migraciones
 - Stock de materiales se mueve por remito (ingreso manual) — consumo automático en F5-01
 - Modal de configuración por pieza (F3-03) reutilizable para mecanizados en F6
+- `PiezaCalculada` tiene `Default` derive — los campos de cantos/material se inicializan en `None` en el motor
+- `confirmar_piezas_modulo` recibe `configs: Vec<ConfigPieza>` desde React — mismo orden que piezas[]
+- Cantos: campo `nombre` es libre, `color` identifica la placa, `material` es el tipo (pvc/abs/etc)
+
+### Bugs pendientes en F3-04
+1. **Configs no se restauran al recalcular** — `SeccionPiezas` recibe `PiezaCalculada` con `canto_*_id` y `material_id` pero no los usa para poblar el estado `filos` y `materiales_`. Fix: en `handleCalcular`, después de `setPiezas(resultado)`, poblar `filos` y `materiales_` desde los campos de cada pieza.
+2. **4 filos por defecto en fondo** — el `useEffect` de defaults asigna `canto_general_id` a todas las piezas incluyendo `back` (fondo 3mm). Fix: excluir `tipo === 'back'` del default de cantos.
+3. **Panel derecho no muestra materiales** — `ResumenModulo` filtra por `m.tipo === 'tablero'` (schema viejo). Fix: eliminar el filtro o usar `m.tipo !== 'HDF'` para separar cuerpo de fondo. Label debe usar `${m.tipo} ${m.color} ${m.espesor}mm` en lugar de `m.nombre` (campo eliminado en v7).
 
 ### Próximo paso sugerido
-**F3-04 — Motor de cálculo** depende de F3-03 (completo). Es el núcleo del modelo paramétrico.
+Terminar los bugs de F3-04 antes de avanzar a F3-05. Son tres fixes quirúrgicos en `SeccionPiezas.jsx` y `ResumenModulo.jsx`.

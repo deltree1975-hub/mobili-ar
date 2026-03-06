@@ -20,7 +20,6 @@ pub fn calcular_piezas_modulo(
     let params = construir_params(conn, &modulo_id)?;
     let mut piezas = crate::engine::calculator::calcular_piezas(&params);
 
-    // Divisores v5
     if params.divisores.as_ref().map_or(false, |d| !d.is_empty()) {
         let extra = crate::engine::calculator::calcular_piezas_divisores(&params, &mut piezas);
         piezas.extend(extra);
@@ -28,12 +27,13 @@ pub fn calcular_piezas_modulo(
 
     Ok(piezas)
 }
+
 /// Calcula y persiste piezas con configuración de material y cantos por pieza
 #[tauri::command]
 pub fn confirmar_piezas_modulo(
     state:     State<DbState>,
     modulo_id: String,
-    configs:   Vec<crate::types::ConfigPieza>,  // una por pieza, mismo orden
+    configs:   Vec<crate::types::ConfigPieza>,
 ) -> Result<Vec<PiezaCalculada>, String> {
     let guard = state.0.lock().map_err(|e| e.to_string())?;
     let conn = guard.as_ref().ok_or("Base de datos no conectada")?;
@@ -49,10 +49,10 @@ pub fn confirmar_piezas_modulo(
     crate::db::piezas::guardar_piezas_modulo(conn, &modulo_id, &piezas, &configs)
         .map_err(|e| e.to_string())?;
 
-    // Releer desde DB para devolver con configs persistidas
     crate::db::piezas::get_piezas_modulo(conn, &modulo_id)
         .map_err(|e| e.to_string())
 }
+
 /// Lee piezas ya calculadas y guardadas de un módulo
 #[tauri::command]
 pub fn get_piezas_modulo(
@@ -92,11 +92,13 @@ pub fn set_ensamble_modulo(
     };
 
     let config = EnsambleConfig {
-        modulo_id:             input.modulo_id,
-        costado_pasante_techo: input.costado_pasante_techo,
-        costado_pasante_piso:  input.costado_pasante_piso,
+        modulo_id:                 input.modulo_id,
+        costado_izq_pasante_techo: input.costado_izq_pasante_techo,
+        costado_der_pasante_techo: input.costado_der_pasante_techo,
+        costado_izq_pasante_piso:  input.costado_izq_pasante_piso,
+        costado_der_pasante_piso:  input.costado_der_pasante_piso,
         fondo_tipo,
-        fondo_retranqueo:      input.fondo_retranqueo,
+        fondo_retranqueo:          input.fondo_retranqueo,
     };
 
     crate::db::ensamble::set(conn, &config).map_err(|e| e.to_string())
@@ -107,7 +109,6 @@ fn construir_params(
     conn:      &rusqlite::Connection,
     modulo_id: &str,
 ) -> Result<MotorParams, String> {
-    // Leer módulo con todos los campos incluyendo v5
     let (ancho, alto, prof, et, ef, cant_estantes, tiene_fondo, alto_faja,
          material_fondo_id, faja_acostada) = conn.query_row(
         "SELECT ancho, alto, profundidad, espesor_tablero, espesor_fondo,
@@ -132,7 +133,6 @@ fn construir_params(
         )),
     ).map_err(|e| format!("Módulo no encontrado: {}", e))?;
 
-    // Leer disposición para saber si tiene fajas y posición
     let disposicion: String = conn.query_row(
         "SELECT disposicion FROM modulos WHERE id = ?1",
         rusqlite::params![modulo_id],
@@ -149,17 +149,13 @@ fn construir_params(
         )),
     ).unwrap_or((false, "superior".to_string()));
 
-    // Leer offset global
     let offset: f64 = conn.query_row(
         "SELECT CAST(valor AS REAL) FROM configuracion_terminal WHERE clave = 'offset_pieza'",
         [],
         |row| row.get(0),
     ).unwrap_or(0.5);
 
-    // Leer ensamble (o usar defaults)
     let ensamble = crate::db::ensamble::get_o_default(conn, modulo_id);
-
-    // Leer divisores del módulo (v5)
     let divisores = leer_divisores(conn, modulo_id);
 
     Ok(MotorParams {
@@ -181,7 +177,6 @@ fn construir_params(
     })
 }
 
-/// Lee los divisores de un módulo y los convierte a DivisorParams para el motor
 fn leer_divisores(
     conn:      &rusqlite::Connection,
     modulo_id: &str,

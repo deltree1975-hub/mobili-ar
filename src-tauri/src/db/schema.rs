@@ -194,8 +194,6 @@ fn migrar(conn: &rusqlite::Connection) -> anyhow::Result<()> {
     }
 
     // -- Migracion v7 ------------------------------------------
-    // Si la columna 'nombre' existe en materiales, hay que migrar al schema nuevo.
-    // Si no existe, la tabla ya tiene el schema nuevo (DB creada con schema.sql actualizado).
     if version < 7 {
         if columna_existe(conn, "materiales", "nombre") {
             let _ = conn.execute_batch("DROP TABLE IF EXISTS materiales_v7_new;");
@@ -233,6 +231,40 @@ fn migrar(conn: &rusqlite::Connection) -> anyhow::Result<()> {
         conn.execute_batch(
             "INSERT OR IGNORE INTO schema_version (version, descripcion)
              VALUES (7, 'F3-01 - materiales: tipo, color, largo, ancho, cantidad');",
+        )?;
+    }
+
+    // -- Migracion v8 ------------------------------------------
+    // Ensamble: 2 campos globales → 4 campos independientes por esquina
+    // costado_pasante_techo/piso → izq/der × techo/piso
+    if version < 8 {
+        if !columna_existe(conn, "modulo_ensamble", "costado_izq_pasante_techo") {
+            // Agregar las 4 columnas nuevas
+            let _ = conn.execute_batch(
+                "ALTER TABLE modulo_ensamble ADD COLUMN costado_izq_pasante_techo INTEGER NOT NULL DEFAULT 1;"
+            );
+            let _ = conn.execute_batch(
+                "ALTER TABLE modulo_ensamble ADD COLUMN costado_der_pasante_techo INTEGER NOT NULL DEFAULT 1;"
+            );
+            let _ = conn.execute_batch(
+                "ALTER TABLE modulo_ensamble ADD COLUMN costado_izq_pasante_piso  INTEGER NOT NULL DEFAULT 1;"
+            );
+            let _ = conn.execute_batch(
+                "ALTER TABLE modulo_ensamble ADD COLUMN costado_der_pasante_piso  INTEGER NOT NULL DEFAULT 1;"
+            );
+
+            // Poblar desde los valores anteriores — ambos lados heredan el valor viejo
+            let _ = conn.execute_batch("
+                UPDATE modulo_ensamble SET
+                    costado_izq_pasante_techo = costado_pasante_techo,
+                    costado_der_pasante_techo = costado_pasante_techo,
+                    costado_izq_pasante_piso  = costado_pasante_piso,
+                    costado_der_pasante_piso  = costado_pasante_piso;
+            ");
+        }
+        conn.execute_batch(
+            "INSERT OR IGNORE INTO schema_version (version, descripcion)
+             VALUES (8, 'F3-04 - ensamble: 4 campos de costado independientes por esquina');",
         )?;
     }
 

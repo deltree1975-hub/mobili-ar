@@ -253,20 +253,24 @@ pub struct CrearCantoInput {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct EnsambleConfig {
-    pub modulo_id:             String,
-    pub costado_pasante_techo: bool,
-    pub costado_pasante_piso:  bool,
-    pub fondo_tipo:            FondoTipo,
-    pub fondo_retranqueo:      f64,
+    pub modulo_id:                  String,
+    pub costado_izq_pasante_techo:  bool,
+    pub costado_der_pasante_techo:  bool,
+    pub costado_izq_pasante_piso:   bool,
+    pub costado_der_pasante_piso:   bool,
+    pub fondo_tipo:                 FondoTipo,
+    pub fondo_retranqueo:           f64,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct SetEnsambleInput {
-    pub modulo_id:             String,
-    pub costado_pasante_techo: bool,
-    pub costado_pasante_piso:  bool,
-    pub fondo_tipo:            String,
-    pub fondo_retranqueo:      f64,
+    pub modulo_id:                  String,
+    pub costado_izq_pasante_techo:  bool,
+    pub costado_der_pasante_techo:  bool,
+    pub costado_izq_pasante_piso:   bool,
+    pub costado_der_pasante_piso:   bool,
+    pub fondo_tipo:                 String,
+    pub fondo_retranqueo:           f64,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]

@@ -43,7 +43,10 @@ pub fn calcular_piezas(params: &MotorParams) -> Vec<PiezaCalculada> {
     }
 
     // ── TECHO ─────────────────────────────────────────────────
-    let techo_ancho = if e.costado_pasante_techo { a - et_ef * 2.0 } else { a };
+    // El ancho del techo se descuenta si AMBOS costados son pasantes en techo
+    // (el techo queda entre los dos laterales)
+    let techo_pasante = e.costado_izq_pasante_techo && e.costado_der_pasante_techo;
+    let techo_ancho = if techo_pasante { a - et_ef * 2.0 } else { a };
     let techo_alto  = if fondo_pasante { p - ef } else { p };
 
     piezas.push(PiezaCalculada {
@@ -60,7 +63,9 @@ pub fn calcular_piezas(params: &MotorParams) -> Vec<PiezaCalculada> {
     });
 
     // ── PISO ──────────────────────────────────────────────────
-    let piso_ancho = if e.costado_pasante_piso { a - et_ef * 2.0 } else { a };
+    // Igual que techo pero con los campos de piso
+    let piso_pasante = e.costado_izq_pasante_piso && e.costado_der_pasante_piso;
+    let piso_ancho = if piso_pasante { a - et_ef * 2.0 } else { a };
     let piso_alto  = if fondo_pasante { p - ef } else { p };
 
     piezas.push(PiezaCalculada {
@@ -274,11 +279,13 @@ mod tests {
 
     fn ensamble_default() -> EnsambleConfig {
         EnsambleConfig {
-            modulo_id:             "test".to_string(),
-            costado_pasante_techo: true,
-            costado_pasante_piso:  true,
-            fondo_tipo:            FondoTipo::Interno,
-            fondo_retranqueo:      12.0,
+            modulo_id:                 "test".to_string(),
+            costado_izq_pasante_techo: true,
+            costado_der_pasante_techo: true,
+            costado_izq_pasante_piso:  true,
+            costado_der_pasante_piso:  true,
+            fondo_tipo:                FondoTipo::Interno,
+            fondo_retranqueo:          12.0,
         }
     }
 
@@ -351,6 +358,17 @@ mod tests {
         assert_eq!(ac,  446.0);
         assert_eq!(alc, 695.0);
     }
+
+    #[test]
+    fn test_techo_asimetrico() {
+        // Solo izquierdo pasante — techo NO se descuenta (necesita ambos)
+        let mut e = ensamble_default();
+        e.costado_der_pasante_techo = false;
+        let params = MotorParams { ensamble: e, ..params_default() };
+        let piezas = calcular_piezas(&params);
+        let techo = piezas.iter().find(|p| p.codigo == "TECHO").unwrap();
+        assert_eq!(techo.ancho_nominal, 600.0); // ancho completo
+    }
 }
 
 #[cfg(test)]
@@ -368,11 +386,13 @@ mod tests_divisores {
             offset:            0.5,
             cant_estantes:     2,
             ensamble: EnsambleConfig {
-                modulo_id:             "test".to_string(),
-                costado_pasante_techo: true,
-                costado_pasante_piso:  true,
-                fondo_tipo:            FondoTipo::Interno,
-                fondo_retranqueo:      12.0,
+                modulo_id:                 "test".to_string(),
+                costado_izq_pasante_techo: true,
+                costado_der_pasante_techo: true,
+                costado_izq_pasante_piso:  true,
+                costado_der_pasante_piso:  true,
+                fondo_tipo:                FondoTipo::Interno,
+                fondo_retranqueo:          12.0,
             },
             tiene_fajas:       false,
             posicion_faja:     "superior".to_string(),
