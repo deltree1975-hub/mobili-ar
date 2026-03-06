@@ -65,6 +65,29 @@ pub fn crear(conn: &Connection, input: &CrearCantoInput) -> rusqlite::Result<Can
     Ok(canto)
 }
 
+pub fn actualizar(conn: &Connection, id: &str, input: &CrearCantoInput) -> rusqlite::Result<()> {
+    conn.execute(
+        "UPDATE cantos SET
+            nombre       = ?1,
+            color        = ?2,
+            material     = ?3,
+            espesor      = ?4,
+            alto_canto   = ?5,
+            stock_metros = ?6
+         WHERE id = ?7",
+        params![
+            input.nombre,
+            input.color,
+            input.material,
+            input.espesor,
+            input.alto_canto,
+            input.stock_metros.unwrap_or(0.0),
+            id
+        ],
+    )?;
+    Ok(())
+}
+
 pub fn desactivar(conn: &Connection, id: &str) -> rusqlite::Result<()> {
     conn.execute("UPDATE cantos SET activo = 0 WHERE id = ?1", params![id])?;
     Ok(())

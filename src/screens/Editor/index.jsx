@@ -34,17 +34,17 @@ function Editor({ modulo, onVolver }) {
   });
 
   useEffect(() => {
-    invoke('get_ensamble_modulo', { moduloId: modulo.id })
-      .then(e => setEnsamble(e))
-      .catch(() => {});
-    invoke('get_cantos')
-      .then(c => setCantos(c))
-      .catch(() => {});
-    invoke('get_materiales')
-      .then(m => setMateriales(m))
-      .catch(() => {});
+  invoke('get_ensamble_modulo', { moduloId: modulo.id })
+    .then(e => setEnsamble(e))
+    .catch(() => {});
+  invoke('get_cantos')
+    .then(c => { console.log('CANTOS:', c); setCantos(c); })
+    .catch(err => console.error('ERROR cantos:', err));
+  invoke('get_materiales')
+    .then(m => { console.log('MATERIALES:', m); setMateriales(m); })
+    .catch(err => console.error('ERROR materiales:', err));
   }, [modulo.id]);
-
+  
   function actualizar(campo, valor) {
     setDatos(prev => ({ ...prev, [campo]: valor }));
     setGuardado(false);

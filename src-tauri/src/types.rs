@@ -276,20 +276,6 @@ pub struct CantosPieza {
     pub superior_id:  Option<String>,
     pub inferior_id:  Option<String>,
 }
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct PiezaCalculada {
-    pub tipo:          String,
-    pub nombre:        String,
-    pub codigo:        String,
-    pub ancho_nominal: f64,
-    pub alto_nominal:  f64,
-    pub ancho_corte:   f64,
-    pub alto_corte:    f64,
-    pub espesor:       f64,
-    pub regaton_alto:  f64,
-}
-
 #[derive(Debug, Clone)]
 pub struct MotorParams {
     pub ancho:           f64,
@@ -371,4 +357,30 @@ pub struct ActualizarMaterialInput {
     pub ancho:    f64,
     pub espesor:  f64,
     pub cantidad: i64,
+}
+// -- F3-04: Config por pieza (frontend → backend) 
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+pub struct ConfigPieza {
+    pub material_id:      Option<String>,
+    pub canto_frente_id:  Option<String>,
+    pub canto_posterior_id: Option<String>,
+    pub canto_superior_id:  Option<String>,
+    pub canto_inferior_id:  Option<String>,
+}
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]  // ← agregar Default
+pub struct PiezaCalculada {
+    pub tipo:               String,
+    pub nombre:             String,
+    pub codigo:             String,
+    pub ancho_nominal:      f64,
+    pub alto_nominal:       f64,
+    pub ancho_corte:        f64,
+    pub alto_corte:         f64,
+    pub espesor:            f64,
+    pub regaton_alto:       f64,
+    pub material_id:        Option<String>,
+    pub canto_frente_id:    Option<String>,
+    pub canto_posterior_id: Option<String>,
+    pub canto_superior_id:  Option<String>,
+    pub canto_inferior_id:  Option<String>,
 }

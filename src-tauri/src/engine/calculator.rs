@@ -38,6 +38,7 @@ pub fn calcular_piezas(params: &MotorParams) -> Vec<PiezaCalculada> {
             alto_corte:    lat_alto,
             espesor:       et,
             regaton_alto:  0.0,
+            ..Default::default()
         });
     }
 
@@ -55,6 +56,7 @@ pub fn calcular_piezas(params: &MotorParams) -> Vec<PiezaCalculada> {
         alto_corte:    techo_alto,
         espesor:       et,
         regaton_alto:  0.0,
+        ..Default::default()
     });
 
     // ── PISO ──────────────────────────────────────────────────
@@ -71,6 +73,7 @@ pub fn calcular_piezas(params: &MotorParams) -> Vec<PiezaCalculada> {
         alto_corte:    piso_alto,
         espesor:       et,
         regaton_alto:  0.0,
+        ..Default::default()
     });
 
     // ── FONDO ─────────────────────────────────────────────────
@@ -87,6 +90,7 @@ pub fn calcular_piezas(params: &MotorParams) -> Vec<PiezaCalculada> {
         alto_corte:    fondo_alto,
         espesor:       ef,
         regaton_alto:  0.0,
+        ..Default::default()
     });
 
     // ── ESTANTES ──────────────────────────────────────────────
@@ -104,6 +108,7 @@ pub fn calcular_piezas(params: &MotorParams) -> Vec<PiezaCalculada> {
             alto_corte:    est_alto,
             espesor:       et,
             regaton_alto:  0.0,
+            ..Default::default()
         });
     }
 
@@ -214,6 +219,7 @@ pub fn calcular_piezas_divisores(
             alto_corte:    alto_div_real,
             espesor:       et,
             regaton_alto:  0.0,
+            ..Default::default()
         });
 
         let mut codigos_a_eliminar: Vec<String> = Vec::new();
@@ -234,6 +240,7 @@ pub fn calcular_piezas_divisores(
                     alto_corte:    est_alto_corte,
                     espesor:       et,
                     regaton_alto:  0.0,
+                    ..Default::default()
                 });
 
                 nuevas.push(PiezaCalculada {
@@ -246,6 +253,7 @@ pub fn calcular_piezas_divisores(
                     alto_corte:    est_alto_corte,
                     espesor:       et,
                     regaton_alto:  0.0,
+                    ..Default::default()
                 });
 
                 codigos_a_eliminar.push(format!("EST-{}", num));
@@ -328,11 +336,16 @@ mod tests {
     #[test]
     fn test_aplicar_cantos() {
         let pieza = PiezaCalculada {
-            tipo: "side".to_string(), nombre: "test".to_string(),
-            codigo: "T".to_string(),
-            ancho_nominal: 450.0, alto_nominal: 720.0,
-            ancho_corte: 450.0,   alto_corte: 720.0,
-            espesor: 18.0,        regaton_alto: 0.0,
+            tipo:          "side".to_string(),
+            nombre:        "test".to_string(),
+            codigo:        "T".to_string(),
+            ancho_nominal: 450.0,
+            alto_nominal:  720.0,
+            ancho_corte:   450.0,
+            alto_corte:    720.0,
+            espesor:       18.0,
+            regaton_alto:  0.0,
+            ..Default::default()
         };
         let (ac, alc) = aplicar_cantos(&pieza, 2.0, 2.0, 0.0, 0.0, 25.0);
         assert_eq!(ac,  446.0);

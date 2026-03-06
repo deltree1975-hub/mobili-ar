@@ -10,6 +10,7 @@ import GestionUsuarios   from './sections/GestionUsuarios';
 import GestionMansiones  from './sections/GestionMansiones';
 import GestionLibreria   from './sections/GestionLibreria';
 import GestionMateriales from './sections/GestionMateriales';
+import GestionCantos     from './sections/GestionCantos';
 import './Gestion.css';
 
 const SECCIONES = [
@@ -17,6 +18,7 @@ const SECCIONES = [
   { id: 'mansiones',  label: 'Mansiones',  icono: '🏭' },
   { id: 'libreria',   label: 'Librería',   icono: '📚' },
   { id: 'materiales', label: 'Materiales', icono: '🪵' },
+  { id: 'cantos',     label: 'Cantos',     icono: '📐' },
 ];
 
 function Gestion({ sesion, onVolver, onIrAlTaller }) {
@@ -66,6 +68,7 @@ function Gestion({ sesion, onVolver, onIrAlTaller }) {
         {seccion === 'mansiones'  && <GestionMansiones />}
         {seccion === 'libreria'   && <GestionLibreria />}
         {seccion === 'materiales' && <GestionMateriales />}
+        {seccion === 'cantos'     && <GestionCantos />}
       </main>
 
     </div>

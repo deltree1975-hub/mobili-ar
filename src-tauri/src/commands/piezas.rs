@@ -28,12 +28,12 @@ pub fn calcular_piezas_modulo(
 
     Ok(piezas)
 }
-
-/// Calcula y persiste piezas en la DB
+/// Calcula y persiste piezas con configuración de material y cantos por pieza
 #[tauri::command]
 pub fn confirmar_piezas_modulo(
     state:     State<DbState>,
     modulo_id: String,
+    configs:   Vec<crate::types::ConfigPieza>,  // una por pieza, mismo orden
 ) -> Result<Vec<PiezaCalculada>, String> {
     let guard = state.0.lock().map_err(|e| e.to_string())?;
     let conn = guard.as_ref().ok_or("Base de datos no conectada")?;
@@ -41,17 +41,18 @@ pub fn confirmar_piezas_modulo(
     let params = construir_params(conn, &modulo_id)?;
     let mut piezas = crate::engine::calculator::calcular_piezas(&params);
 
-    // Divisores v5
     if params.divisores.as_ref().map_or(false, |d| !d.is_empty()) {
         let extra = crate::engine::calculator::calcular_piezas_divisores(&params, &mut piezas);
         piezas.extend(extra);
     }
 
-    crate::db::piezas::guardar_piezas_modulo(conn, &modulo_id, &piezas)
+    crate::db::piezas::guardar_piezas_modulo(conn, &modulo_id, &piezas, &configs)
         .map_err(|e| e.to_string())?;
-    Ok(piezas)
-}
 
+    // Releer desde DB para devolver con configs persistidas
+    crate::db::piezas::get_piezas_modulo(conn, &modulo_id)
+        .map_err(|e| e.to_string())
+}
 /// Lee piezas ya calculadas y guardadas de un módulo
 #[tauri::command]
 pub fn get_piezas_modulo(

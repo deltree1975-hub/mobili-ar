@@ -435,19 +435,28 @@ function SeccionPiezas({ moduloId, datos, cantos, materiales, divisor }) {
   }
 
   async function handleConfirmar() {
-    setConfirmando(true);
-    setError('');
-    try {
-      const resultado = await invoke('confirmar_piezas_modulo', { moduloId });
-      setPiezas(resultado);
-      setConfirmado(true);
-      setSinGuardar(false);
-    } catch (err) {
-      setError(`Error: ${err}`);
-    } finally {
-      setConfirmando(false);
-    }
+  setConfirmando(true);
+  setError('');
+  try {
+    // Construir configs en el mismo orden que piezas[]
+    const configs = piezas.map((_, i) => ({
+      material_id:        materiales_[i] || null,
+      canto_frente_id:    filos[i]?.frente    || null,
+      canto_posterior_id: filos[i]?.posterior || null,
+      canto_superior_id:  filos[i]?.superior  || null,
+      canto_inferior_id:  filos[i]?.inferior  || null,
+    }));
+
+    const resultado = await invoke('confirmar_piezas_modulo', { moduloId, configs });
+    setPiezas(resultado);
+    setConfirmado(true);
+    setSinGuardar(false);
+  } catch (err) {
+    setError(`Error: ${err}`);
+  } finally {
+    setConfirmando(false);
   }
+}
 
   const cantosOpciones = [
     { value: '', label: '—' },
