@@ -94,3 +94,22 @@ pub fn actualizar_modulo_completo(
     let conn = guard.as_ref().ok_or("Base de datos no conectada")?;
     db::actualizar_modulo(conn, &id, datos).map_err(|e| e.to_string())
 }
+#[tauri::command]
+pub fn get_disposicion(
+    state: State<'_, DbState>,
+    disposicion_id: String,
+) -> Result<crate::types::Disposicion, String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard.as_ref().ok_or("Base de datos no conectada")?;
+    db::get_disposicion(conn, &disposicion_id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn get_disposiciones(
+    state: State<'_, DbState>,
+) -> Result<Vec<crate::types::Disposicion>, String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard.as_ref().ok_or("Base de datos no conectada")?;
+    db::get_disposiciones(conn).map_err(|e| e.to_string())
+}
+

@@ -109,14 +109,46 @@ fn construir_params(
     conn:      &rusqlite::Connection,
     modulo_id: &str,
 ) -> Result<MotorParams, String> {
-    let (ancho, alto, prof, et, ef, cant_estantes, tiene_fondo, alto_faja,
-         material_fondo_id, faja_acostada) = conn.query_row(
+
+    let (
+        ancho,
+        alto,
+        prof,
+        et,
+        ef,
+        cant_estantes,
+        tiene_fondo,
+        alto_faja,
+        material_fondo_id,
+        faja_acostada,
+
+        tiene_techo,
+        tiene_piso,
+        tiene_costado_izq,
+        tiene_costado_der,
+
+        tiene_faja_sup,
+        tiene_faja_inf,
+        alto_faja_sup,
+        alto_faja_inf
+    ) = conn.query_row(
         "SELECT ancho, alto, profundidad, espesor_tablero, espesor_fondo,
                 cant_estantes,
                 COALESCE(tiene_fondo, 1),
                 COALESCE(alto_faja, 80.0),
                 material_fondo_id,
-                COALESCE(faja_acostada, 0)
+                COALESCE(faja_acostada, 0),
+
+                COALESCE(tiene_techo,1),
+                COALESCE(tiene_piso,1),
+                COALESCE(tiene_costado_izq,1),
+                COALESCE(tiene_costado_der,1),
+
+                COALESCE(tiene_faja_sup,0),
+                COALESCE(tiene_faja_inf,0),
+                COALESCE(alto_faja_sup,80.0),
+                COALESCE(alto_faja_inf,80.0)
+
          FROM modulos WHERE id = ?1",
         rusqlite::params![modulo_id],
         |row| Ok((
@@ -126,10 +158,21 @@ fn construir_params(
             row.get::<_, f64>(3)?,
             row.get::<_, f64>(4)?,
             row.get::<_, i64>(5)?,
+
             row.get::<_, i64>(6)? != 0,
             row.get::<_, f64>(7)?,
             row.get::<_, Option<String>>(8)?,
             row.get::<_, i64>(9)? != 0,
+
+            row.get::<_, i64>(10)? != 0,
+            row.get::<_, i64>(11)? != 0,
+            row.get::<_, i64>(12)? != 0,
+            row.get::<_, i64>(13)? != 0,
+
+            row.get::<_, i64>(14)? != 0,
+            row.get::<_, i64>(15)? != 0,
+            row.get::<_, f64>(16)?,
+            row.get::<_, f64>(17)?,
         )),
     ).map_err(|e| format!("Módulo no encontrado: {}", e))?;
 
@@ -167,10 +210,25 @@ fn construir_params(
         offset,
         cant_estantes,
         ensamble,
+
+        // paneles
+        tiene_techo,
+        tiene_piso,
+        tiene_costado_izq,
+        tiene_costado_der,
+        tiene_fondo,
+
+        // fajas nuevas
+        tiene_faja_sup,
+        tiene_faja_inf,
+        alto_faja_sup,
+        alto_faja_inf,
+
+        // legacy
         tiene_fajas,
         posicion_faja,
         alto_faja,
-        tiene_fondo,
+
         faja_acostada,
         material_fondo_id,
         divisores,

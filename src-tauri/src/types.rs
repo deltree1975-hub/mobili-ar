@@ -85,6 +85,14 @@ pub struct Modulo {
     pub alto_faja:        f64,
     pub material_fondo_id: Option<String>,
     pub faja_acostada:    bool,
+    pub tiene_techo:       bool,
+    pub tiene_piso:        bool,
+    pub tiene_costado_izq: bool,
+    pub tiene_costado_der: bool,
+    pub tiene_faja_sup:    bool,
+    pub tiene_faja_inf:    bool,
+    pub alto_faja_sup:     f64,
+    pub alto_faja_inf:     f64,
 }
 
 #[derive(Debug, Deserialize)]
@@ -111,6 +119,14 @@ pub struct CrearModuloInput {
     pub alto_faja:        Option<f64>,
     pub material_fondo_id: Option<String>,
     pub faja_acostada:    Option<bool>,
+    pub tiene_techo:       Option<bool>,
+    pub tiene_piso:        Option<bool>,
+    pub tiene_costado_izq: Option<bool>,
+    pub tiene_costado_der: Option<bool>,
+    pub tiene_faja_sup:    Option<bool>,
+    pub tiene_faja_inf:    Option<bool>,
+    pub alto_faja_sup:     Option<f64>,
+    pub alto_faja_inf:     Option<f64>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -136,6 +152,14 @@ pub struct ActualizarModuloInput {
     pub alto_faja:        f64,
     pub material_fondo_id: Option<String>,
     pub faja_acostada:    bool,
+    pub tiene_techo:       bool,
+    pub tiene_piso:        bool,
+    pub tiene_costado_izq: bool,
+    pub tiene_costado_der: bool,
+    pub tiene_faja_sup:    bool,
+    pub tiene_faja_inf:    bool,
+    pub alto_faja_sup:     f64,
+    pub alto_faja_inf:     f64,
 }
 
 // -- LIBRERIA -------------------------------------------------
@@ -188,16 +212,27 @@ pub struct CrearUsuarioInput {
     pub mansiones: Vec<String>,
 }
 
-// -- F3-01: Disposiciones -------------------------------------
-
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Disposicion {
-    pub id:            String,
-    pub nombre:        String,
-    pub tiene_fajas:   bool,
-    pub posicion_faja: Option<String>,
-    pub alto_faja:     f64,
-    pub activo:        bool,
+    pub id:                        String,
+    pub nombre:                    String,
+    pub tiene_techo:               bool,
+    pub tiene_piso:                bool,
+    pub tiene_costado_izq:         bool,
+    pub tiene_costado_der:         bool,
+    pub tiene_fondo:               bool,
+    pub tiene_faja_sup:            bool,
+    pub tiene_faja_inf:            bool,
+    pub alto_faja_sup:             f64,
+    pub alto_faja_inf:             f64,
+    pub costado_izq_pasante_techo: bool,
+    pub costado_der_pasante_techo: bool,
+    pub costado_izq_pasante_piso:  bool,
+    pub costado_der_pasante_piso:  bool,
+    pub fondo_tipo:                String,
+    pub fondo_retranqueo:          f64,
+    pub es_sistema:                bool,
+    pub activo:                    bool,
 }
 
 #[derive(Debug, Deserialize)]
@@ -282,21 +317,31 @@ pub struct CantosPieza {
 }
 #[derive(Debug, Clone)]
 pub struct MotorParams {
-    pub ancho:           f64,
-    pub alto:            f64,
-    pub profundidad:     f64,
-    pub espesor_tablero: f64,
-    pub espesor_fondo:   f64,
-    pub offset:          f64,
-    pub cant_estantes:   i64,
-    pub ensamble:        EnsambleConfig,
-    pub tiene_fajas:     bool,
-    pub posicion_faja:   String,
-    pub alto_faja:       f64,
-    pub tiene_fondo:     bool,
-    pub faja_acostada:   bool,
+    pub ancho:            f64,
+    pub alto:             f64,
+    pub profundidad:      f64,
+    pub espesor_tablero:  f64,
+    pub espesor_fondo:    f64,
+    pub offset:           f64,
+    pub cant_estantes:    i64,
+    pub ensamble:         EnsambleConfig,
+    // paneles opcionales
+    pub tiene_techo:      bool,
+    pub tiene_piso:       bool,
+    pub tiene_costado_izq: bool,
+    pub tiene_costado_der: bool,
+    pub tiene_fondo:      bool,
+    pub tiene_faja_sup:   bool,
+    pub tiene_faja_inf:   bool,
+    pub alto_faja_sup:    f64,
+    pub alto_faja_inf:    f64,
+    // legacy (se mantienen por compatibilidad)
+    pub tiene_fajas:      bool,
+    pub posicion_faja:    String,
+    pub alto_faja:        f64,
+    pub faja_acostada:    bool,
     pub material_fondo_id: Option<String>,
-    pub divisores:       Option<Vec<DivisorParams>>,
+    pub divisores:        Option<Vec<DivisorParams>>,
 }
 
 // -- F3-02: Divisores -----------------------------------------
