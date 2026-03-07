@@ -74,43 +74,42 @@ fn migrar(conn: &rusqlite::Connection) -> anyhow::Result<()> {
              VALUES (3, 'F3-01 - alto_canto y stock_metros en tabla cantos');",
         )?;
     }
-
     // -- Migracion v4 ------------------------------------------
     if version < 4 {
         conn.execute_batch("
-            CREATE TABLE IF NOT EXISTS disposiciones (
-                id             TEXT PRIMARY KEY NOT NULL,
-                nombre         TEXT NOT NULL,
-                tiene_fajas    INTEGER NOT NULL DEFAULT 0,
-                posicion_faja  TEXT DEFAULT NULL
-                               CHECK (posicion_faja IN ('superior','inferior')),
-                alto_faja      REAL NOT NULL DEFAULT 80,
-                activo         INTEGER NOT NULL DEFAULT 1,
-                creado_en      TEXT NOT NULL DEFAULT (datetime('now'))
+          CREATE TABLE IF NOT EXISTS disposiciones (
+            id             TEXT PRIMARY KEY NOT NULL,
+            nombre         TEXT NOT NULL,
+            tiene_fajas    INTEGER NOT NULL DEFAULT 0,
+            posicion_faja  TEXT DEFAULT NULL
+                           CHECK (posicion_faja IN ('superior','inferior')),
+            alto_faja      REAL NOT NULL DEFAULT 80,
+            activo         INTEGER NOT NULL DEFAULT 1,
+            creado_en      TEXT NOT NULL DEFAULT (datetime('now'))
             );
-            INSERT OR IGNORE INTO disposiciones (id, nombre, tiene_fajas, posicion_faja) VALUES
-                ('bm',       'Bajomesa',           1, 'superior'),
-                ('al',       'Aereo',              0, NULL),
-                ('to',       'Torre',              0, NULL),
-                ('ca',       'Cajon',              0, NULL),
-                ('ab',       'Abierto',            0, NULL),
-                ('me',       'Mesa',               0, NULL),
-                ('es',       'Estante',            0, NULL),
-                ('co',       'Columna',            0, NULL),
-                ('caj-plac', 'Cajonera de placar', 1, 'inferior');
+          INSERT OR IGNORE INTO disposiciones (id, nombre) VALUES
+            ('bm',       'Bajomesada'),
+            ('al',       'Alacena'),
+            ('to',       'Torre'),
+            ('ca',       'Cajon'),
+            ('ab',       'Abierto'),
+            ('me',       'Mesa'),
+            ('es',       'Estante'),
+            ('co',       'Columna'),
+            ('caj-plac', 'Cajonera de placar');
         ")?;
-        let _ = conn.execute_batch(
-            "ALTER TABLE modulos ADD COLUMN tiene_fondo INTEGER NOT NULL DEFAULT 1",
-        );
-        let _ = conn.execute_batch(
-            "ALTER TABLE modulos ADD COLUMN alto_faja REAL NOT NULL DEFAULT 80",
-        );
-        conn.execute_batch(
-            "INSERT OR IGNORE INTO schema_version (version, descripcion)
-             VALUES (4, 'F3-01 - disposiciones, fajas y tiene_fondo en modulos');",
-        )?;
+    let _ = conn.execute_batch(
+        "ALTER TABLE modulos ADD COLUMN tiene_fondo INTEGER NOT NULL DEFAULT 1",
+    );
+    let _ = conn.execute_batch(
+        "ALTER TABLE modulos ADD COLUMN alto_faja REAL NOT NULL DEFAULT 80",
+    );
+    conn.execute_batch(
+        "INSERT OR IGNORE INTO schema_version (version, descripcion)
+         VALUES (4, 'F3-01 - disposiciones, fajas y tiene_fondo en modulos');",
+    )?;
     }
-
+   
     // -- Migracion v5 ------------------------------------------
     if version < 5 {
         let _ = conn.execute_batch(
@@ -268,5 +267,66 @@ fn migrar(conn: &rusqlite::Connection) -> anyhow::Result<()> {
         )?;
     }
 
+    // -- Migracion v9 ------------------------------------------
+// modulos: campos de paneles opcionales
+// disposiciones: campos de paneles + ensamble default + es_sistema
+if version < 9 {
+    // Campos de paneles en modulos
+    let campos_modulos = [
+        "ALTER TABLE modulos ADD COLUMN tiene_techo       INTEGER NOT NULL DEFAULT 1",
+        "ALTER TABLE modulos ADD COLUMN tiene_piso        INTEGER NOT NULL DEFAULT 1",
+        "ALTER TABLE modulos ADD COLUMN tiene_costado_izq INTEGER NOT NULL DEFAULT 1",
+        "ALTER TABLE modulos ADD COLUMN tiene_costado_der INTEGER NOT NULL DEFAULT 1",
+        "ALTER TABLE modulos ADD COLUMN tiene_faja_sup    INTEGER NOT NULL DEFAULT 0",
+        "ALTER TABLE modulos ADD COLUMN tiene_faja_inf    INTEGER NOT NULL DEFAULT 0",
+        "ALTER TABLE modulos ADD COLUMN alto_faja_sup     REAL NOT NULL DEFAULT 80",
+        "ALTER TABLE modulos ADD COLUMN alto_faja_inf     REAL NOT NULL DEFAULT 80",
+    ];
+    for sql in &campos_modulos {
+        let _ = conn.execute_batch(sql);
+    }
+
+    // Campos nuevos en disposiciones
+    let campos_disp = [
+        "ALTER TABLE disposiciones ADD COLUMN tiene_techo               INTEGER NOT NULL DEFAULT 1",
+        "ALTER TABLE disposiciones ADD COLUMN tiene_piso                INTEGER NOT NULL DEFAULT 1",
+        "ALTER TABLE disposiciones ADD COLUMN tiene_costado_izq         INTEGER NOT NULL DEFAULT 1",
+        "ALTER TABLE disposiciones ADD COLUMN tiene_costado_der         INTEGER NOT NULL DEFAULT 1",
+        "ALTER TABLE disposiciones ADD COLUMN tiene_fondo               INTEGER NOT NULL DEFAULT 1",
+        "ALTER TABLE disposiciones ADD COLUMN tiene_faja_sup            INTEGER NOT NULL DEFAULT 0",
+        "ALTER TABLE disposiciones ADD COLUMN tiene_faja_inf            INTEGER NOT NULL DEFAULT 0",
+        "ALTER TABLE disposiciones ADD COLUMN alto_faja_sup             REAL NOT NULL DEFAULT 80",
+        "ALTER TABLE disposiciones ADD COLUMN alto_faja_inf             REAL NOT NULL DEFAULT 80",
+        "ALTER TABLE disposiciones ADD COLUMN costado_izq_pasante_techo INTEGER NOT NULL DEFAULT 1",
+        "ALTER TABLE disposiciones ADD COLUMN costado_der_pasante_techo INTEGER NOT NULL DEFAULT 1",
+        "ALTER TABLE disposiciones ADD COLUMN costado_izq_pasante_piso  INTEGER NOT NULL DEFAULT 1",
+        "ALTER TABLE disposiciones ADD COLUMN costado_der_pasante_piso  INTEGER NOT NULL DEFAULT 1",
+        "ALTER TABLE disposiciones ADD COLUMN fondo_tipo                TEXT NOT NULL DEFAULT 'interno'",
+        "ALTER TABLE disposiciones ADD COLUMN fondo_retranqueo          REAL NOT NULL DEFAULT 12",
+        "ALTER TABLE disposiciones ADD COLUMN es_sistema                INTEGER NOT NULL DEFAULT 0",
+    ];
+    for sql in &campos_disp {
+        let _ = conn.execute_batch(sql);
+    }
+
+    // Poblar defaults correctos para las disposiciones base
+    let _ = conn.execute_batch("
+        UPDATE disposiciones SET tiene_techo = 0, tiene_faja_sup = 1, es_sistema = 1
+        WHERE id = 'bm';
+        UPDATE disposiciones SET es_sistema = 1
+        WHERE id IN ('al','to','ab','me','co');
+        UPDATE disposiciones SET tiene_techo = 0, tiene_faja_inf = 1, es_sistema = 1
+        WHERE id = 'caj-plac';
+        UPDATE disposiciones SET tiene_piso = 0, tiene_fondo = 0, es_sistema = 1
+        WHERE id = 'me';
+        UPDATE disposiciones SET tiene_fondo = 0, es_sistema = 1
+        WHERE id = 'ab';
+    ");
+
+    conn.execute_batch(
+        "INSERT OR IGNORE INTO schema_version (version, descripcion)
+         VALUES (9, 'B1-02 - paneles opcionales en modulos y disposiciones configurables');",
+    )?;
+    }
     Ok(())
 }

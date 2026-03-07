@@ -77,7 +77,14 @@ CREATE TABLE IF NOT EXISTS modulos (
   offset_tirador REAL NOT NULL DEFAULT 0, color_material TEXT, color_puerta TEXT,
   canto_general_id TEXT REFERENCES cantos(id),
   tiene_fondo INTEGER NOT NULL DEFAULT 1, alto_faja REAL NOT NULL DEFAULT 80,
-  material_fondo_id TEXT REFERENCES materiales(id), faja_acostada INTEGER NOT NULL DEFAULT 0,
+  material_fondo_id TEXT REFERENCES materiales(id), faja_acostada INTEGER NOT NULL DEFAULT 0,tiene_techo INTEGER NOT NULL DEFAULT 1,
+  tiene_piso INTEGER NOT NULL DEFAULT 1,
+  tiene_costado_izq INTEGER NOT NULL DEFAULT 1,
+  tiene_costado_der INTEGER NOT NULL DEFAULT 1,
+  tiene_faja_sup INTEGER NOT NULL DEFAULT 0,
+  tiene_faja_inf INTEGER NOT NULL DEFAULT 0,
+  alto_faja_sup REAL NOT NULL DEFAULT 80,
+  alto_faja_inf REAL NOT NULL DEFAULT 80,
   creado_en TEXT NOT NULL DEFAULT (datetime('now')));
 
 CREATE TABLE IF NOT EXISTS herrajes (
@@ -99,11 +106,14 @@ CREATE TABLE IF NOT EXISTS piezas (
 CREATE INDEX IF NOT EXISTS idx_piezas_modulo ON piezas(modulo_id);
 
 CREATE TABLE IF NOT EXISTS modulo_ensamble (
-  modulo_id TEXT PRIMARY KEY REFERENCES modulos(id) ON DELETE CASCADE,
-  costado_pasante_techo INTEGER NOT NULL DEFAULT 1,
-  costado_pasante_piso INTEGER NOT NULL DEFAULT 1,
-  fondo_tipo TEXT NOT NULL DEFAULT 'interno' CHECK (fondo_tipo IN ('pasante','interno')),
-  fondo_retranqueo REAL NOT NULL DEFAULT 12);
+  modulo_id                 TEXT PRIMARY KEY REFERENCES modulos(id) ON DELETE CASCADE,
+  costado_izq_pasante_techo INTEGER NOT NULL DEFAULT 1,
+  costado_der_pasante_techo INTEGER NOT NULL DEFAULT 1,
+  costado_izq_pasante_piso  INTEGER NOT NULL DEFAULT 1,
+  costado_der_pasante_piso  INTEGER NOT NULL DEFAULT 1,
+  fondo_tipo                TEXT NOT NULL DEFAULT 'interno'
+                            CHECK (fondo_tipo IN ('pasante','interno')),
+  fondo_retranqueo          REAL NOT NULL DEFAULT 12);
 
 CREATE TABLE IF NOT EXISTS divisores_modulo (
   id TEXT PRIMARY KEY NOT NULL,
@@ -136,13 +146,36 @@ CREATE INDEX IF NOT EXISTS idx_sesiones_usuario ON sesiones(usuario_id);
 CREATE INDEX IF NOT EXISTS idx_sesiones_mansion ON sesiones(mansion_id);
 
 CREATE TABLE IF NOT EXISTS disposiciones (
-  id TEXT PRIMARY KEY NOT NULL, nombre TEXT NOT NULL,
-  tiene_fajas INTEGER NOT NULL DEFAULT 0,
-  posicion_faja TEXT DEFAULT NULL CHECK (posicion_faja IN ('superior','inferior')),
-  alto_faja REAL NOT NULL DEFAULT 80, activo INTEGER NOT NULL DEFAULT 1,
-  creado_en TEXT NOT NULL DEFAULT (datetime('now')));
-INSERT OR IGNORE INTO disposiciones (id, nombre, tiene_fajas, posicion_faja) VALUES
-  ('bm','Bajomesa',1,'superior'),('al','Aereo',0,NULL),('to','Torre',0,NULL),
-  ('ca','Cajon',0,NULL),('ab','Abierto',0,NULL),('me','Mesa',0,NULL),
-  ('es','Estante',0,NULL),('co','Columna',0,NULL),
-  ('caj-plac','Cajonera de placar',1,'inferior');
+  id                        TEXT PRIMARY KEY NOT NULL,
+  nombre                    TEXT NOT NULL,
+  tiene_techo               INTEGER NOT NULL DEFAULT 1,
+  tiene_piso                INTEGER NOT NULL DEFAULT 1,
+  tiene_costado_izq         INTEGER NOT NULL DEFAULT 1,
+  tiene_costado_der         INTEGER NOT NULL DEFAULT 1,
+  tiene_fondo               INTEGER NOT NULL DEFAULT 1,
+  tiene_faja_sup            INTEGER NOT NULL DEFAULT 0,
+  tiene_faja_inf            INTEGER NOT NULL DEFAULT 0,
+  alto_faja_sup             REAL NOT NULL DEFAULT 80,
+  alto_faja_inf             REAL NOT NULL DEFAULT 80,
+  costado_izq_pasante_techo INTEGER NOT NULL DEFAULT 1,
+  costado_der_pasante_techo INTEGER NOT NULL DEFAULT 1,
+  costado_izq_pasante_piso  INTEGER NOT NULL DEFAULT 1,
+  costado_der_pasante_piso  INTEGER NOT NULL DEFAULT 1,
+  fondo_tipo                TEXT NOT NULL DEFAULT 'interno',
+  fondo_retranqueo          REAL NOT NULL DEFAULT 12,
+  es_sistema                INTEGER NOT NULL DEFAULT 0,
+  activo                    INTEGER NOT NULL DEFAULT 1,
+  creado_en                 TEXT NOT NULL DEFAULT (datetime('now')));
+
+-- Solo campos base en el INSERT — la migración v9 puebla los valores correctos
+INSERT OR IGNORE INTO disposiciones (id, nombre, es_sistema) VALUES
+  ('bm',       'Bajomesada',         1),
+  ('al',       'Alacena',            1),
+  ('to',       'Torre',              1),
+  ('ab',       'Abierto',            1),
+  ('me',       'Mesa/Escritorio',    1),
+  ('co',       'Columna',            1),
+  ('caj-plac', 'Cajonera de placar', 1);
+
+  INSERT OR IGNORE INTO usuarios (id, nombre, apellido, rol, token, activo, creado_en) VALUES
+  ('usr-admin-001', 'Admin', 'MOBILI-AR', 'dueno', 'MOBILI-ADMIN-0001', 1, datetime('now'));
