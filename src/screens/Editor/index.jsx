@@ -86,8 +86,31 @@ function aplicarDefaultsDisposicion(disp, datosPrev, setEnsambleFn) {
   }
 
   function actualizarEnsamble(campo, valor) {
-    setEnsamble(prev => ({ ...prev, [campo]: valor }));
-    setGuardado(false);
+  setEnsamble(prev => {
+    const next = { ...prev, [campo]: valor };
+
+    // Restricción física: si un costado se activa como pasante,
+    // el opuesto del mismo extremo se fuerza a pasante también
+    // (no puede haber horizontal pasante con costado presente)
+    // Si un costado se desactiva, el opuesto se fuerza a pasante
+    // para que siempre haya al menos un costado tapando cada extremo.
+
+    if (campo === 'costado_izq_pasante_techo') {
+      if (!valor) next.costado_der_pasante_techo = true;
+    }
+    if (campo === 'costado_der_pasante_techo') {
+      if (!valor) next.costado_izq_pasante_techo = true;
+    }
+    if (campo === 'costado_izq_pasante_piso') {
+      if (!valor) next.costado_der_pasante_piso = true;
+    }
+    if (campo === 'costado_der_pasante_piso') {
+      if (!valor) next.costado_izq_pasante_piso = true;
+    }
+
+    return next;
+  });
+  setGuardado(false);
   }
 
   function handleDivisorChange(nuevoDivisor) {
