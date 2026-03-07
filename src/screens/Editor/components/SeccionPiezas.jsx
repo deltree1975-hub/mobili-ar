@@ -73,22 +73,25 @@ function filosPorDefecto(pieza, idx, cantoDef, canto2mm, ensamble) {
     }
 
     case 'side': {
-      // Base: 4 filos
-      let superior = cantoDef;
-      let inferior = cantoDef;
+  let superior = cantoDef;
+  let inferior = cantoDef;
 
-      // Si ambos costados son pasantes en techo → el horizontal tapa el extremo superior del side
-      const pasanteTecho = (ensamble?.costado_izq_pasante_techo ?? true) &&
-                           (ensamble?.costado_der_pasante_techo ?? true);
-      // Si ambos costados son pasantes en piso → el horizontal tapa el extremo inferior
-      const pasantePiso  = (ensamble?.costado_izq_pasante_piso  ?? true) &&
-                           (ensamble?.costado_der_pasante_piso  ?? true);
+  // Cada lateral usa solo sus propios campos de ensamble
+  const esIzq = pieza.codigo === 'LAT-IZQ';
 
-      if (pasanteTecho) superior = '';
-      if (pasantePiso)  inferior = '';
+  const pasanteTecho = esIzq
+    ? (ensamble?.costado_izq_pasante_techo ?? true)
+    : (ensamble?.costado_der_pasante_techo ?? true);
 
-      return { frente: cantoDef, posterior: cantoDef, superior, inferior };
-    }
+  const pasantePiso = esIzq
+    ? (ensamble?.costado_izq_pasante_piso ?? true)
+    : (ensamble?.costado_der_pasante_piso ?? true);
+
+  if (pasanteTecho) superior = '';
+  if (pasantePiso)  inferior = '';
+
+  return { frente: cantoDef, posterior: cantoDef, superior, inferior };
+  }
 
     default:
       return { frente: cantoDef, posterior: cantoDef, superior: cantoDef, inferior: cantoDef };
@@ -429,15 +432,17 @@ function SeccionPiezas({ moduloId, datos, ensamble, cantos, materiales, divisor 
 
   // ── Defaults de filos cuando llegan piezas nuevas ─────────
   // Solo aplica sobre piezas que NO tienen filos restaurados desde DB
+ // ── Defaults de filos cuando llegan piezas nuevas ─────────
   useEffect(() => {
     if (!piezas.length) return;
-    const cantoDef = datos?.canto_general_id || '';
-    const canto2mm = cantos?.find(c => c.espesor === 2)?.id || cantoDef;
+      const cantoDef = datos?.canto_general_id || '';
+      const canto2mm = cantos?.find(c => c.espesor === 2)?.id || cantoDef;
 
     setFilos(prev => {
       const nuevo = {};
       piezas.forEach((p, i) => {
-        if (prev[i]) { nuevo[i] = prev[i]; return; } // ya tiene valor (DB o edición)
+        const tieneValor = prev[i] && Object.values(prev[i]).some(v => v !== '');
+        if (tieneValor) { nuevo[i] = prev[i]; return; }
         nuevo[i] = filosPorDefecto(p, i, cantoDef, canto2mm, ensamble);
       });
       return nuevo;

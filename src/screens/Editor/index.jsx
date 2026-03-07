@@ -49,8 +49,40 @@ function Editor({ modulo, onVolver }) {
   }, [modulo.id]);
 
   function actualizar(campo, valor) {
-    setDatos(prev => ({ ...prev, [campo]: valor }));
-    setGuardado(false);
+  setDatos(prev => {
+    const next = { ...prev, [campo]: valor };
+    if (campo === 'disposicion') {
+      aplicarDefaultsDisposicion(valor, next, setEnsamble);
+    }
+    return next;
+  });
+  setGuardado(false);
+}
+
+function aplicarDefaultsDisposicion(disp, datosPrev, setEnsambleFn) {
+  // Defaults de estructura en datos (tiene_fondo, tiene_fajas, etc.)
+  // se manejan por disposicion en ResumenModulo — acá solo ensamble
+
+  const defaultsEnsamble = {
+    bm: {
+      costado_izq_pasante_techo: true,
+      costado_der_pasante_techo: true,
+      costado_izq_pasante_piso:  true,
+      costado_der_pasante_piso:  true,
+      fondo_tipo: 'interno',
+    },
+    al: {
+      costado_izq_pasante_techo: true,
+      costado_der_pasante_techo: true,
+      costado_izq_pasante_piso:  true,
+      costado_der_pasante_piso:  true,
+      fondo_tipo: 'interno',
+    },
+    // ... etc
+  };
+
+  const def = defaultsEnsamble[disp];
+  if (def) setEnsambleFn(prev => ({ ...prev, ...def }));
   }
 
   function actualizarEnsamble(campo, valor) {

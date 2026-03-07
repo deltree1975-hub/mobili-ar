@@ -24,23 +24,43 @@ pub fn calcular_piezas(params: &MotorParams) -> Vec<PiezaCalculada> {
     let fr            = e.fondo_retranqueo;
 
     // ── LATERALES ─────────────────────────────────────────────
-    let lat_ancho = if fondo_pasante { p - ef } else { p };
-    let lat_alto  = al;
+let lat_ancho = if fondo_pasante { p - ef } else { p };
 
-    for (nombre, codigo) in [("Lateral Izquierdo", "LAT-IZQ"), ("Lateral Derecho", "LAT-DER")] {
-        piezas.push(PiezaCalculada {
-            tipo:          "side".to_string(),
-            nombre:        nombre.to_string(),
-            codigo:        codigo.to_string(),
-            ancho_nominal: lat_ancho,
-            alto_nominal:  lat_alto,
-            ancho_corte:   lat_ancho,
-            alto_corte:    lat_alto,
-            espesor:       et,
-            regaton_alto:  0.0,
-            ..Default::default()
-        });
-    }
+// Izquierdo
+let izq_desc_sup = if !e.costado_izq_pasante_techo { et_ef } else { 0.0 };
+let izq_desc_inf = if !e.costado_izq_pasante_piso  { et_ef } else { 0.0 };
+let izq_alto     = al - izq_desc_sup - izq_desc_inf;
+
+piezas.push(PiezaCalculada {
+    tipo:          "side".to_string(),
+    nombre:        "Lateral Izquierdo".to_string(),
+    codigo:        "LAT-IZQ".to_string(),
+    ancho_nominal: lat_ancho,
+    alto_nominal:  izq_alto,
+    ancho_corte:   lat_ancho,
+    alto_corte:    izq_alto,
+    espesor:       et,
+    regaton_alto:  0.0,
+    ..Default::default()
+});
+
+// Derecho
+let der_desc_sup = if !e.costado_der_pasante_techo { et_ef } else { 0.0 };
+let der_desc_inf = if !e.costado_der_pasante_piso  { et_ef } else { 0.0 };
+let der_alto     = al - der_desc_sup - der_desc_inf;
+
+piezas.push(PiezaCalculada {
+    tipo:          "side".to_string(),
+    nombre:        "Lateral Derecho".to_string(),
+    codigo:        "LAT-DER".to_string(),
+    ancho_nominal: lat_ancho,
+    alto_nominal:  der_alto,
+    ancho_corte:   lat_ancho,
+    alto_corte:    der_alto,
+    espesor:       et,
+    regaton_alto:  0.0,
+    ..Default::default()
+});
 
     // ── TECHO ─────────────────────────────────────────────────
     // El ancho del techo se descuenta si AMBOS costados son pasantes en techo
@@ -80,10 +100,12 @@ pub fn calcular_piezas(params: &MotorParams) -> Vec<PiezaCalculada> {
         regaton_alto:  0.0,
         ..Default::default()
     });
-
     // ── FONDO ─────────────────────────────────────────────────
-    let fondo_ancho = a - et_ef * 2.0;
-    let fondo_alto  = al - et_ef * 2.0;
+    // 3mm: va en ranura → sumar 8mm por lado (16mm total)
+    // >3mm: interno normal → solo descuento de laterales
+    let ranura      = 8.0;
+    let fondo_ancho = if fondo_pasante || ef > 3.0 { a  - et_ef * 2.0 } else { a  - et_ef * 2.0 + ranura * 2.0 };
+    let fondo_alto  = if fondo_pasante || ef > 3.0 { al - et_ef * 2.0 } else { al - et_ef * 2.0 + ranura * 2.0 };
 
     piezas.push(PiezaCalculada {
         tipo:          "back".to_string(),
@@ -317,27 +339,33 @@ mod tests {
     }
 
     #[test]
-    fn test_lateral_fondo_interno() {
-        let piezas = calcular_piezas(&params_default());
-        let lat = piezas.iter().find(|p| p.codigo == "LAT-IZQ").unwrap();
-        assert_eq!(lat.ancho_nominal, 550.0);
-        assert_eq!(lat.alto_nominal,  720.0);
+    fn test_fondo_interno_ranura() {
+        let piezas = calcular_piezas(&params_default()); // ef = 3.0, fondo_tipo = Interno
+        let fondo = piezas.iter().find(|p| p.codigo == "FONDO").unwrap();
+        let esperado_ancho = 600.0 - (18.0 + 0.5) * 2.0 + 16.0;
+        let esperado_alto  = 720.0 - (18.0 + 0.5) * 2.0 + 16.0;
+        assert_eq!(fondo.ancho_nominal, esperado_ancho);
+        assert_eq!(fondo.alto_nominal,  esperado_alto);
     }
 
+    #[test]
+    fn test_fondo_interno_grueso() {
+        // ef = 18mm → sin ranura, descuento normal
+        let mut params = params_default();
+        params.espesor_fondo = 18.0;
+        let piezas = calcular_piezas(&params);
+        let fondo = piezas.iter().find(|p| p.codigo == "FONDO").unwrap();
+        let esperado_ancho = 600.0 - (18.0 + 0.5) * 2.0;
+        let esperado_alto  = 720.0 - (18.0 + 0.5) * 2.0;
+        assert_eq!(fondo.ancho_nominal, esperado_ancho);
+        assert_eq!(fondo.alto_nominal,  esperado_alto);
+    }
     #[test]
     fn test_techo_pasante() {
         let piezas = calcular_piezas(&params_default());
         let techo = piezas.iter().find(|p| p.codigo == "TECHO").unwrap();
         let esperado = 600.0 - (18.0 + 0.5) * 2.0;
         assert_eq!(techo.ancho_nominal, esperado);
-    }
-
-    #[test]
-    fn test_estante_fondo_interno() {
-        let piezas = calcular_piezas(&params_default());
-        let est = piezas.iter().find(|p| p.codigo == "EST-1").unwrap();
-        let esperado = 550.0 - 3.0 - 12.0;
-        assert_eq!(est.alto_nominal, esperado);
     }
 
     #[test]

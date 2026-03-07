@@ -102,40 +102,42 @@ function CampoToggle({ label, labelOn, labelOff, valor, onClick }) {
 // lado     : 'izq'   | 'der'
 // pasante  : true = costado tapa al horizontal | false = horizontal tapa al costado
 function IconoUnion({ posicion, lado, pasante }) {
-  const W = 34, H = 26, g = 6; // g = grosor visual tablero
+  const W = 34, H = 26, g = 6;
   const esDer   = lado === 'der';
   const esTecho = posicion === 'techo';
 
-  const colorCostado    = '#4a90c4'; // azul
-  const colorHorizontal = '#5ba85a'; // verde
+  const colorCostado    = '#4a90c4';
+  const colorHorizontal = '#5ba85a';
   const stroke          = '#1a3a5c';
   const sw              = 0.8;
 
-  // Coordenadas base
-  const cx = esDer ? W - g : 0;          // X del costado
-  const hy = esTecho ? 0 : H - g;        // Y del horizontal
+  const cx = esDer ? W - g : 0;
+  const hy = esTecho ? 0 : H - g;
 
-  let cr, hr; // costadoRect, horizontalRect
+  let cr, hr;
   if (pasante) {
-    // Costado va de borde a borde — horizontal se mete entre costados
-    cr = { x: cx,  y: 0,  w: g,     h: H      };
-    hr = { x: g,   y: hy, w: W-g*2, h: g      };
+    cr = { x: cx, y: 0,  w: g,     h: H     };
+    hr = { x: g,  y: hy, w: W-g*2, h: g     };
   } else {
-    // Horizontal va de borde a borde — costado se mete entre techo y piso
-    hr = { x: 0,   y: hy, w: W,     h: g      };
-    cr = { x: cx,  y: g,  w: g,     h: H-g*2  };
+    hr = { x: 0,  y: hy, w: W,     h: g     };
+    cr = { x: cx, y: g,  w: g,     h: H-g*2 };
   }
 
   return (
     <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display: 'block' }}>
-      <rect x={hr.x} y={hr.y} width={hr.w} height={hr.h}
-        fill={colorHorizontal} stroke={stroke} strokeWidth={sw} />
-      <rect x={cr.x} y={cr.y} width={cr.w} height={cr.h}
-        fill={colorCostado} stroke={stroke} strokeWidth={sw} />
+      {pasante
+        ? <>
+            <rect x={hr.x} y={hr.y} width={hr.w} height={hr.h} fill={colorHorizontal} stroke={stroke} strokeWidth={sw} />
+            <rect x={cr.x} y={cr.y} width={cr.w} height={cr.h} fill={colorCostado}    stroke={stroke} strokeWidth={sw} />
+          </>
+        : <>
+            <rect x={cr.x} y={cr.y} width={cr.w} height={cr.h} fill={colorCostado}    stroke={stroke} strokeWidth={sw} />
+            <rect x={hr.x} y={hr.y} width={hr.w} height={hr.h} fill={colorHorizontal} stroke={stroke} strokeWidth={sw} />
+          </>
+      }
     </svg>
   );
 }
-
 // ── Widget 4 botones de ensamble costados ─────────────────────
 //
 //  Disposición visual (módulo visto de frente):
