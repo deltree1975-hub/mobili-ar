@@ -23,18 +23,6 @@ const APERTURAS = [
   { value: 'corredera', label: '⇄ Corredera' },
 ];
 
-const DISPOSICIONES = [
-  { value: 'bm',       label: 'Bajomesa'           },
-  { value: 'al',       label: 'Aéreo'              },
-  { value: 'to',       label: 'Torre'              },
-  { value: 'ca',       label: 'Cajón'              },
-  { value: 'ab',       label: 'Abierto'            },
-  { value: 'me',       label: 'Mesa'               },
-  { value: 'es',       label: 'Estante'            },
-  { value: 'co',       label: 'Columna'            },
-  { value: 'caj-plac', label: 'Cajonera de placar' },
-];
-
 // ── Campos reutilizables ──────────────────────────────────────
 
 function CampoNum({ label, campo, valor, onChange, min = 0, max = 9999, step = 1 }) {
@@ -98,9 +86,6 @@ function CampoToggle({ label, labelOn, labelOff, valor, onClick }) {
 }
 
 // ── Ícono SVG esquemático de unión costado/horizontal ─────────
-// posicion : 'techo' | 'piso'
-// lado     : 'izq'   | 'der'
-// pasante  : true = costado tapa al horizontal | false = horizontal tapa al costado
 function IconoUnion({ posicion, lado, pasante }) {
   const W = 34, H = 26, g = 6;
   const esDer   = lado === 'der';
@@ -138,13 +123,8 @@ function IconoUnion({ posicion, lado, pasante }) {
     </svg>
   );
 }
+
 // ── Widget 4 botones de ensamble costados ─────────────────────
-//
-//  Disposición visual (módulo visto de frente):
-//
-//    [ Izq-Techo ]  [ Der-Techo ]     ← fila techo
-//    [ Izq-Piso  ]  [ Der-Piso  ]     ← fila piso
-//
 function WidgetEnsambleCostados({ ensamble, onChange }) {
   const BOTONES = [
     { key: 'costado_izq_pasante_techo', posicion: 'techo', lado: 'izq' },
@@ -155,13 +135,10 @@ function WidgetEnsambleCostados({ ensamble, onChange }) {
 
   return (
     <div style={{ marginBottom: 6 }}>
-      {/* Encabezados de columna */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, marginBottom: 2, paddingLeft: 2 }}>
         <span style={{ fontSize: 10, color: '#888', textAlign: 'center' }}>Izquierdo</span>
         <span style={{ fontSize: 10, color: '#888', textAlign: 'center' }}>Derecho</span>
       </div>
-
-      {/* 2 filas × 2 columnas */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
         {BOTONES.map(b => {
           const pasante = ensamble?.[b.key] ?? true;
@@ -186,7 +163,10 @@ function WidgetEnsambleCostados({ ensamble, onChange }) {
 
 // ── Componente principal ──────────────────────────────────────
 
-function ResumenModulo({ datos, ensamble, cantos, materiales, onChange, onEnsambleChange, onDivisorChange }) {
+function ResumenModulo({
+  datos, ensamble, cantos, materiales, disposiciones,
+  onChange, onEnsambleChange, onPanelChange, onDivisorChange
+}) {
 
   const [divisor,          setDivisor]          = useState(null);
   const [tieneDivisor,     setTieneDivisor]     = useState(false);
@@ -267,7 +247,6 @@ function ResumenModulo({ datos, ensamble, cantos, materiales, onChange, onEnsamb
   const sectorIzq = !isNaN(px) ? Math.round(px - datos?.espesor_tablero / 2) : null;
   const sectorDer = !isNaN(px) ? Math.round(anchoInterno - px - datos?.espesor_tablero / 2) : null;
 
-  // BUG 3 FIX: schema v7 — sin filtro, label usa tipo+color+espesor
   const materialesOpciones = [
     { value: '', label: '— Sin asignar —' },
     ...(materiales || []).map(m => ({
@@ -284,6 +263,12 @@ function ResumenModulo({ datos, ensamble, cantos, materiales, onChange, onEnsamb
     }))
   ];
 
+  // Disposiciones desde DB o fallback vacío
+  const disposicionesOpciones = (disposiciones || []).map(d => ({
+    value: d.id,
+    label: d.nombre,
+  }));
+
   return (
     <div className="resumen-card">
       <h3 className="resumen-titulo">Propiedades</h3>
@@ -295,12 +280,13 @@ function ResumenModulo({ datos, ensamble, cantos, materiales, onChange, onEnsamb
         placeholder="Nombre del módulo"
       />
 
+      {/* Disposición desde DB */}
       <select
         className="resumen-select resumen-select--tipo"
         value={datos.disposicion}
         onChange={e => onChange('disposicion', e.target.value)}
       >
-        {DISPOSICIONES.map(d => (
+        {disposicionesOpciones.map(d => (
           <option key={d.value} value={d.value}>{d.label}</option>
         ))}
       </select>
@@ -370,21 +356,58 @@ function ResumenModulo({ datos, ensamble, cantos, materiales, onChange, onEnsamb
 
       <div className="resumen-separador" />
 
+      {/* ── PANELES ── */}
+      <div className="resumen-grupo-titulo">Paneles</div>
+      <CampoToggle label="Techo"       labelOn="Con techo"    labelOff="Sin techo"
+        valor={datos.tiene_techo ?? true}
+        onClick={() => onPanelChange('tiene_techo', !(datos.tiene_techo ?? true))} />
+      <CampoToggle label="Piso"        labelOn="Con piso"     labelOff="Sin piso"
+        valor={datos.tiene_piso ?? true}
+        onClick={() => onPanelChange('tiene_piso', !(datos.tiene_piso ?? true))} />
+      <CampoToggle label="Cost. Izq"   labelOn="Con costado"  labelOff="Sin costado"
+        valor={datos.tiene_costado_izq ?? true}
+        onClick={() => onPanelChange('tiene_costado_izq', !(datos.tiene_costado_izq ?? true))} />
+      <CampoToggle label="Cost. Der"   labelOn="Con costado"  labelOff="Sin costado"
+        valor={datos.tiene_costado_der ?? true}
+        onClick={() => onPanelChange('tiene_costado_der', !(datos.tiene_costado_der ?? true))} />
+      <CampoToggle label="Fondo"       labelOn="Con fondo"    labelOff="Sin fondo"
+        valor={datos.tiene_fondo ?? true}
+        onClick={() => onPanelChange('tiene_fondo', !(datos.tiene_fondo ?? true))} />
+
+      {/* Fajas — mutuamente excluyentes con techo/piso */}
+      <CampoToggle label="Faja sup"    labelOn="Con faja sup" labelOff="Sin faja sup"
+        valor={datos.tiene_faja_sup ?? false}
+        onClick={() => {
+          const nuevo = !(datos.tiene_faja_sup ?? false);
+          onPanelChange('tiene_faja_sup', nuevo);
+          if (nuevo) onPanelChange('tiene_techo', false); // faja sup reemplaza techo
+        }} />
+      {(datos.tiene_faja_sup) && (
+        <CampoNum label="Alto faja sup" campo="alto_faja_sup"
+          valor={datos.alto_faja_sup || 80} onChange={onPanelChange} min={40} max={200} />
+      )}
+
+      <CampoToggle label="Faja inf"    labelOn="Con faja inf" labelOff="Sin faja inf"
+        valor={datos.tiene_faja_inf ?? false}
+        onClick={() => {
+          const nuevo = !(datos.tiene_faja_inf ?? false);
+          onPanelChange('tiene_faja_inf', nuevo);
+          if (nuevo) onPanelChange('tiene_piso', false); // faja inf reemplaza piso
+        }} />
+      {(datos.tiene_faja_inf) && (
+        <CampoNum label="Alto faja inf" campo="alto_faja_inf"
+          valor={datos.alto_faja_inf || 80} onChange={onPanelChange} min={40} max={200} />
+      )}
+
+      <div className="resumen-separador" />
+
       <div className="resumen-grupo-titulo">Construcción</div>
       <CampoSelect label="Unión"    campo="tipo_union"    valor={datos.tipo_union}    opciones={TIPOS_UNION} onChange={onChange} />
       <CampoInt    label="Estantes" campo="cant_estantes" valor={datos.cant_estantes} onChange={onChange} max={20} />
       <CampoInt    label="Puertas"  campo="cant_puertas"  valor={datos.cant_puertas}  onChange={onChange} max={10} />
-
-      {(datos.disposicion === 'bm' || datos.disposicion === 'caj-plac') && (
-        <>
-          <CampoToggle label="Fondo" labelOn="Con fondo" labelOff="Sin fondo"
-            valor={datos.tiene_fondo} onClick={() => onChange('tiene_fondo', !datos.tiene_fondo)} />
-          <CampoNum label="Alto faja" campo="alto_faja" valor={datos.alto_faja || 80}
-            onChange={onChange} min={40} max={200} />
-          <CampoToggle label="Faja" labelOn="Acostada (plano)" labelOff="Parada (canto)"
-            valor={datos.faja_acostada || false} onClick={() => onChange('faja_acostada', !datos.faja_acostada)} />
-        </>
-      )}
+      <CampoToggle label="Faja" labelOn="Acostada (plano)" labelOff="Parada (canto)"
+        valor={datos.faja_acostada || false}
+        onClick={() => onChange('faja_acostada', !datos.faja_acostada)} />
 
       <div className="resumen-separador" />
 

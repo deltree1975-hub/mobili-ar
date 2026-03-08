@@ -49,6 +49,9 @@ pub fn run() {
             // F2-01: usuarios y auth
             commands::usuarios::validar_token,
             commands::usuarios::crear_usuario_completo,
+            // F3-06: disposiciones
+            commands::composiciones::get_disposicion,
+            commands::composiciones::get_disposiciones,
             auth::login,
             auth::logout,
             auth::get_sesion_activa,
@@ -78,6 +81,7 @@ pub fn run() {
             divisores::crear_divisor,
             divisores::actualizar_divisor,
             divisores::eliminar_divisor,
+            
         ])
         .run(tauri::generate_context!())
         .expect("Error al iniciar MOBILI-AR");
