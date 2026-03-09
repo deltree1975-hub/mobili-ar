@@ -13,15 +13,17 @@ import {
 import ComposicionPanel from './components/ComposicionPanel';
 import ModalNuevaComposicion from './components/ModalNuevaComposicion';
 import ModalNuevoModulo from './components/ModalNuevoModulo';
+import ModalListaCorte from './components/ModalListaCorte';
 import './Proyecto.css';
 
-function Proyecto({ trabajo, onVolver, onAbrirEditor, onAbrirLibreria }) {
+function Proyecto({ trabajo, onVolver, onAbrirEditor, onAbrirLibreria, onAbrirListasCorte }) {
   const [composiciones, setComposiciones] = useState([]);
   const [modulos, setModulos]             = useState({});
   const [cargando, setCargando]           = useState(true);
   const [modalComp, setModalComp]         = useState(false);
   const [modalMod, setModalMod]           = useState(null);
   const [confirmarEliminar, setConfirmarEliminar] = useState(null);
+  const [modalLista, setModalLista] = useState(false);
 
   useEffect(() => { cargarTodo(); }, [trabajo.id]);
 
@@ -89,10 +91,14 @@ function Proyecto({ trabajo, onVolver, onAbrirEditor, onAbrirLibreria }) {
           {trabajo.cliente && <span className="proyecto-cliente">👤 {trabajo.cliente}</span>}
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
+        <button className="btn-secundario" onClick={onAbrirListasCorte}>
+          📋 Listas de corte
+        </button>
           <button className="btn-primario" onClick={() => setModalComp(true)}>
-            + Composición
-          </button>
-        </div>
+         + Composición
+        </button>
+      </div>
+
       </header>
 
       <main className="proyecto-main">
@@ -154,6 +160,12 @@ function Proyecto({ trabajo, onVolver, onAbrirEditor, onAbrirLibreria }) {
             </div>
           </div>
         </div>
+      )}
+      {modalLista && (
+        <ModalListaCorte
+          trabajo={trabajo}
+          onCerrar={() => setModalLista(false)}
+        />
       )}
     </div>
   );

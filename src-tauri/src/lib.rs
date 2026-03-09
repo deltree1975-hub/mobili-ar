@@ -55,6 +55,13 @@ pub fn run() {
             commands::composiciones::get_disposiciones,
             commands::lista_corte::generar_lista_corte,
 
+            commands::listas_corte::get_modulos_para_lista,
+            commands::listas_corte::get_listas_corte,
+            commands::listas_corte::crear_y_generar_lista_corte,
+            commands::listas_corte::get_modulos_lista,
+            commands::listas_corte::anular_lista_corte,
+            commands::listas_corte::reimprimir_lista_corte,
+
             auth::login,
             auth::logout,
             auth::get_sesion_activa,

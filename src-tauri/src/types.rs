@@ -432,3 +432,66 @@ pub struct PiezaCalculada {
     pub canto_superior_id:  Option<String>,
     pub canto_inferior_id:  Option<String>,
 }
+
+// -- B4-02: Listas de corte -----------------------------------
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ListaCorte {
+    pub id:         String,
+    pub trabajo_id: String,
+    pub numero_ot:  i64,
+    pub nombre:     String,
+    pub output_pdf: Option<String>,
+    pub output_dir: Option<String>,
+    pub creado_en:  String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ListaCorteModulo {
+    pub id:        String,
+    pub lista_id:  String,
+    pub modulo_id: String,
+    pub incluido:  bool,
+    pub motivo:    Option<String>,  // null | 'roto' | 'faltante'
+    pub creado_en: String,
+}
+
+/// Item enriquecido para el modal de selección — incluye datos del módulo
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ModuloParaLista {
+    pub modulo_id:      String,
+    pub modulo_nombre:  String,
+    pub composicion_id: String,
+    pub comp_nombre:    String,
+    pub ancho:          f64,
+    pub alto:           f64,
+    pub profundidad:    f64,
+    pub tiene_piezas:   bool,       // false = sin confirmar, no se puede incluir
+    pub en_lista_id:    Option<String>,  // Some(id) = ya está en otra lista
+    pub motivo:         Option<String>,  // si está en lista por roto/faltante
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CrearListaCorteInput {
+    pub trabajo_id:  String,
+    pub nombre:      String,
+    pub modulo_ids:  Vec<String>,   // módulos seleccionados
+    pub output_dir:  String,
+}
+
+// -- B4-01: Resultado generación lista de corte ---------------
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ArchivoOperativo {
+    pub archivo:  String,
+    pub ruta:     String,
+    pub material: String,
+    pub piezas:   u32,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ResultadoListaCorte {
+    pub pdf:     String,
+    pub carpeta: String,
+    pub csvs:    Vec<ArchivoOperativo>,
+}

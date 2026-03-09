@@ -15,6 +15,7 @@ import Libreria  from './screens/Libreria';
 import Gestion   from './screens/Gestion';
 import Materiales from './screens/Materiales';
 import SeleccionMansion from './components/SeleccionMansion';
+import ListasCorte from './screens/ListasCorte';
 
 import './App.css';
 
@@ -29,6 +30,7 @@ const ESTADO = {
   LIBRERIA:          'libreria',
   MATERIALES:        'materiales',
   ELIGIENDO_MANSION: 'eligiendo_mansion',
+  LISTAS_CORTE: 'listas_corte',
 };
 
 function App() {
@@ -115,6 +117,9 @@ function App() {
     setEstado(ESTADO.LIBRERIA);
   }
 
+  function handleAbrirListasCorte() {
+  setEstado(ESTADO.LISTAS_CORTE);
+  }
   // ── Renders ──────────────────────────────────────────────────
 
   if (estado === ESTADO.VERIFICANDO) {
@@ -173,15 +178,16 @@ function App() {
     );
 
   if (estado === ESTADO.PROYECTO)
-    return (
-      <Proyecto
-        trabajo={trabajoActivo}
-        sesion={sesion}
-        onVolver={() => setEstado(ESTADO.DASHBOARD)}
-        onAbrirEditor={handleAbrirEditor}
-        onAbrirLibreria={handleAbrirLibreria}
-      />
-    );
+  return (
+    <Proyecto
+      trabajo={trabajoActivo}
+      sesion={sesion}
+      onVolver={() => setEstado(ESTADO.DASHBOARD)}
+      onAbrirEditor={handleAbrirEditor}
+      onAbrirLibreria={handleAbrirLibreria}
+      onAbrirListasCorte={handleAbrirListasCorte}
+    />
+  );
 
   if (estado === ESTADO.EDITOR)
     return (
@@ -200,6 +206,13 @@ function App() {
         onModuloCreado={() => setEstado(ESTADO.PROYECTO)}
       />
     );
+  if (estado === ESTADO.LISTAS_CORTE)
+  return (
+    <ListasCorte
+      trabajo={trabajoActivo}
+      onVolver={() => setEstado(ESTADO.PROYECTO)}
+    />
+  );
 }
 
 export default App;

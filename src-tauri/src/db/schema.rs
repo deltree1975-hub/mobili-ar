@@ -346,5 +346,40 @@ if version < 9 {
              VALUES (10, 'B4-01 - numero_ot secuencial en trabajos');",
         )?;
     }
+    // -- Migracion v11 -----------------------------------------
+    // listas_corte + listas_corte_modulos
+    if version < 11 {
+        conn.execute_batch("
+            CREATE TABLE IF NOT EXISTS listas_corte (
+                id          TEXT PRIMARY KEY NOT NULL,
+                trabajo_id  TEXT NOT NULL REFERENCES trabajos(id) ON DELETE CASCADE,
+                numero_ot   INTEGER NOT NULL DEFAULT 0,
+                nombre      TEXT NOT NULL DEFAULT '',
+                output_pdf  TEXT,
+                output_dir  TEXT,
+                creado_en   TEXT NOT NULL DEFAULT (datetime('now'))
+            );
+
+            CREATE TABLE IF NOT EXISTS listas_corte_modulos (
+                id          TEXT PRIMARY KEY NOT NULL,
+                lista_id    TEXT NOT NULL REFERENCES listas_corte(id) ON DELETE CASCADE,
+                modulo_id   TEXT NOT NULL REFERENCES modulos(id) ON DELETE CASCADE,
+                incluido    INTEGER NOT NULL DEFAULT 1,
+                motivo      TEXT DEFAULT NULL
+                            CHECK (motivo IN (NULL, 'roto', 'faltante')),
+                creado_en   TEXT NOT NULL DEFAULT (datetime('now'))
+            );
+
+            CREATE UNIQUE INDEX IF NOT EXISTS
+                idx_lista_modulo_unico
+            ON listas_corte_modulos (modulo_id)
+            WHERE motivo IS NULL;
+        ")?;
+
+        conn.execute_batch(
+            "INSERT OR IGNORE INTO schema_version (version, descripcion)
+             VALUES (11, 'B4-02 - listas_corte y listas_corte_modulos');",
+        )?;
+    }
     Ok(())
 }

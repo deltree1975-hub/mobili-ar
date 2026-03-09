@@ -22,3 +22,4 @@ pub mod piezas;
 pub mod materiales;
 // F3-02
 pub mod divisores;
+pub mod listas_corte;
