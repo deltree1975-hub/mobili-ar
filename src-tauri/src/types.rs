@@ -6,18 +6,17 @@
 
 use serde::{Deserialize, Serialize};
 
-// -- TRABAJO --------------------------------------------------
-
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Trabajo {
-    pub id: String,
-    pub nombre: String,
-    pub cliente: Option<String>,
-    pub notas: Option<String>,
-    pub estado: String,
-    pub prioridad: i64,
+    pub id:            String,
+    pub nombre:        String,
+    pub cliente:       Option<String>,
+    pub notas:         Option<String>,
+    pub estado:        String,
+    pub prioridad:     i64,
     pub fecha_entrega: Option<String>,
-    pub creado_en: String,
+    pub creado_en:     String,
+    pub numero_ot:     Option<i64>,   // ← nuevo
 }
 
 #[derive(Debug, Deserialize)]

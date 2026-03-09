@@ -5,8 +5,9 @@
 // ============================================================
 mod commands;
 mod db;
-mod types;
+mod types; 
 pub mod engine;
+
 use db::DbState;
 use std::sync::Mutex;
 use commands::usuarios;
@@ -52,6 +53,8 @@ pub fn run() {
             // F3-06: disposiciones
             commands::composiciones::get_disposicion,
             commands::composiciones::get_disposiciones,
+            commands::lista_corte::generar_lista_corte,
+
             auth::login,
             auth::logout,
             auth::get_sesion_activa,

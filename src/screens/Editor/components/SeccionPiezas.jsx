@@ -25,80 +25,34 @@ const CARAS = [
   { key: 'inferior',  label: 'In' },
 ];
 
-// ── Lógica de filos por defecto ───────────────────────────────
-//
-// Reglas:
-//   back     → sin filos (fondo de 3mm, queda oculto)
-//   door     → 4 filos (puertas siempre 4 lados)
-//   faja     → solo frente
-//   shelf    → solo frente
-//   divisor  → solo frente
-//   horizontal (techo/piso del cuerpo) → frente + posterior
-//              los lados quedan cubiertos por los costados
-//   side (costado) → 4 filos base, luego se descuentan los extremos
-//              que quedan cubiertos según ensamble:
-//              - superior libre si izq/der pasante en techo
-//              - inferior libre si izq/der pasante en piso
-//              El motor recibe el lado de la pieza (izq=índice 0, der=índice 1)
-//              pero como el motor no expone eso aún, usamos la regla conservadora:
-//              si AMBOS costados son pasantes en ese extremo → el horizontal
-//              queda tapado → el side no necesita canto en ese lado.
-//
-// cantoDef : ID del canto general del módulo (string o '')
-// canto2mm : ID del canto de 2mm (para puertas), fallback a cantoDef
-// ensamble : objeto con los 4 campos costado_*_pasante_*
-
 function filosPorDefecto(pieza, idx, cantoDef, canto2mm, ensamble) {
   const vacio = { frente: '', posterior: '', superior: '', inferior: '' };
-
   switch (pieza.tipo) {
-    case 'back':
-      return { ...vacio };
-
-    case 'door':
-      return { frente: canto2mm, posterior: canto2mm, superior: canto2mm, inferior: canto2mm };
-
-    case 'faja':
-      return { frente: cantoDef, posterior: '', superior: '', inferior: '' };
-
-    case 'shelf':
-      return { frente: cantoDef, posterior: '', superior: '', inferior: '' };
-
-    case 'divisor':
-      return { frente: cantoDef, posterior: '', superior: '', inferior: '' };
-
-    case 'horizontal': {
-      // Techo/piso: solo frente y posterior, los lados los tapan los costados
-      return { frente: cantoDef, posterior: cantoDef, superior: '', inferior: '' };
-    }
-
+    case 'back':    return { ...vacio };
+    case 'door':    return { frente: canto2mm, posterior: canto2mm, superior: canto2mm, inferior: canto2mm };
+    case 'faja':    return { frente: cantoDef, posterior: '', superior: '', inferior: '' };
+    case 'shelf':   return { frente: cantoDef, posterior: '', superior: '', inferior: '' };
+    case 'divisor': return { frente: cantoDef, posterior: '', superior: '', inferior: '' };
+    case 'horizontal': return { frente: cantoDef, posterior: cantoDef, superior: '', inferior: '' };
     case 'side': {
-  let superior = cantoDef;
-  let inferior = cantoDef;
-
-  // Cada lateral usa solo sus propios campos de ensamble
-  const esIzq = pieza.codigo === 'LAT-IZQ';
-
-  const pasanteTecho = esIzq
-    ? (ensamble?.costado_izq_pasante_techo ?? true)
-    : (ensamble?.costado_der_pasante_techo ?? true);
-
-  const pasantePiso = esIzq
-    ? (ensamble?.costado_izq_pasante_piso ?? true)
-    : (ensamble?.costado_der_pasante_piso ?? true);
-
-  if (pasanteTecho) superior = '';
-  if (pasantePiso)  inferior = '';
-
-  return { frente: cantoDef, posterior: cantoDef, superior, inferior };
-  }
-
-    default:
-      return { frente: cantoDef, posterior: cantoDef, superior: cantoDef, inferior: cantoDef };
+      const esIzq = pieza.codigo?.includes('LAT-I');
+      const pasanteTecho = esIzq
+        ? (ensamble?.costado_izq_pasante_techo ?? true)
+        : (ensamble?.costado_der_pasante_techo ?? true);
+      const pasantePiso = esIzq
+        ? (ensamble?.costado_izq_pasante_piso ?? true)
+        : (ensamble?.costado_der_pasante_piso ?? true);
+      return {
+        frente:    cantoDef,
+        posterior: cantoDef,
+        superior:  pasanteTecho ? '' : cantoDef,
+        inferior:  pasantePiso  ? '' : cantoDef,
+      };
+    }
+    default: return { frente: cantoDef, posterior: cantoDef, superior: cantoDef, inferior: cantoDef };
   }
 }
 
-// ── Restaurar filos y materiales desde PiezaCalculada[] ───────
 function restaurarDesdeDB(resultado) {
   const filos = {};
   const mats  = {};
@@ -161,7 +115,7 @@ function useIso(W, H, P, ET, espejado) {
   return { w, h, p, et, escala, vbW, vbH, pt, ptXY };
 }
 
-// ── Vista isométrica del módulo ───────────────────────────────
+// ── Vista isométrica ──────────────────────────────────────────
 function VistaIso({ datos, vista, divisor }) {
   if (!datos) return (
     <div style={{ textAlign: 'center', color: '#aaa', padding: 30, fontSize: 12 }}>
@@ -278,7 +232,7 @@ function VistaIso({ datos, vista, divisor }) {
   );
 }
 
-// ── Vista 2D técnica de pieza individual (para modal) ─────────
+// ── Vista 2D pieza individual ─────────────────────────────────
 function VistaPieza2D({ pieza, filos, cantos }) {
   const A = pieza.ancho_corte;
   const L = pieza.alto_corte;
@@ -319,7 +273,7 @@ function VistaPieza2D({ pieza, filos, cantos }) {
   );
 }
 
-// ── Modal configuración avanzada de pieza ─────────────────────
+// ── Modal configuración avanzada ──────────────────────────────
 function ModalPieza({ pieza, idx, filos, cantos, materiales, moduloDatos, onGuardar, onCerrar }) {
   const [filosLocal, setFilosLocal] = useState({ ...filos });
   const [materialId, setMaterialId] = useState(pieza.material_id || moduloDatos?.material_id || '');
@@ -412,8 +366,8 @@ function SeccionPiezas({ moduloId, datos, ensamble, cantos, materiales, divisor 
   const [error,       setError]       = useState('');
   const [vista,       setVista]       = useState('der');
   const [modalPieza,  setModalPieza]  = useState(null);
+  const [mostrarSuIn, setMostrarSuIn] = useState(false); // ← toggle Su/In
 
-  // ── Carga automática al montar o cambiar módulo ───────────
   useEffect(() => {
     if (!moduloId) return;
     invoke('get_piezas_modulo', { moduloId })
@@ -430,14 +384,10 @@ function SeccionPiezas({ moduloId, datos, ensamble, cantos, materiales, divisor 
       .catch(console.error);
   }, [moduloId]);
 
-  // ── Defaults de filos cuando llegan piezas nuevas ─────────
-  // Solo aplica sobre piezas que NO tienen filos restaurados desde DB
- // ── Defaults de filos cuando llegan piezas nuevas ─────────
   useEffect(() => {
     if (!piezas.length) return;
-      const cantoDef = datos?.canto_general_id || '';
-      const canto2mm = cantos?.find(c => c.espesor === 2)?.id || cantoDef;
-
+    const cantoDef = datos?.canto_general_id || '';
+    const canto2mm = cantos?.find(c => c.espesor === 2)?.id || cantoDef;
     setFilos(prev => {
       const nuevo = {};
       piezas.forEach((p, i) => {
@@ -457,7 +407,6 @@ function SeccionPiezas({ moduloId, datos, ensamble, cantos, materiales, divisor 
     setModalPieza(null);
   }
 
-  // ── BUG 1 FIX: restaurar filos desde DB tras recalcular ───
   async function handleCalcular() {
     setCalculando(true);
     setError('');
@@ -466,7 +415,6 @@ function SeccionPiezas({ moduloId, datos, ensamble, cantos, materiales, divisor 
       const resultado = await invoke('calcular_piezas_modulo', { moduloId });
       setPiezas(resultado);
       const { filos: f, mats: m } = restaurarDesdeDB(resultado);
-      // prev tiene edits no guardados — se preservan sobre los restaurados
       setFilos(prev => ({ ...f, ...prev }));
       setMateriales_(m);
       setSinGuardar(true);
@@ -508,6 +456,11 @@ function SeccionPiezas({ moduloId, datos, ensamble, cantos, materiales, divisor 
     }))
   ];
 
+  // Indicador de cantos Su/In activos (para mostrar en el toggle)
+  const tieneSuIn = piezas.some((_, i) =>
+    filos[i]?.superior || filos[i]?.inferior
+  );
+
   return (
     <div className="editor-seccion">
       <h3 className="editor-seccion-titulo">📋 Lista de Corte</h3>
@@ -548,31 +501,50 @@ function SeccionPiezas({ moduloId, datos, ensamble, cantos, materiales, divisor 
 
       {piezas.length > 0 && (
         <div className="piezas-tabla-wrap">
-          <table className="piezas-tabla">
+          <table className="piezas-tabla piezas-tabla--compacta">
             <thead>
               <tr>
-                <th>Cód</th><th>Nombre</th><th>Tipo</th>
-                <th className="num">A</th><th className="num">L</th><th className="num">E</th>
-                <th className="filo-col">Fr</th><th className="filo-col">Po</th>
-                <th className="filo-col">Su</th><th className="filo-col">In</th>
-                <th title="Configuración avanzada">⚙</th>
+                <th className="col-codigo">Cód</th>
+                <th>Nombre</th>
+                <th className="col-tipo">Tipo</th>
+                <th className="num">A</th>
+                <th className="num">L</th>
+                <th className="num">E</th>
+                <th className="filo-col">Fr</th>
+                <th className="filo-col">Po</th>
+                {mostrarSuIn && <>
+                  <th className="filo-col">Su</th>
+                  <th className="filo-col">In</th>
+                </>}
+                <th className="col-acciones">
+                  {/* Toggle Su/In con indicador si hay valores */}
+                  <button
+                    className={`btn-toggle-suIn ${mostrarSuIn ? 'activo' : ''} ${tieneSuIn && !mostrarSuIn ? 'con-datos' : ''}`}
+                    onClick={() => setMostrarSuIn(v => !v)}
+                    title={mostrarSuIn ? 'Ocultar Su/In' : 'Mostrar Su/In'}
+                  >
+                    {mostrarSuIn ? '▲' : `▼${tieneSuIn ? '●' : ''}`}
+                  </button>
+                </th>
               </tr>
             </thead>
             <tbody>
               {piezas.map((p, i) => (
                 <tr key={i} className={`pieza-fila pieza-tipo-${p.tipo} ${materiales_[i] ? 'pieza-mat-custom' : ''}`}>
-                  <td className="codigo">{p.codigo}</td>
+                  <td className="codigo col-codigo">{p.codigo}</td>
                   <td>{p.nombre}</td>
-                  <td><span className="pieza-badge">{TIPO_LABEL[p.tipo] || p.tipo}</span></td>
+                  <td className="col-tipo">
+                    <span className="pieza-badge">{TIPO_LABEL[p.tipo] || p.tipo}</span>
+                  </td>
                   <td className="num corte">{p.ancho_corte.toFixed(1)}</td>
                   <td className="num corte">{p.alto_corte.toFixed(1)}</td>
                   <td className="num">{p.espesor.toFixed(0)}</td>
-                  {CARAS.map(cara => (
-                    <td key={cara.key} className="filo-td">
+                  {['frente','posterior'].map(cara => (
+                    <td key={cara} className="filo-td">
                       <select className="filo-select"
-                        value={filos[i]?.[cara.key] || ''}
+                        value={filos[i]?.[cara] || ''}
                         onChange={e => {
-                          setFilos(prev => ({ ...prev, [i]: { ...prev[i], [cara.key]: e.target.value } }));
+                          setFilos(prev => ({ ...prev, [i]: { ...prev[i], [cara]: e.target.value } }));
                           setSinGuardar(true);
                           setConfirmado(false);
                         }}>
@@ -584,7 +556,24 @@ function SeccionPiezas({ moduloId, datos, ensamble, cantos, materiales, divisor 
                       </select>
                     </td>
                   ))}
-                  <td>
+                  {mostrarSuIn && ['superior','inferior'].map(cara => (
+                    <td key={cara} className="filo-td">
+                      <select className="filo-select"
+                        value={filos[i]?.[cara] || ''}
+                        onChange={e => {
+                          setFilos(prev => ({ ...prev, [i]: { ...prev[i], [cara]: e.target.value } }));
+                          setSinGuardar(true);
+                          setConfirmado(false);
+                        }}>
+                        {cantosOpciones.map(o => (
+                          <option key={o.value} value={o.value} style={o.sinStock ? { color: '#cc0000' } : {}}>
+                            {o.sinStock ? `⚠ ${o.label}` : o.label}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                  ))}
+                  <td className="col-acciones">
                     <button
                       className={`btn-config-pieza ${materiales_[i] ? 'btn-config-pieza--custom' : ''}`}
                       onClick={() => setModalPieza(i)}
@@ -596,7 +585,9 @@ function SeccionPiezas({ moduloId, datos, ensamble, cantos, materiales, divisor 
               ))}
             </tbody>
           </table>
-          <p className="piezas-total">{piezas.length} piezas — A=Ancho L=Largo E=Espesor (mm corte)</p>
+          <p className="piezas-total">
+            {piezas.length} piezas — A=Ancho L=Largo E=Espesor (mm corte)
+          </p>
         </div>
       )}
 

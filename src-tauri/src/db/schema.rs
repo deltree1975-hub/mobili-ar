@@ -328,5 +328,23 @@ if version < 9 {
          VALUES (9, 'B1-02 - paneles opcionales en modulos y disposiciones configurables');",
     )?;
     }
+    // -- Migracion v10 -----------------------------------------
+    if version < 10 {
+        if !columna_existe(conn, "trabajos", "numero_ot") {
+            let _ = conn.execute_batch(
+                "ALTER TABLE trabajos ADD COLUMN numero_ot INTEGER;"
+            );
+            let _ = conn.execute_batch("
+                UPDATE trabajos SET numero_ot = (
+                    SELECT COUNT(*) FROM trabajos t2
+                    WHERE t2.creado_en <= trabajos.creado_en
+                );
+            ");
+        }
+        conn.execute_batch(
+            "INSERT OR IGNORE INTO schema_version (version, descripcion)
+             VALUES (10, 'B4-01 - numero_ot secuencial en trabajos');",
+        )?;
+    }
     Ok(())
 }
